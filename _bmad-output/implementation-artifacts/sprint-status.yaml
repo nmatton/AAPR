@@ -1,0 +1,93 @@
+# generated: 2026-01-16
+# project: AAPPR
+# project_key: AAPPR
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 2026-01-16
+project: AAPPR
+project_key: AAPPR
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  # Epic 1: Authentication & Team Onboarding
+  epic-1: in-progress
+  1-0-set-up-initial-project-from-starter-template: review
+  1-1-user-registration-with-email-validation: backlog
+  1-2-user-login-with-session-management: backlog
+  1-3-teams-list-view-with-multi-team-support: backlog
+  1-4-team-creation-with-practice-selection: backlog
+  1-5-email-based-team-member-invitations: backlog
+  1-6-invite-status-management-and-membership-view: backlog
+  epic-1-retrospective: optional
+
+  # Epic 2: Practice Catalog & Coverage
+  epic-2: backlog
+  2-0-import-practice-data-from-json: backlog
+  2-1-load-and-display-practice-catalog: backlog
+  2-2-search-and-filter-practices-by-pillar: backlog
+  2-3-add-selected-practices-to-team-portfolio: backlog
+  2-4-remove-practices-from-team-portfolio: backlog
+  2-5-create-new-practice-from-scratch-or-as-template: backlog
+  2-6-view-team-coverage-at-pillar-level: backlog
+  2-7-view-team-coverage-by-category: backlog
+  2-8-edit-practice-details-any-practice: backlog
+  epic-2-retrospective: optional
+
+  # Epic 3: Big Five Personality Profiling
+  epic-3: backlog
+  3-1-complete-44-item-ipip-neo-questionnaire: backlog
+  3-2-display-big-five-profile-scores: backlog
+  epic-3-retrospective: optional
+
+  # Epic 4: Issue Submission & Discussion
+  epic-4: backlog
+  4-1-submit-practice-linked-issue-with-description: backlog
+  4-2-view-issue-detail-with-full-history: backlog
+  4-3-comment-in-issue-thread: backlog
+  4-4-detect-and-handle-concurrent-edits-optimistic-locking: backlog
+  epic-4-retrospective: optional
+
+  # Epic 5: Adaptation Decision & Tracking
+  epic-5: backlog
+  5-1-record-adaptation-decision-on-issue: backlog
+  5-2-update-issue-status-to-evaluated-and-capture-outcome: backlog
+  5-3-view-system-recommendations-for-alternative-practices: backlog
+  epic-5-retrospective: optional
+
+  # Epic 6: Research Data Integrity & Event Logging
+  epic-6: backlog
+  6-1-log-all-db-affecting-events-excluding-auth-composition: backlog
+  6-2-ensure-event-immutability-and-audit-trail-completeness: backlog
+  6-3-event-export-and-filtering-capability-research-use: backlog
+  epic-6-retrospective: optional

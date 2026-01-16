@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="calm-slate">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>bmad_version — UX Design Directions Showcase</title>
+  <style>
+    :root {
+      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.08);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.10);
+      --shadow-lg: 0 12px 24px rgba(0,0,0,0.12);
+      --space: 8px; /* base unit, theme-scaled */
+      --transition: 180ms ease;
+    }
+
+    /* Themes: set color + spacing scales */
+    html[data-theme="calm-slate"] {
+      --bg: #f8fafc; /* slate-50 */
+      --bg-panel: #ffffff;
+      --text: #0f172a; /* slate-900 */
+      --muted: #64748b; /* slate-500 */
+      --border: #cbd5e1; /* slate-300 */
+      --primary: #0f766e; /* teal-700 */
+      --primary-contrast: #ffffff;
+      --accent: #0891b2; /* cyan-700 */
+      --success: #16a34a; /* green-600 */
+      --warning: #f59e0b; /* amber-500 */
+      --danger: #dc2626; /* red-600 */
+      --code: #111827;
+      --space-scale: 1;
+    }
+    html[data-theme="teal-focus"] {
+      --bg: #f0fdfa; /* teal-50 */
+      --bg-panel: #ffffff;
+      --text: #0f172a;
+      --muted: #0f766e;
+      --border: #99f6e4; /* teal-200 */
+      --primary: #0e7490; /* cyan-700 */
+      --primary-contrast: #ffffff;
+      --accent: #14b8a6; /* teal-500 */
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+      --code: #0f172a;
+      --space-scale: 1.0;
+    }
+    html[data-theme="blue-minimal"] {
+      --bg: #f1f5f9; /* slate-100 */
+      --bg-panel: #ffffff;
+      --text: #0f172a;
+      --muted: #334155; /* slate-700 */
+      --border: #e2e8f0; /* slate-200 */
+      --primary: #2563eb; /* blue-600 */
+      --primary-contrast: #ffffff;
+      --accent: #1e40af; /* blue-800 */
+      --success: #15803d;
+      --warning: #f59e0b;
+      --danger: #b91c1c;
+      --code: #0b1220;
+      --space-scale: 0.95;
+    }
+    html[data-theme="warm-amber"] {
+      --bg: #fffbeb; /* amber-50 */
+      --bg-panel: #ffffff;
+      --text: #0f172a;
+      --muted: #a16207; /* amber-700 */
+      --border: #fde68a; /* amber-200 */
+      --primary: #f59e0b; /* amber-500 */
+      --primary-contrast: #0f172a;
+      --accent: #0ea5e9; /* sky-500 */
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --danger: #b91c1c;
+      --code: #111827;
+      --space-scale: 1.05;
+    }
+    html[data-theme="monochrome"] {
+      --bg: #f6f6f6;
+      --bg-panel: #ffffff;
+      --text: #1f1f1f;
+      --muted: #555555;
+      --border: #dcdcdc;
+      --primary: #1f1f1f;
+      --primary-contrast: #ffffff;
+      --accent: #3a3a3a;
+      --success: #2f8f2f;
+      --warning: #9a6b00;
+      --danger: #9a2c2c;
+      --code: #111111;
+      --space-scale: 1.0;
+    }
+    html[data-theme="dense-pro"] {
+      --bg: #f8fafc;
+      --bg-panel: #ffffff;
+      --text: #0f172a;
+      --muted: #475569; /* slate-600 */
+      --border: #cbd5e1;
+      --primary: #1e40af; /* blue-800 */
+      --primary-contrast: #ffffff;
+      --accent: #0ea5e9; /* sky-500 */
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+      --code: #0b1220;
+      --space-scale: 0.85; /* tighter spacing */
+    }
+    html[data-theme="spacious-calm"] {
+      --bg: #f8fafc;
+      --bg-panel: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --border: #cbd5e1;
+      --primary: #0ea5e9;
+      --primary-contrast: #ffffff;
+      --accent: #22c55e;
+      --success: #22c55e;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --code: #111827;
+      --space-scale: 1.2; /* airier spacing */
+    }
+    html[data-theme="high-contrast"] {
+      --bg: #ffffff;
+      --bg-panel: #ffffff;
+      --text: #0a0a0a;
+      --muted: #1f2937; /* gray-800 */
+      --border: #0a0a0a;
+      --primary: #000000;
+      --primary-contrast: #ffffff;
+      --accent: #2563eb;
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --danger: #dc2626;
+      --code: #0a0a0a;
+      --space-scale: 1.0;
+    }
+
+    /* Base styles */
+    body { font-family: var(--font-sans); color: var(--text); background: var(--bg); margin: 0; }
+    .app { display: flex; flex-direction: column; min-height: 100vh; }
+    .topbar { display: flex; align-items: center; gap: calc(var(--space) * 2 * var(--space-scale)); padding: calc(var(--space) * 2 * var(--space-scale)); border-bottom: 1px solid var(--border); background: var(--bg-panel); position: sticky; top: 0; z-index: 20; }
+    .brand { font-weight: 700; letter-spacing: 0.3px; }
+    .controls { display: flex; gap: calc(var(--space) * 2 * var(--space-scale)); align-items: center; }
+    select, button { border: 1px solid var(--border); background: var(--bg-panel); color: var(--text); padding: calc(var(--space) * 1.25 * var(--space-scale)) calc(var(--space) * 1.5 * var(--space-scale)); border-radius: var(--radius-sm); box-shadow: var(--shadow-sm); transition: box-shadow var(--transition), transform var(--transition), background var(--transition), color var(--transition); }
+    button.primary { background: var(--primary); color: var(--primary-contrast); border-color: var(--primary); }
+    button.primary:hover { filter: brightness(1.05); transform: translateY(-1px); }
+    button:hover, select:hover { box-shadow: var(--shadow-md); }
+
+    .container { display: grid; grid-template-columns: 1fr; gap: calc(var(--space) * 3 * var(--space-scale)); padding: calc(var(--space) * 3 * var(--space-scale)); }
+    .compare { grid-template-columns: 1fr 1fr; }
+
+    .frame { display: grid; grid-template-columns: 1fr 280px; gap: calc(var(--space) * 3 * var(--space-scale)); align-items: start; }
+
+    .panel { background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: calc(var(--space) * 3 * var(--space-scale)); }
+
+    .section-title { font-size: 14px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: calc(var(--space) * 1.5 * var(--space-scale)); }
+    .title { font-size: 22px; font-weight: 700; margin: 0 0 calc(var(--space) * 2 * var(--space-scale)); }
+    .muted { color: var(--muted); }
+
+    .list { display: grid; gap: calc(var(--space) * 2 * var(--space-scale)); }
+    .card { border: 1px solid var(--border); border-radius: var(--radius-md); padding: calc(var(--space) * 2 * var(--space-scale)); background: var(--bg-panel); box-shadow: var(--shadow-sm); }
+    .card:hover { box-shadow: var(--shadow-md); }
+
+    .badge { display: inline-flex; align-items: center; gap: calc(var(--space) * 0.75 * var(--space-scale)); font-size: 12px; padding: calc(var(--space) * 0.75 * var(--space-scale)) calc(var(--space) * 1.0 * var(--space-scale)); border-radius: var(--radius-sm); border: 1px solid var(--border); }
+    .badge.submitted { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+    .badge.discussed { background: #f1f5f9; color: #334155; border-color: #cbd5e1; }
+    .badge.decided { background: #f0fdfa; color: var(--primary); border-color: #99f6e4; }
+    .badge.evaluated { background: #f1f5f9; color: #475569; border-color: #cbd5e1; }
+    .badge.conflict { background: #fffbeb; color: var(--warning); border-color: #fde68a; }
+
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: calc(var(--space) * 2 * var(--space-scale)); }
+
+    .comment { display: grid; gap: calc(var(--space) * 1.5 * var(--space-scale)); border-top: 1px dashed var(--border); padding-top: calc(var(--space) * 1.5 * var(--space-scale)); }
+    .comment .meta { font-size: 12px; color: var(--muted); }
+
+    .activity { display: grid; gap: calc(var(--space) * 1.25 * var(--space-scale)); font-size: 14px; }
+    .activity .item { display: flex; align-items: center; gap: calc(var(--space) * 1.25 * var(--space-scale)); }
+    .activity .item .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--primary); }
+
+    .coverage { display: grid; gap: calc(var(--space) * 1 * var(--space-scale)); }
+    .coverage .bar { height: 12px; background: #e5e7eb; border-radius: 999px; overflow: hidden; }
+    .coverage .bar .fill { height: 100%; background: var(--accent); width: 60%; }
+    .coverage .note { font-size: 12px; color: var(--muted); }
+
+    .sidebar-section { display: grid; gap: calc(var(--space) * 1 * var(--space-scale)); margin-bottom: calc(var(--space) * 2 * var(--space-scale)); }
+    .pill { display: inline-flex; align-items: center; gap: calc(var(--space) * 0.75 * var(--space-scale)); padding: 4px 8px; border-radius: 999px; background: #e2e8f0; color: #334155; font-size: 12px; }
+
+    /* Modal */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.35); display: none; align-items: center; justify-content: center; z-index: 50; }
+    .modal { width: min(900px, 90vw); background: var(--bg-panel); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: calc(var(--space) * 3 * var(--space-scale)); }
+    .modal h3 { margin-top: 0; }
+    .diff { display: grid; grid-template-columns: 1fr 1fr; gap: calc(var(--space) * 2 * var(--space-scale)); margin: calc(var(--space) * 2 * var(--space-scale)) 0; }
+    .diff pre { background: #0b1220; color: #e5e7eb; padding: calc(var(--space) * 2 * var(--space-scale)); border-radius: var(--radius-md); overflow: auto; }
+    .modal-actions { display: flex; justify-content: flex-end; gap: calc(var(--space) * 1.25 * var(--space-scale)); }
+    .show { display: flex; }
+
+    /* Save indicator */
+    .save-indicator { font-size: 12px; color: var(--success); opacity: 0; transition: opacity var(--transition); }
+    .save-indicator.visible { opacity: 1; }
+
+    /* Focus */
+    :focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="brand">bmad_version · UX Directions</div>
+      <div class="controls">
+        <label for="themeSelect" class="muted">Theme</label>
+        <select id="themeSelect" aria-label="Theme selector">
+          <option value="calm-slate">Calm Slate</option>
+          <option value="teal-focus">Teal Focus</option>
+          <option value="blue-minimal">Blue Minimal</option>
+          <option value="warm-amber">Warm Amber</option>
+          <option value="monochrome">Monochrome</option>
+          <option value="dense-pro">Dense Pro</option>
+          <option value="spacious-calm">Spacious Calm</option>
+          <option value="high-contrast">High Contrast</option>
+        </select>
+        <button id="toggleCompare" class="primary">Compare Mode</button>
+        <button id="simulateConflict">Simulate Conflict</button>
+        <button id="simulateSave" title="Simulate auto-save feedback">Simulate Auto-Save</button>
+      </div>
+    </div>
+
+    <div id="container" class="container">
+      <div class="frame">
+        <main class="panel">
+          <div class="section-title">Team View</div>
+          <h2 class="title">Issues</h2>
+          <div class="list">
+            <div class="card">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <span class="badge submitted">Submitted</span>
+                  <strong>Daily standup drains focus</strong>
+                </div>
+                <div class="save-indicator" id="saveIndicator">Saved ✓</div>
+              </div>
+              <p class="muted">Practice: Standup · Author: Sophie · 2h ago</p>
+              <p>Standup format feels interrupt-heavy. Prefer async updates + weekly sync ceremony.</p>
+              <div class="grid2">
+                <button class="primary">Open Issue</button>
+                <button id="openConflict" class="badge conflict" style="cursor:pointer; border: none;">Trigger 409 Conflict</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="badge discussed">Discussed</span>
+                <strong>Sprint planning feels overwhelming</strong>
+              </div>
+              <p class="muted">Practice: Sprint Planning · Author: Alex · 1d ago</p>
+              <p>Estimation anxiety high. Trying T-shirt sizing + pre-planning buddy session.</p>
+            </div>
+          </div>
+
+          <hr style="border:none; border-top:1px solid var(--border); margin: 24px 0;" />
+
+          <div class="section-title">Issue Detail</div>
+          <div class="card">
+            <div style="display:flex; align-items:center; gap:8px; justify-content:space-between;">
+              <div style="display:flex; align-items:center; gap:8px;">
+                <span class="badge decided">Decided</span>
+                <strong>Change standup to async posts</strong>
+              </div>
+              <div class="muted">Last action: Marc set status to Decided · 20m ago</div>
+            </div>
+            <p class="muted">Practice: Standup · Author: Sophie</p>
+            <p>Decision: Pilot async status posts 3x/week + weekly sync ceremony for 2 sprints.</p>
+            <div class="comment">
+              <div class="meta">Comments</div>
+              <div>
+                <strong>Marc</strong>: Let's run this pilot and review in 2 sprints.
+              </div>
+              <div>
+                <strong>Sophie</strong>: Thank you—this will help focus time.
+              </div>
+            </div>
+
+            <div style="margin-top: 16px; display:flex; gap: 8px;">
+              <button class="primary">Add Comment</button>
+              <button>Export Decision Trace</button>
+            </div>
+          </div>
+
+          <hr style="border:none; border-top:1px solid var(--border); margin: 24px 0;" />
+
+          <div class="section-title">Activity Feed</div>
+          <div class="panel" style="padding: 16px;">
+            <div class="activity">
+              <div class="item"><span class="dot"></span> Marc changed status to <strong>Decided</strong></div>
+              <div class="item"><span class="dot"></span> Sophie submitted issue</div>
+              <div class="item"><span class="dot"></span> Alex commented on planning issue</div>
+            </div>
+          </div>
+        </main>
+
+        <aside class="panel">
+          <div class="sidebar-section">
+            <div class="section-title">Coverage</div>
+            <div class="coverage">
+              <div>Team Coverage: <strong>63%</strong></div>
+              <div class="bar"><div class="fill" style="width:63%;"></div></div>
+              <div class="note">Pillars covered: Transparency, Communication, Planning</div>
+            </div>
+          </div>
+          <div class="sidebar-section">
+            <div class="section-title">Practice Catalog</div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <span class="pill">Standup</span>
+              <span class="pill">Sprint Planning</span>
+              <span class="pill">Retrospective</span>
+              <span class="pill">Backlog Refinement</span>
+            </div>
+          </div>
+          <div class="sidebar-section">
+            <div class="section-title">Personality Context</div>
+            <div class="muted">Team: 3 introverts, 2 extroverts; High conscientiousness majority</div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <!-- Modal for Conflict Resolution -->
+    <div id="modalBackdrop" class="modal-backdrop" aria-hidden="true" role="dialog" aria-label="Conflict Resolution">
+      <div class="modal">
+        <h3>Conflict Detected (409)</h3>
+        <p class="muted">This item changed since you opened it. Choose how to proceed:</p>
+        <div class="diff">
+          <div>
+            <div class="section-title">Your Edits</div>
+            <pre>Decision: Pilot async status posts 3x/week
+Added note: Prefer written updates before noon</pre>
+          </div>
+          <div>
+            <div class="section-title">Latest Server State</div>
+            <pre>Decision: Pilot async status posts 3x/week
+Added note: Weekly sync ceremony on Fridays</pre>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button id="applyLatest" class="primary">Apply latest + re-apply my edits</button>
+          <button id="overwrite">Overwrite (if permitted)</button>
+          <button id="saveAsComment">Save my edits as new comment</button>
+          <button id="closeModal">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const themeSelect = document.getElementById('themeSelect');
+    const container = document.getElementById('container');
+    const toggleCompare = document.getElementById('toggleCompare');
+    const modalBackdrop = document.getElementById('modalBackdrop');
+    const openConflict = document.getElementById('openConflict');
+    const closeModal = document.getElementById('closeModal');
+    const simulateConflict = document.getElementById('simulateConflict');
+    const saveIndicator = document.getElementById('saveIndicator');
+    const simulateSave = document.getElementById('simulateSave');
+
+    const themes = [
+      'calm-slate', 'teal-focus', 'blue-minimal', 'warm-amber', 'monochrome', 'dense-pro', 'spacious-calm', 'high-contrast'
+    ];
+
+    themeSelect.addEventListener('change', (e) => {
+      document.documentElement.setAttribute('data-theme', e.target.value);
+    });
+
+    toggleCompare.addEventListener('click', () => {
+      const comparing = container.classList.toggle('compare');
+      toggleCompare.textContent = comparing ? 'Exit Compare Mode' : 'Compare Mode';
+      // When entering compare, add a second frame with a different theme
+      if (comparing) {
+        const second = document.querySelector('.frame').cloneNode(true);
+        container.appendChild(second);
+        // Pick a contrasting theme
+        const current = themeSelect.value;
+        const otherTheme = themes.find(t => t !== current) || 'high-contrast';
+        second.setAttribute('data-theme', otherTheme);
+        // Visually mark second frame
+        second.querySelector('.title').textContent = 'Issues (Comparison)';
+        second.querySelector('.brand')?.remove();
+      } else {
+        // Remove any extra frames
+        const frames = container.querySelectorAll('.frame');
+        if (frames.length > 1) frames[1].remove();
+      }
+    });
+
+    const showModal = () => { modalBackdrop.classList.add('show'); modalBackdrop.setAttribute('aria-hidden', 'false'); };
+    const hideModal = () => { modalBackdrop.classList.remove('show'); modalBackdrop.setAttribute('aria-hidden', 'true'); };
+
+    openConflict.addEventListener('click', showModal);
+    simulateConflict.addEventListener('click', showModal);
+    closeModal.addEventListener('click', hideModal);
+
+    simulateSave.addEventListener('click', () => {
+      saveIndicator.classList.add('visible');
+      setTimeout(() => saveIndicator.classList.remove('visible'), 1600);
+    });
+  </script>
+</body>
+</html>

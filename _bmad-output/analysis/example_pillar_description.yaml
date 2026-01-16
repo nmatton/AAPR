@@ -1,0 +1,69 @@
+{
+  "pillars": [
+    {
+      "pilier": "Collective Code Ownership",
+      "description": "Toute l'équipe est responsable de tout le code.\nPersonne n'a \"propriété\" exclusive sur une partie.",
+      "rationale": [
+        "Réduit les goulets d'étranglement",
+        "Augmente le partage de connaissances",
+        "Crée une responsabilité collective"
+      ],
+      "relations": {
+        "depends": [
+          {
+            "name": "Code Reviews",
+            "condition": "ALWAYS",
+            "rationale": "Nécessaire pour maintenir la qualité du code partagé"
+          },
+          {
+            "name": "Pair Programming",
+            "condition": "IF équipe_disponible",
+            "rationale": "Facilite le partage de connaissances en temps réel"
+          }
+        ],
+        "reinforces": [
+          {
+            "name": "Continuous Integration",
+            "condition": "ALWAYS",
+            "rationale": "Encourage l'intégration fréquente de code par toute l'équipe"
+          },
+          {
+            "name": "Automated Testing",
+            "condition": "ALWAYS",
+            "rationale": "Assure que le code partagé reste fonctionnel"
+          }
+        ]
+      }
+    },
+    {
+      "pilier": "Self-Organization",
+      "description": "Les équipes s'auto-organisent pour gérer leur travail.\nElles décident comment accomplir les tâches.",
+      "rationale": [
+        "Augmente la flexibilité",
+        "Améliore la motivation de l'équipe",
+        "Favorise l'innovation"
+      ],
+      "relations": {
+        "depends": [
+          {
+            "name": "Cross-Functional Teams",
+            "condition": "IF nombre_équipes > 1",
+            "rationale": "Besoin de coordination entre spécialistes",
+            "alternative": "Équipe isolée peut fonctionner sans ça"
+          },
+          {
+            "name": "Transparency",
+            "condition": "ALWAYS",
+            "rationale": "Impossible de s'auto-organiser sans visibilité"
+          },
+          {
+            "name": "Courage",
+            "condition": "ALWAYS",
+            "rationale": "S'auto-organiser = prendre des risques"
+          }
+        ],
+        "reinforces": []
+      }
+    }
+  ]
+}

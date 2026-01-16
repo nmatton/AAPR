@@ -1,0 +1,12 @@
+Pilier: Self-Organization
+Dépend_de:
+  - Cross-Functional Teams:
+      Condition: "IF nombre_équipes > 1"
+      Raison: "Besoin de coordination entre spécialistes"
+      Alternative: "Équipe isolée peut fonctionner sans ça"
+  - Transparency:
+      Condition: "ALWAYS"
+      Raison: "Impossible de s'auto-organiser sans visibilité"
+  - Courage:
+      Condition: "ALWAYS"
+      Raison: "S'auto-organiser = prendre des risques"

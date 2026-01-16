@@ -1,0 +1,51 @@
+[
+  {
+    "category": "VALEURS HUMAINES",
+    "pillars": [
+      "Communication",
+      "Courage",
+      "Humility",
+      "Transparency",
+      "Sustainable Pace"
+    ]
+  },
+  {
+    "category": "FEEDBACK & APPRENTISSAGE",
+    "pillars": [
+      "Feedback",
+      "Inspection",
+      "Adaptation",
+      "Continuous Integration",
+      "Refactoring",
+      "TDD (Test First)"
+    ]
+  },
+  {
+    "category": "EXCELLENCE TECHNIQUE",
+    "pillars": [
+      "Simple Design",
+      "Coding Standards",
+      "Collective Code Ownership",
+      "TDD (Test First)",
+      "Refactoring",
+      "Continuous Integration"
+    ]
+  },
+  {
+    "category": "ORGANISATION & AUTONOMIE",
+    "pillars": [
+      "Self-Organization",
+      "Cross-Functional Teams",
+      "Collective Code Ownership",
+      "Active Stakeholder Participation"
+    ]
+  },
+  {
+    "category": "FLUX & RAPIDITÉ",
+    "pillars": [
+      "Simplicity",
+      "Short Releases",
+      "Sustainable Pace"
+    ]
+  }
+]
