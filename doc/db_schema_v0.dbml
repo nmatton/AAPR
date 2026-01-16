@@ -1,0 +1,531 @@
+////==============================================
+////    Agile Practices Repository ERD for database
+////==============================================
+
+//==============================================
+//          User and Team Management
+//==============================================
+
+Table Person {
+ id integer [pk]
+ name varchar(255) [not null]
+ email varchar(255) [unique, not null]
+ passwordHash varchar(255) [not null, note: 'Storing a secure hash of the password.']
+ roleId integer
+ createdAt timestamp [default: "now()"]
+ Note: 'Represents an individual user of the system.'
+}
+
+Table Team {
+  id integer [pk]
+  name varchar(255) [not null]
+  description text
+  Note: 'Represents a group of people working together, for example, a development team.'
+}
+
+Table teamMember {
+  teamId integer [not null]
+  personId integer [not null]
+
+  Indexes {
+    (teamId, personId) [pk]
+  }
+  Note: 'Join table to manage the many-to-many relationship between Teams and People.'
+}
+
+//==============================================
+//          Personality profile related
+//==============================================
+
+Table bfProfile {
+  id integer [pk]
+  personId integer [not null]
+  statusId integer [not null, note: 'FK to bfProfileStatus table']
+  o float
+  c float
+  e float
+  a float
+  n float
+  Note: 'Represents the Big Five results for a person'
+}
+
+Table personPracticeAffinity {
+  id integer [pk]
+  personId integer [not null]
+  practiceVersionId integer [not null]
+  affinity integer [not null]
+  Note: 'Represents the affinity of a practice for a person'
+
+    Indexes {
+      personId
+      practiceVersionId
+    }
+}
+
+Table affinitySurveyResults {
+  id integer [pk]
+  personId integer [not null]
+  itemId integer [not null]
+  result integer [not null]
+  Note: 'Represents the result of the person for the practice questionnaire item'
+}
+
+Table affinitySurveyVersion {
+  id integer [pk]
+  itemId integer [not null]
+  version integer [not null]
+  versionNote varchar(255)
+
+  Indexes {
+    itemId
+    (itemId,version)
+  }
+  Note : 'Represents a version of a given item of Affinity questionnaire'
+}
+
+Table affinitySurvey {
+  id integer [pk]
+  content varchar(255) [not null, note: 'the question of the survey']
+  description varchar(255)
+  comment varchar(255) [note : 'internal comment of the item']
+  Note: 'Represents a questionnaire item'
+}
+
+//==============================================
+//          New Core & Versioning Tables
+//==============================================
+
+Table Universe {
+  id integer [pk]
+  teamId integer [not null]
+  name varchar(255) [not null, note: 'The name of the team, organization, or context, e.g., "Team Phoenix"']
+  description text [note: 'A detailed description of the universe.']
+
+  Note: 'Represents a specific context (team, project, organization) where practices are customized. Each universe has its own set of practice and method versions and is owned by a Team.'
+}
+
+Table Practice {
+  id integer [pk]
+  name varchar(64) [unique, not null]
+  objective varchar(255)
+  description varchar(255)
+  typeId integer [note: 'FK to practiceType table']
+  tagId integer [note: 'FK to practiceTag table']
+  Note: 'Represents the abstract concept of a practice, independent of any version or customization. It acts as a container for its versions.'
+}
+
+Table practiceVersion {
+  id integer [pk]
+  practiceId integer [not null]
+  universeId integer [not null]
+  versionName varchar(255) [not null, note: 'A descriptive name for the version, e.g., "v1.0 - Default", "Team Phoenix Adaptation"']
+  versionTimestamp timestamp [default: "now()", note: 'The timestamp when this version was created.']
+  changeDescription text [note: 'The rationale for creating this version, similar to a commit message.']
+  lastUpdate timestamp
+  lastUpdateById integer [note: 'FK Person.id']
+  Note: 'A specific, concrete version of a Practice, customized for a particular Universe at a point in time.'
+
+    Indexes {
+      practiceId
+      universeId
+      }
+}
+
+Table Method {
+  id integer [pk]
+  name varchar(64)
+  objective varchar(255)
+  description varchar(255)
+  typeId integer
+  Note: 'Represents the abstract concept of a method, acting as a container for its different versions.'
+}
+
+Table methodVersion {
+  id integer [pk]
+  methodId integer [not null]
+  universeId integer [not null]
+  versionName varchar(255) [not null]
+  versionTimestamp timestamp [default: "now()"]
+  changeDescription text
+  lastUpdate timestamp
+  lastUpdateById integer [note: 'FK Person.id']
+  Note: 'A specific, concrete version of a Method, customized for a particular Universe at a point in time.'
+}
+
+
+//==================================================
+//     Core Tables Note affected by Versionning
+//==================================================
+
+Table Metric {
+  id integer [pk]
+  name varchar(64)
+  unit varchar(64)
+  scale varchar(64)
+  formula varchar(64)
+  lastUpdate timestamp
+  lastUpdateById integer [note: 'FK Person.id']
+  Note: 'Defines a quantifiable measure or estimation that can be used to assess practices or processes.'
+}
+
+Table Role {
+  id integer [pk]
+  name varchar(64)
+  description varchar(255)
+  lastUpdate timestamp
+  lastUpdateById integer [note: 'FK Person.id']
+  Note: 'Represents an individual or a group with a specific set of skills and responsibilities within a practice.'
+}
+
+Table Workproduct {
+  id integer [pk]
+  name varchar(64)
+  description varchar(255)
+  lastUpdate timestamp
+  lastUpdateById integer [note: 'FK Person.id']
+  Note: 'Any artifact developed and produced during a project, such as documents, models, code, or test scripts.'
+}
+
+Table Goal {
+  id integer [pk]
+  name varchar(64)
+  description varchar(255)
+  Note: 'Represents a high-level objective or desired outcome that a method or practice aims to achieve.'
+}
+
+Table Context {
+  id integer [pk]
+  description varchar(255) [note: 'Changed from integer to varchar for meaningful descriptions.']
+  Note: 'Defines a specific situational context in which practices are applied, influencing their configuration and suitability.'
+}
+
+//==============================================
+//          Practice Detail Tables
+//==============================================
+
+Table Guideline {
+  id integer [pk]
+  practiceVersionId integer
+  methodVersionId integer
+  name varchar(64)
+  description varchar(64)
+  content varchar(255)
+  lastUpdate timestamp
+  lastUpdateById integer [note: 'FK Person.id']
+  typeId integer [note: 'FK to guidelineType table']
+  Note: 'Provides external guidance for a specific version of a practice or method.'
+}
+
+Table Pitfall {
+  id integer [pk]
+  practiceVersionId integer
+  name varchar(64)
+  description varchar(255)
+  content varchar(255)
+  lastUpdate timestamp
+  lastUpdateById integer [note: 'FK Person.id']
+  Note: 'Documents common misapplications for a specific version of a practice.'
+}
+
+Table Benefit {
+  id integer [pk]
+  practiceVersionId integer
+  name varchar(64)
+  description varchar(64)
+  content varchar(255)
+  lastUpdate timestamp
+  lastUpdateById integer [note: 'FK Person.id']
+  Note: 'Describes the benefits of applying a specific version of a practice.'
+}
+
+Table Activity {
+  id integer [pk]
+  name varchar(64)
+  description varchar(64)
+  lastUpdate timestamp
+  lastUpdateById integer [note: 'FK Person.id']
+  Note: 'Represents a reusable unit of work that can be included in multiple practice versions.'
+}
+
+Table completionCriteria {
+  id integer [pk]
+  practiceVersionId integer
+  name varchar(64)
+  description varchar(64)
+  lastUpdate timestamp
+  lastUpdateById integer [note: 'FK Person.id']
+  Note: 'Defines the completion conditions for an activity within a specific version of a practice.'
+}
+
+Table Recommendation {
+  id integer [pk]
+  practiceVersionId integer
+  contextId integer
+  description varchar(255)
+  typeId integer [note: 'FK to recommendationType table']
+  statusId integer [note: 'FK to recommendationStatus table']
+  lastUpdate timestamp
+  lastUpdateById integer [note: 'FK Person.id']
+  Note: 'Provides advice for a specific version of a practice within a given context.'
+
+    Indexes {
+      practiceVersionId
+      contextId
+    }
+}
+
+Table contextIndicator {
+  id integer [pk]
+  contextId integer
+  name varchar(64)
+  description varchar(255)
+  attributes varchar(64)
+  precision varchar(64)
+  value varchar(64)
+  Note: 'Defines specific attributes and values that characterize a particular context.'
+}
+
+//==============================================
+//          Type & Status Lookup Tables
+//==============================================
+
+Table practiceType {
+  id integer [pk]
+  name varchar(255) [unique, not null]
+  description text
+  Note: 'Defines the different types of practices (e.g., Development practices, Teamwork practices, Organizational practices).'
+}
+
+Table practiceTag {
+  id integer [pk]
+  name varchar(255) [unique, not null]
+  description text
+  Note: 'Defines a specific tag that characterize the practice (related to behavior or specificities) (e.g., (a)synchron, prep needed, etc.)'
+}
+
+
+Table guidelineType {
+  id integer [pk]
+  name varchar(255) [unique, not null]
+  description text
+  Note: 'Defines the different types of guidelines (e.g., Wiki, scientific article, blog post, etc.).'
+}
+
+Table recommendationType {
+  id integer [pk]
+  name varchar(255) [unique, not null]
+  description text
+  Note: 'AMQuICk relies by default on 4 recommendation types : 0 : Neutral practice, + : Helpful practice, C : Helpful if customized or carefully implemented and − : Harmful practice.'
+}
+
+Table recommendationStatus {
+  id integer [pk]
+  name varchar(255) [unique, not null]
+  description text
+  Note: 'Defines the status of a recommendation (e.g., Proposed, Accepted, Rejected).'
+}
+
+Table practiceAssociationType {
+  id integer [pk]
+  name varchar(255) [unique, not null]
+  description text
+  Note: 'A practice association may be of 5 kinds: configuration, equivalence, dependency, complementarity or exclusion'
+}
+
+Table roleUseType {
+  id integer [pk]
+  name varchar(255) [unique, not null]
+  description text
+  Note: 'Defines how a role is involved in the fulfillment of the practice (e.g., Responsible, Accountable, Consulted, Informed).'
+}
+
+Table bfProfileStatus {
+  id integer [pk]
+  name varchar(255) [unique, not null]
+  description text
+  Note: 'Defines the status of a Big Five profile (e.g., Pending, Complete, In-Progress).'
+}
+
+Table roleType {
+  id integer [pk]
+  name varchar(255) [unique, not null]
+  description text
+  Note: 'Defines the role of a person (Expert, Team Member, etc.)'
+}
+
+Table methodType {
+  id integer [pk]
+  name varchar [unique, not null]
+  description text
+  Note : 'method types to categorize methods. Examples: project management, development, maintenance or software deployment operations.'
+}
+
+//==============================================
+//          Join / Association Tables
+//==============================================
+
+Table practiceMethod {
+  methodVersionId integer
+  practiceVersionId integer
+
+  Indexes {
+    (methodVersionId, practiceVersionId) [pk]
+  }
+  Note: 'Associates specific versions of practices with a specific version of a method.'
+}
+
+Table practiceVersionActivity {
+  practiceVersionId integer [not null]
+  activityId integer [not null]
+  sequence integer [not null]
+
+  Indexes {
+    (practiceVersionId, activityId) [pk]
+    (practiceVersionId, sequence) [unique]
+  }
+  Note: 'Links activities to a practice version and defines their order.'
+}
+
+Table metricPractice {
+  metricId integer
+  practiceVersionId integer
+
+  Indexes {
+    (metricId, practiceVersionId) [pk]
+  }
+  Note: 'Links metrics to a specific version of a practice for assessment.'
+}
+
+Table practiceAssociation {
+  id integer [pk]
+  sourcePracticeVersionId integer
+  targetPracticeVersionId integer
+  typeId integer [note: 'FK to practiceAssociationType table']
+  Note: 'Represents relationships between specific versions of practices.'
+}
+
+Table roleUse {
+  practiceVersionId integer
+  roleId integer
+  typeId integer [note: 'FK to roleUseType table']
+
+  Indexes {
+    (practiceVersionId, roleId) [pk]
+  }
+  Note: 'Specifies how a Role is involved in a specific version of a Practice.'
+}
+
+Table workproductPractice {
+  practiceVersionId integer
+  workproductId integer
+
+  Indexes {
+    (practiceVersionId, workproductId) [pk]
+  }
+  Note: 'Associates workproducts with a specific version of a practice.'
+}
+
+Table recommendationGoal {
+  recommendationId integer
+  goalId integer
+
+  Indexes {
+    (recommendationId, goalId) [pk]
+  }
+  Note: 'Links a recommendation to the specific goal it helps to achieve.'
+}
+
+Table affinityPractice {
+  id integer [pk]
+  itemId integer [not null]
+  practiceVersionId integer [not null]
+  Note: 'Links a questionnaire item to a practice'
+}
+
+Table PracticeVersionUniverse {
+  practiceVersionId integer [pk]
+  universeId integer [pk]
+  isActive bool
+
+  Note: 'Links a Practice version to Universes'
+}
+
+//==============================================
+//                Relationships
+//==============================================
+
+// Team and Person Relationships
+Ref: teamMember.teamId > Team.id
+Ref: teamMember.personId > Person.id
+Ref: Universe.teamId - Team.id
+
+// Versioning Relationships
+Ref: practiceVersion.practiceId > Practice.id
+Ref: methodVersion.methodId > Method.id
+Ref: methodVersion.universeId > Universe.id
+
+// Detail Table Relationships
+Ref: Guideline.practiceVersionId > practiceVersion.id
+Ref: Guideline.methodVersionId > methodVersion.id
+Ref: Pitfall.practiceVersionId > practiceVersion.id
+Ref: Benefit.practiceVersionId > practiceVersion.id
+Ref: completionCriteria.practiceVersionId > practiceVersion.id
+
+// Join Table Relationships
+Ref: practiceMethod.methodVersionId > methodVersion.id
+Ref: practiceMethod.practiceVersionId > practiceVersion.id
+Ref: practiceVersionActivity.practiceVersionId > practiceVersion.id
+Ref: practiceVersionActivity.activityId > Activity.id
+Ref: metricPractice.metricId > Metric.id
+Ref: metricPractice.practiceVersionId > practiceVersion.id
+Ref: practiceAssociation.sourcePracticeVersionId > practiceVersion.id
+Ref: practiceAssociation.targetPracticeVersionId > practiceVersion.id
+Ref: roleUse.practiceVersionId > practiceVersion.id
+Ref: roleUse.roleId > Role.id
+Ref: workproductPractice.practiceVersionId > practiceVersion.id
+Ref: workproductPractice.workproductId > Workproduct.id
+Ref: Recommendation.practiceVersionId > practiceVersion.id
+Ref: Recommendation.contextId > Context.id
+Ref: recommendationGoal.recommendationId > Recommendation.id
+Ref: recommendationGoal.goalId > Goal.id
+Ref: PracticeVersionUniverse.practiceVersionId > practiceVersion.id
+Ref: PracticeVersionUniverse.universeId > Universe.id
+
+// Personality and affinity Relationships
+Ref: bfProfile.personId < Person.id
+Ref: affinitySurveyResults.personId < Person.id
+Ref: affinitySurveyVersion.id < affinitySurveyResults.itemId
+Ref: affinitySurvey.id < affinitySurveyVersion.itemId
+Ref: Person.id < personPracticeAffinity.personId
+Ref: personPracticeAffinity.practiceVersionId > practiceVersion.id
+Ref: affinityPractice.practiceVersionId > practiceVersion.id
+Ref: affinityPractice.itemId > affinitySurveyVersion.id
+
+Ref: bfProfile.statusId > bfProfileStatus.id
+Ref: Practice.typeId > practiceType.id
+Ref: Guideline.typeId > guidelineType.id
+Ref: Recommendation.typeId > recommendationType.id
+Ref: Recommendation.statusId > recommendationStatus.id
+Ref: practiceAssociation.typeId > practiceAssociationType.id
+Ref: roleUse.typeId > roleUseType.id
+
+Ref: Method.typeId > methodType.id
+// 'lastUpdateById' Foreign Key Relationships (Currently commented out)
+//Ref: practiceVersion.lastUpdateById > Person.id
+//Ref: methodVersion.lastUpdateById > Person.id
+//Ref: Metric.lastUpdateById > Person.id
+//Ref: Role.lastUpdateById > Person.id
+//Ref: Workproduct.lastUpdateById > Person.id
+//Ref: Guideline.lastUpdateById > Person.id
+//Ref: Pitfall.lastUpdateById > Person.id
+//Ref: Benefit.lastUpdateById > Person.id
+//Ref: Activity.lastUpdateById > Person.id
+//Ref: completionCriteria.lastUpdateById > Person.id
+//Ref: Recommendation.lastUpdateById > Person.id
+//Ref: practiceMethod.lastUpdateById > Person.id
+
+Ref: "Recommendation"."contextId" < "contextIndicator"."id"
+
+Ref: "Person"."roleId" < "roleType"."id"
+
+Ref: "Practice"."tagId" < "practiceTag"."id"
