@@ -1,17 +1,39 @@
-const App = () => {
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { SignupForm } from './features/auth/components/SignupForm'
+import { useAuthStore } from './features/auth/state/authSlice'
+
+function Teams() {
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100">
-      <div className="mx-auto flex min-h-screen max-w-3xl flex-col items-center justify-center px-6 text-center">
-        <p className="text-sm uppercase tracking-[0.3em] text-slate-400">BMAD</p>
-        <h1 className="mt-4 text-4xl font-semibold sm:text-5xl">Minimal Vite + React + Express Starter</h1>
-        <p className="mt-4 text-base text-slate-300">
-          React 18.2, TypeScript, Vite 5, and TailwindCSS are ready. The backend runs on Express.
-        </p>
-        <div className="mt-8 rounded-full border border-slate-700 px-4 py-2 text-sm text-slate-300">
-          API: <span className="text-emerald-400">$VITE_API_URL</span>
-        </div>
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">Teams</h1>
+        <p className="text-gray-600">Welcome to your teams dashboard (placeholder)</p>
       </div>
-    </main>
+    </div>
+  )
+}
+
+const App = () => {
+  const { isAuthenticated } = useAuthStore()
+
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route
+          path="/signup"
+          element={
+            isAuthenticated ? <Navigate to="/teams" replace /> : <SignupForm />
+          }
+        />
+        <Route
+          path="/teams"
+          element={
+            isAuthenticated ? <Teams /> : <Navigate to="/signup" replace />
+          }
+        />
+        <Route path="/" element={<Navigate to="/signup" replace />} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 

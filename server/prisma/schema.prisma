@@ -1,0 +1,75 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// User entity - authentication and profile information
+/// Security: Passwords MUST be bcrypt-hashed (10+ rounds)
+/// Privacy: User emails/names are NOT anonymized in research exports
+model User {
+  /// Auto-incrementing user identifier
+  id        Int      @id @default(autoincrement())
+  
+  /// User's display name (3-50 characters)
+  name      String   @db.VarChar(100)
+  
+  /// Unique email address for authentication
+  email     String   @unique @db.VarChar(255)
+  
+  /// Bcrypt-hashed password (NEVER stored as plain text)
+  password  String   @db.VarChar(255)
+  
+  /// User creation timestamp
+  createdAt DateTime @default(now()) @map("created_at")
+  
+  /// Last update timestamp
+  updatedAt DateTime @updatedAt @map("updated_at")
+  
+  @@map("users")
+}
+
+/// Event entity - immutable audit log for research data integrity
+/// Isolation: team_id is the primary boundary for all queries
+/// Privacy: Events contain system actions, not sensitive user data
+model Event {
+  /// Auto-incrementing event identifier
+  id            BigInt   @id @default(autoincrement())
+  
+  /// Event classification (e.g., 'user.registered', 'issue.created')
+  eventType     String   @map("event_type") @db.VarChar(50)
+  
+  /// User who triggered the event (NULL for system events)
+  actorId       Int?     @map("actor_id")
+  
+  /// Team context for the event (NULL for user-level events)
+  teamId        Int?     @map("team_id")
+  
+  /// Type of entity affected (e.g., 'user', 'issue', 'practice')
+  entityType    String?  @map("entity_type") @db.VarChar(50)
+  
+  /// Identifier of the affected entity
+  entityId      Int?     @map("entity_id")
+  
+  /// Action performed (e.g., 'created', 'updated', 'deleted')
+  action        String?  @db.VarChar(50)
+  
+  /// JSON payload with event-specific data
+  payload       Json?
+  
+  /// Schema version for payload structure evolution
+  schemaVersion String   @default("v1") @map("schema_version") @db.VarChar(10)
+  
+  /// Event creation timestamp (immutable)
+  createdAt     DateTime @default(now()) @map("created_at")
+  
+  @@index([teamId, eventType], map: "idx_events_team_type")
+  @@index([entityType, entityId], map: "idx_events_entity")
+  @@index([eventType], map: "idx_events_type")
+  @@map("events")
+}
