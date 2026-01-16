@@ -56,7 +56,10 @@ interface TokenPair {
 const BCRYPT_ROUNDS = 10
 
 // JWT configuration from environment
-const JWT_SECRET = process.env.JWT_SECRET || 'default_secret_CHANGE_IN_PRODUCTION'
+if (!process.env.JWT_SECRET) {
+  throw new Error('CRITICAL: JWT_SECRET environment variable is required')
+}
+const JWT_SECRET = process.env.JWT_SECRET
 const ACCESS_TOKEN_EXPIRY = '1h'
 const REFRESH_TOKEN_EXPIRY = '7d'
 
@@ -87,6 +90,16 @@ export const registerUser = async (dto: RegisterUserDto): Promise<UserResponse> 
 
   // Hash password with bcrypt (10 rounds minimum - security requirement)
   const hashedPassword = await bcrypt.hash(password, BCRYPT_ROUNDS)
+
+  // Verify bcrypt hash is correct length (bcrypt always produces 60 characters)
+  if (hashedPassword.length !== 60) {
+    throw new AppError(
+      'hash_generation_failed',
+      'Password hashing failed',
+      {},
+      500
+    )
+  }
 
   // CRITICAL: Atomic transaction - user creation + event logging must both succeed
   const user = await prisma.$transaction(async (tx) => {

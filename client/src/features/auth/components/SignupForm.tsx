@@ -124,7 +124,11 @@ export const SignupForm: React.FC = () => {
 
       // Handle structured API errors
       if (error && typeof error === 'object' && 'code' in error) {
-        const apiError = error as { code: string; message: string }
+        const apiError = error as { 
+          code: string; 
+          message: string; 
+          details?: { errors?: Array<{ path: string; message: string }> } 
+        }
 
         if (apiError.code === 'email_exists') {
           setErrors({
@@ -132,7 +136,19 @@ export const SignupForm: React.FC = () => {
             general: 'Email already registered. Please log in instead.'
           })
         } else if (apiError.code === 'validation_error') {
-          setErrors({ general: 'Please check your input and try again.' })
+          // Map backend validation errors to form fields
+          if (apiError.details?.errors) {
+            const fieldErrors: FormErrors = {}
+            apiError.details.errors.forEach((err: { path: string; message: string }) => {
+              const field = err.path as keyof FormErrors
+              if (field === 'name' || field === 'email' || field === 'password') {
+                fieldErrors[field] = err.message
+              }
+            })
+            setErrors(fieldErrors)
+          } else {
+            setErrors({ general: 'Please check your input and try again.' })
+          }
         } else {
           setErrors({ general: 'Registration failed. Please try again.' })
         }

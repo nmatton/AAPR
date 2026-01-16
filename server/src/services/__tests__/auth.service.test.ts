@@ -1,3 +1,6 @@
+// Set JWT_SECRET for tests BEFORE importing auth.service (auth.service validates on import)
+process.env.JWT_SECRET = 'test_secret_for_unit_tests_12345678901234567890'
+
 import bcrypt from 'bcrypt'
 import { registerUser, generateTokens, verifyToken, AppError } from '../auth.service'
 import { prisma } from '../../lib/prisma'

@@ -23,7 +23,8 @@ model User {
   email     String   @unique @db.VarChar(255)
   
   /// Bcrypt-hashed password (NEVER stored as plain text)
-  password  String   @db.VarChar(255)
+  /// IMPORTANT: Bcrypt always produces 60-character hashes
+  password  String   @db.Char(60)
   
   /// User creation timestamp
   createdAt DateTime @default(now()) @map("created_at")
