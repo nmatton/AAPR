@@ -52,7 +52,8 @@ describe('App auth flow integration', () => {
     await userEvent.type(screen.getByLabelText(/password/i), 'password123')
     await userEvent.click(screen.getByRole('button', { name: /sign in/i }))
 
-    expect(await screen.findByRole('heading', { name: 'My Teams', level: 1 })).toBeInTheDocument()
+    expect(await screen.findByRole('button', { name: /create team/i })).toBeInTheDocument()
+    expect(screen.getByText('My Teams')).toBeInTheDocument()
   })
 
   it('restores session on refresh and stays on /teams', async () => {

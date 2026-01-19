@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as teamsController from '../controllers/teams.controller';
 import * as invitesController from '../controllers/invites.controller';
+import * as membersController from '../controllers/members.controller';
 import { requireAuth } from '../middleware/requireAuth';
 import { validateTeamMembership } from '../middleware/validateTeamMembership';
 
@@ -41,3 +42,24 @@ teamsRouter.get('/:teamId/invites', requireAuth, validateTeamMembership, invites
  * Protected by requireAuth + team membership validation
  */
 teamsRouter.post('/:teamId/invites/:inviteId/resend', requireAuth, validateTeamMembership, invitesController.resendInvite);
+
+/**
+ * GET /api/v1/teams/:teamId/members
+ * List team members with invite status
+ * Protected by requireAuth + team membership validation
+ */
+teamsRouter.get('/:teamId/members', requireAuth, validateTeamMembership, membersController.listMembers);
+
+/**
+ * GET /api/v1/teams/:teamId/members/:userId
+ * Get a team member detail
+ * Protected by requireAuth + team membership validation
+ */
+teamsRouter.get('/:teamId/members/:userId', requireAuth, validateTeamMembership, membersController.getMemberDetail);
+
+/**
+ * DELETE /api/v1/teams/:teamId/members/:userId
+ * Remove a team member
+ * Protected by requireAuth + team membership validation
+ */
+teamsRouter.delete('/:teamId/members/:userId', requireAuth, validateTeamMembership, membersController.removeMember);

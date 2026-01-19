@@ -7,9 +7,9 @@ import { AppError } from '../services/auth.service';
  */
 export const errorHandler = (
   error: any,
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ): void => {
   // Get request ID for tracing
   const requestId = error.requestId || res.getHeader('x-request-id');

@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTeamsStore } from '../state/teamsSlice';
 import { InviteMembersPanel } from './InviteMembersPanel';
+import { TeamMembersPanel } from './TeamMembersPanel';
 
 export const TeamDashboard = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -78,6 +79,7 @@ export const TeamDashboard = () => {
               </div>
             </div>
             <InviteMembersPanel teamId={selectedTeam.id} teamName={selectedTeam.name} />
+            <TeamMembersPanel teamId={selectedTeam.id} />
           </div>
         )}
       </div>
