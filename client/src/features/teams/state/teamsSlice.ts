@@ -29,8 +29,18 @@ export const useTeamsStore = create<TeamsState>((set) => ({
       const teams = await getTeams();
       set({ teams, isLoading: false });
     } catch (error: any) {
+      let errorMessage = 'Failed to fetch teams';
+      
+      if (error.statusCode === 401) {
+        errorMessage = 'Session expired. Please log in again.';
+      } else if (error.code === 'network_error') {
+        errorMessage = 'Connection failed. Check your internet and retry.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       set({ 
-        error: error.message || 'Failed to fetch teams', 
+        error: errorMessage, 
         isLoading: false 
       });
     }

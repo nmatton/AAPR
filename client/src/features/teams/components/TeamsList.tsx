@@ -1,20 +1,32 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTeamsStore } from '../state/teamsSlice';
 import { TeamCard } from './TeamCard';
 import { EmptyState } from './EmptyState';
 
 export const TeamsList = () => {
   const { teams, isLoading, error, fetchTeams } = useTeamsStore();
+  const [minLoadTime, setMinLoadTime] = useState(false);
 
   useEffect(() => {
     fetchTeams();
   }, [fetchTeams]);
 
+  // Ensure loading skeleton shows for at least 300ms to avoid flash
+  useEffect(() => {
+    if (isLoading) {
+      setMinLoadTime(false);
+      const timer = setTimeout(() => setMinLoadTime(true), 300);
+      return () => clearTimeout(timer);
+    } else {
+      setMinLoadTime(true);
+    }
+  }, [isLoading]);
+
   const handleRetry = () => {
     fetchTeams();
   };
 
-  if (isLoading) {
+  if (isLoading || !minLoadTime) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-gray-800 mb-8">My Teams</h1>
