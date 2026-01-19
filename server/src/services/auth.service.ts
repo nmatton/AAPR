@@ -1,6 +1,7 @@
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../lib/prisma'
+import { autoResolveInvitesOnSignup } from './invites.service'
 
 /**
  * Custom application error for structured error handling
@@ -135,6 +136,9 @@ export const registerUser = async (dto: RegisterUserDto): Promise<UserResponse> 
         schemaVersion: 'v1'
       }
     })
+
+    // Auto-resolve pending invites for this email
+    await autoResolveInvitesOnSignup(newUser.id, newUser.email, tx)
 
     return newUser
   })

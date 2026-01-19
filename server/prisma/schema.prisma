@@ -33,7 +33,9 @@ model User {
   updatedAt DateTime @updatedAt @map("updated_at")
   
   // Relationships
-  teamMembers TeamMember[]
+  teamMembers    TeamMember[]
+  invitesSent    TeamInvite[] @relation("invites_sent")
+  invitesReceived TeamInvite[] @relation("invites_received")
   
   @@map("users")
 }
@@ -55,8 +57,9 @@ model Team {
   updatedAt    DateTime       @updatedAt @map("updated_at")
   
   // Relationships
-  teamMembers  TeamMember[]
+  teamMembers   TeamMember[]
   teamPractices TeamPractice[]
+  teamInvites   TeamInvite[]
   
   @@index([name], map: "idx_teams_name")
   @@map("teams")
@@ -88,6 +91,50 @@ model TeamMember {
   @@index([teamId], map: "idx_team_members_team")
   @@index([userId], map: "idx_team_members_user")
   @@map("team_members")
+}
+
+/// TeamInvite entity - pending or completed invitations to join a team
+/// Isolation: Queries must filter by teamId
+model TeamInvite {
+  /// Auto-incrementing invite identifier
+  id            Int      @id @default(autoincrement())
+
+  /// Team identifier
+  teamId        Int      @map("team_id")
+
+  /// Email address of invitee
+  email         String   @db.VarChar(255)
+
+  /// Invite status (Pending, Added, Failed)
+  status        String   @db.VarChar(20)
+
+  /// User who sent the invite
+  invitedBy     Int      @map("invited_by")
+
+  /// Existing user invited (if any)
+  invitedUserId Int?     @map("invited_user_id")
+
+  /// Invite creation timestamp
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  /// Invite update timestamp
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  /// Last email sent timestamp
+  lastSentAt    DateTime? @map("last_sent_at")
+
+  /// Last email error message (if any)
+  errorMessage  String?  @map("error_message") @db.Text
+
+  // Relationships
+  team          Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  invitedByUser User     @relation("invites_sent", fields: [invitedBy], references: [id], onDelete: Cascade)
+  invitedUser   User?    @relation("invites_received", fields: [invitedUserId], references: [id], onDelete: SetNull)
+
+  @@unique([teamId, email], map: "uq_team_invites_team_email")
+  @@index([teamId], map: "idx_team_invites_team")
+  @@index([email], map: "idx_team_invites_email")
+  @@map("team_invites")
 }
 
 /// Practice entity - agile practices catalog

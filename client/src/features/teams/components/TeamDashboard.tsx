@@ -1,6 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTeamsStore } from '../state/teamsSlice';
+import { InviteMembersPanel } from './InviteMembersPanel';
 
 export const TeamDashboard = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -76,6 +77,7 @@ export const TeamDashboard = () => {
                 <p className="text-2xl font-semibold text-gray-800">{selectedTeam.coverage}%</p>
               </div>
             </div>
+            <InviteMembersPanel teamId={selectedTeam.id} teamName={selectedTeam.name} />
           </div>
         )}
       </div>

@@ -46,8 +46,8 @@ development_status:
   1-1-user-registration-with-email-validation: done
   1-2-user-login-with-session-management: done
   1-3-teams-list-view-with-multi-team-support: done
-  1-4-team-creation-with-practice-selection: in-progress
-  1-5-email-based-team-member-invitations: backlog
+  1-4-team-creation-with-practice-selection: done
+  1-5-email-based-team-member-invitations: done
   1-6-invite-status-management-and-membership-view: backlog
   epic-1-retrospective: optional
 

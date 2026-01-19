@@ -51,6 +51,13 @@ describe('Auth Service', () => {
           },
           event: {
             create: jest.fn().mockResolvedValue({})
+          },
+          teamInvite: {
+            findMany: jest.fn().mockResolvedValue([]),
+            update: jest.fn()
+          },
+          teamMember: {
+            create: jest.fn()
           }
         })
       })
@@ -105,6 +112,13 @@ describe('Auth Service', () => {
           },
           event: {
             create: jest.fn().mockResolvedValue({})
+          },
+          teamInvite: {
+            findMany: jest.fn().mockResolvedValue([]),
+            update: jest.fn()
+          },
+          teamMember: {
+            create: jest.fn()
           }
         })
       })
@@ -142,6 +156,13 @@ describe('Auth Service', () => {
           },
           event: {
             create: mockEventCreate
+          },
+          teamInvite: {
+            findMany: jest.fn().mockResolvedValue([]),
+            update: jest.fn()
+          },
+          teamMember: {
+            create: jest.fn()
           }
         })
       })
@@ -163,6 +184,69 @@ describe('Auth Service', () => {
             registrationMethod: 'email_password'
           }),
           schemaVersion: 'v1'
+        })
+      })
+    })
+
+    it('should auto-resolve pending invites on signup', async () => {
+      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
+
+      const mockUser = {
+        id: 77,
+        name: validUserDto.name,
+        email: validUserDto.email,
+        createdAt: new Date()
+      }
+
+      const pendingInvite = {
+        id: 12,
+        teamId: 5,
+        email: validUserDto.email,
+        status: 'Pending'
+      }
+
+      const mockEventCreate = jest.fn().mockResolvedValue({})
+      const mockTeamMemberCreate = jest.fn().mockResolvedValue({ id: 901 })
+      const mockInviteUpdate = jest.fn().mockResolvedValue({})
+
+      ;(prisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
+        return callback({
+          user: {
+            create: jest.fn().mockResolvedValue(mockUser)
+          },
+          event: {
+            create: mockEventCreate
+          },
+          teamInvite: {
+            findMany: jest.fn().mockResolvedValue([pendingInvite]),
+            update: mockInviteUpdate
+          },
+          teamMember: {
+            create: mockTeamMemberCreate
+          }
+        })
+      })
+
+      await registerUser(validUserDto)
+
+      expect(mockTeamMemberCreate).toHaveBeenCalledWith({
+        data: {
+          teamId: pendingInvite.teamId,
+          userId: mockUser.id,
+          role: 'member'
+        }
+      })
+
+      expect(mockInviteUpdate).toHaveBeenCalledWith({
+        where: { id: pendingInvite.id },
+        data: { status: 'Added', invitedUserId: mockUser.id }
+      })
+
+      expect(mockEventCreate).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          eventType: 'invite.auto_resolved',
+          teamId: pendingInvite.teamId,
+          action: 'resolved'
         })
       })
     })
