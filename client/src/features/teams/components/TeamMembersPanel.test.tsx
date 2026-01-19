@@ -86,7 +86,9 @@ describe('TeamMembersPanel', () => {
     const pendingChip = await screen.findByText('Pending')
     fireEvent.mouseEnter(pendingChip)
 
+    // AC2: Verify exact text "Awaiting signup" appears in tooltip
     expect(await screen.findByText('Awaiting signup')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /resend invite/i })).toBeInTheDocument()
 
     fireEvent.click(screen.getByRole('button', { name: /resend invite/i }))
 

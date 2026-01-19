@@ -155,8 +155,8 @@ Recent work on invite system (1.5) provides foundation. Membership view joins ex
 
 ## Story Completion Status
 
-- **Status:** review
-- **Completion Note:** Membership view, member detail, removal, and UI flows implemented with tests passing.
+- **Status:** done
+- **Completion Note:** Membership view, member detail, removal, and UI flows implemented with tests passing. Code review completed with 7 HIGH and 3 MEDIUM severity issues fixed.
 
 ## Dev Notes
 
@@ -199,6 +199,14 @@ GPT-5.2-Codex
 - Added member list/detail UI, pending tooltip with resend, failed retry, and removal confirmation with last-member guard.
 - Added members API client/types and route updates; verified resend invite updates via tests.
 - Tests run: server `npm test`, client `npm test`.
+- **Code Review 2026-01-19:** Fixed 7 HIGH and 3 MEDIUM severity issues:
+  - Removed redundant action field from event payload (architecture compliance)
+  - Converted Date objects to ISO strings in API responses (type consistency)
+  - Added self-removal validation (prevents user orphaning)
+  - Added TODOs for BigFive and Issues queries (Epic 3/4 integration points)
+  - Enhanced test coverage for AC2 tooltip text verification
+  - Added JSDoc documentation for all public service functions
+  - Added test for self-removal prevention
 
 ### File List
 
@@ -226,3 +234,4 @@ GPT-5.2-Codex
 ### Change Log
 
 - Completed story 1.6 implementation and tests. (2026-01-19)
+- Code review completed, fixed 7 HIGH + 3 MEDIUM severity issues. (2026-01-19)

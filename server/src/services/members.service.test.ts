@@ -66,7 +66,7 @@ describe('members.service', () => {
         id: userId,
         name: 'Alex Member',
         email: 'alex@example.com',
-        joinDate: new Date('2026-01-15T10:00:00.000Z'),
+        joinDate: '2026-01-15T10:00:00.000Z',
         inviteStatus: 'Added',
         bigFiveCompleted: false
       },
@@ -74,7 +74,7 @@ describe('members.service', () => {
         id: 10,
         name: 'invitee@example.com',
         email: 'invitee@example.com',
-        joinDate: new Date('2026-01-16T10:00:00.000Z'),
+        joinDate: '2026-01-16T10:00:00.000Z',
         inviteStatus: 'Pending',
         bigFiveCompleted: false
       }
@@ -98,6 +98,25 @@ describe('members.service', () => {
     await expect(removeMember(teamId, userId, 1)).rejects.toThrow(AppError)
     await expect(removeMember(teamId, userId, 1)).rejects.toMatchObject({
       code: 'last_member_removal_forbidden'
+    })
+  })
+
+  it('prevents self-removal from team', async () => {
+    const findTeamMember = membersRepository.findTeamMember as jest.MockedFunction<typeof membersRepository.findTeamMember>
+
+    findTeamMember.mockResolvedValue({
+      id: 2,
+      teamId,
+      userId,
+      role: 'member',
+      joinedAt: new Date(),
+      user: { id: userId, name: 'Sam', email: 'sam@example.com' }
+    })
+
+    // User tries to remove themselves (userId === removedBy)
+    await expect(removeMember(teamId, userId, userId)).rejects.toThrow(AppError)
+    await expect(removeMember(teamId, userId, userId)).rejects.toMatchObject({
+      code: 'self_removal_forbidden'
     })
   })
 
@@ -144,7 +163,12 @@ describe('members.service', () => {
           eventType: 'team_member.removed',
           teamId,
           entityId: userId,
-          action: 'removed'
+          action: 'removed',
+          payload: expect.objectContaining({
+            teamId,
+            userId,
+            removedBy: 99
+          })
         })
       })
     )
