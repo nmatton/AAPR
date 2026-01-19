@@ -10,7 +10,7 @@ import { prisma } from '../lib/prisma';
 
 const PRACTICES_JSON_PATH = path.join(__dirname, '../../../docs/raw_practices/practices_reference.json');
 
-async function seedPractices() {
+export async function seedPractices(): Promise<number> {
   console.log('[INFO] Starting practice seed script...');
   console.log(`[INFO] Reading from: ${PRACTICES_JSON_PATH}`);
   
@@ -21,7 +21,7 @@ async function seedPractices() {
     
     if (!Array.isArray(practicesData)) {
       console.error('[ERROR] JSON file does not contain an array of practices');
-      process.exit(1);
+      return 1;
     }
     
     console.log(`[INFO] Found ${practicesData.length} practices in JSON`);
@@ -64,19 +64,21 @@ async function seedPractices() {
     
     if (result.errors.length > 0 && result.imported === 0) {
       console.error('\n[ERROR] No practices were imported. Exiting with error code 1');
-      process.exit(1);
+      return 1;
     }
-    
+
     console.log('\n[SUCCESS] Practice seed completed successfully');
-    process.exit(0);
+    return 0;
     
   } catch (error) {
     console.error('[ERROR] Failed to seed practices:', error);
-    process.exit(1);
+    return 1;
   } finally {
     await prisma.$disconnect();
   }
 }
 
-// Run the seed
-seedPractices();
+// Run the seed when executed directly
+if (require.main === module) {
+  seedPractices().then((code) => process.exit(code));
+}

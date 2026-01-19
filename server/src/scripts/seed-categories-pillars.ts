@@ -69,7 +69,7 @@ const PILLARS = [
   { name: 'Refactoring', categoryId: 'FLUX_RAPIDITE', description: 'Regular refactoring for code quality' },
 ];
 
-async function seedCategoriesAndPillars() {
+export async function seedCategoriesAndPillars(): Promise<void> {
   console.log('[INFO] Starting categories and pillars seed...');
   
   try {
@@ -109,5 +109,7 @@ async function seedCategoriesAndPillars() {
   }
 }
 
-// Run the seed
-seedCategoriesAndPillars();
+// Run the seed when executed directly
+if (require.main === module) {
+  seedCategoriesAndPillars();
+}

@@ -46,7 +46,7 @@ describe('teams routes - members', () => {
         id: 1,
         name: 'Alex',
         email: 'alex@example.com',
-        joinDate: new Date('2026-01-15T10:00:00.000Z'),
+        joinDate: '2026-01-15T10:00:00.000Z',
         inviteStatus: 'Added',
         bigFiveCompleted: false
       }
@@ -67,7 +67,7 @@ describe('teams routes - members', () => {
       id: 5,
       name: 'Sam',
       email: 'sam@example.com',
-      joinDate: new Date('2026-01-15T10:00:00.000Z'),
+      joinDate: '2026-01-15T10:00:00.000Z',
       bigFiveCompleted: false,
       bigFiveProfile: null,
       issues: []

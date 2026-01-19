@@ -1,6 +1,6 @@
 # Story 2.0: Import Practice Data from JSON
 
-Status: review
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -141,9 +141,9 @@ So that the practice catalog is available for teams to browse and select.
 
 - [x] **Documentation** (Mandatory)
   - [x] Story file updated with implementation details
-  - [ ] Update `docs/04-database.md`: add practice catalog schema, seed script usage
-  - [ ] Update `docs/08-development-guide.md`: document seed script execution steps
-  - [ ] Update `docs/09-changelog.md`: add Story 2.0 entry under Epic 2
+  - [x] Update `docs/04-database.md`: add practice catalog schema, seed script usage
+  - [x] Update `docs/08-development-guide.md`: document seed script execution steps
+  - [x] Update `docs/09-changelog.md`: add Story 2.0 entry under Epic 2
 
 ## Developer Context
 
@@ -474,7 +474,7 @@ server/
 
 ## Story Completion Status
 
-**Status:** ready-for-dev
+**Status:** done
 
 **Completion Note:** Ultimate context engine analysis completed - comprehensive developer guide created. This story is ready for implementation by the Dev agent.
 
@@ -936,6 +936,13 @@ Claude Sonnet 4.5 (via GitHub Copilot)
 - Unit tests for repository: Deferred to future iteration (functions created and ready)
 - Integration tests: Manual validation complete, automated tests deferred
 
+✅ **Code Review Fixes Applied:**
+- Enforced HTTPS-only URL validation
+- Rejected unknown practice types (no silent category defaults)
+- Stable checksum across full practice payload
+- Seed pipeline runs categories/pillars before practices
+- Updated docs and version constraints (Zod 4.3+)
+
 **Ready for Story 2.1:**
 - Practice repository with all query functions implemented
 - Database fully populated with 42 practices, 19 pillars, 5 categories
@@ -949,11 +956,19 @@ Claude Sonnet 4.5 (via GitHub Copilot)
 - `server/src/repositories/practice.repository.ts` (data access layer)
 - `server/src/scripts/seed-categories-pillars.ts` (static data seeding)
 - `server/src/scripts/seed-practices.ts` (practice JSON import)
+- `server/src/scripts/seed-all.ts` (orchestrated seed pipeline)
 - `server/prisma/migrations/20260119190611_add_practice_catalog_enhancements/migration.sql` (schema migration)
 
 **Modified Files:**
 - `server/prisma/schema.prisma` (added categories table, enhanced practices and pillars models)
 - `server/package.json` (updated db:seed script, fixed Zod version)
-- `_bmad-output/implementation-artifacts/sprint-status.yaml` (marked story in-progress)
+- `server/src/services/practice-import.service.ts` (checksum, category validation, event payload)
+- `server/src/schemas/practice.schema.ts` (HTTPS-only URL validation)
+- `server/src/scripts/seed-categories-pillars.ts` (exported function)
+- `server/src/scripts/seed-practices.ts` (exported function)
+- `docs/04-database.md` (schema updates)
+- `docs/08-development-guide.md` (version constraints)
+- `docs/09-changelog.md` (Epic 2 Story 2.0 entry)
+- `_bmad-output/implementation-artifacts/sprint-status.yaml` (marked story done)
 - `_bmad-output/implementation-artifacts/2-0-import-practice-data-from-json.md` (this file - tasks marked complete)
 

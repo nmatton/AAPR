@@ -35,8 +35,8 @@ export const MetricSchema = z.object({
 export const GuidelineSchema = z.object({
   name: z.string().min(1).max(200),
   url: z.string().url().refine(
-    (url) => url.startsWith('https://') || url.startsWith('http://'),
-    { message: 'URL must use HTTP or HTTPS protocol' }
+    (url) => url.startsWith('https://'),
+    { message: 'URL must use HTTPS protocol' }
   ),
   type: z.string().optional(), // Allow any resource type
 });

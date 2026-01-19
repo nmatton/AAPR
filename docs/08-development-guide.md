@@ -25,14 +25,14 @@ This guide defines:
 - **Language:** TypeScript 5.2+ (strict mode)
 - **Runtime:** Node.js 18+ LTS
 - **Framework:** Express 4.18+
-- **ORM:** Prisma 5.0+
+- **ORM:** Prisma 7.2+
 - **Database:** PostgreSQL 14+
-- **Testing:** Jest 29.5+
+- **Testing:** Jest 30.0+
 - **Linting:** ESLint + Prettier
 
 **Locked Dependencies:**
 - `express@4.18.2`
-- `prisma@5.0.0`
+- `prisma@7.2.0`
 
 ---
 
@@ -41,7 +41,7 @@ This guide defines:
 - **Language:** TypeScript 5.2+ (strict mode)
 - **Framework:** React 18.2 (LOCKED - do not upgrade)
 - **State:** Zustand 4.4+
-- **Routing:** React Router 6.x
+- **Routing:** React Router 7.x
 - **Styling:** TailwindCSS 3.0+
 - **Build:** Vite 5.0+
 - **Testing:** Vitest + React Testing Library
@@ -151,6 +151,22 @@ const teams = await getTeams();
 ## Backend Architecture
 
 **See:** [03-architecture.md#adr-002-layered-backend](03-architecture.md)
+
+---
+
+## Database Seeding
+
+Use the seed pipeline to load categories, pillars, and practices from JSON:
+
+```powershell
+cd server
+npm run db:seed
+```
+
+**What it does:**
+1. Seeds 5 categories and 19 pillars
+2. Imports practices from `docs/raw_practices/practices_reference.json`
+
 
 ### Layer Responsibilities
 

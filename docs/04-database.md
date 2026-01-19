@@ -4,7 +4,7 @@
 
 Last Updated: January 19, 2026  
 Database: PostgreSQL 14+  
-ORM: Prisma 5.0+
+ORM: Prisma 7.2+
 
 ---
 
@@ -147,6 +147,25 @@ The AAPR database uses a **normalized relational schema** (3NF) with the followi
 
 ---
 
+### categories
+
+**Purpose:** 5 APR framework categories (global reference data)
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| id | VARCHAR(50) | PRIMARY KEY | Category ID (semantic key) |
+| name | VARCHAR(255) | UNIQUE, NOT NULL | Display name |
+| description | TEXT | NULL | Category description |
+| display_order | INT | NOT NULL | UI ordering |
+| created_at | TIMESTAMP | DEFAULT NOW() | Creation timestamp |
+| updated_at | TIMESTAMP | DEFAULT NOW() | Last update |
+
+**Indexes:**
+- PRIMARY KEY on `id`
+- UNIQUE on `name`
+
+---
+
 ### practices
 
 **Purpose:** Agile practices catalog
@@ -155,14 +174,36 @@ The AAPR database uses a **normalized relational schema** (3NF) with the followi
 |--------|------|-------------|-------------|
 | id | SERIAL | PRIMARY KEY | Auto-increment ID |
 | title | VARCHAR(100) | NOT NULL | Practice name |
-| goal | TEXT | NOT NULL | Practice description |
-| category | VARCHAR(50) | NOT NULL | Practice category |
+| goal | VARCHAR(500) | NOT NULL | Practice objective |
+| description | TEXT | NULL | Practice description |
+| category_id | VARCHAR(50) | FK → categories(id) | Practice category |
+| method | VARCHAR(50) | NULL | Framework/method |
+| tags | JSONB | NULL | Tags array |
+| activities | JSONB | NULL | Structured activities |
+| roles | JSONB | NULL | RACI roles |
+| work_products | JSONB | NULL | Work products |
+| completion_criteria | TEXT | NULL | Definition of Done |
+| metrics | JSONB | NULL | Success metrics |
+| guidelines | JSONB | NULL | Guideline links |
+| pitfalls | JSONB | NULL | Pitfalls list |
+| benefits | JSONB | NULL | Benefits list |
+| associated_practices | JSONB | NULL | Related practices |
 | is_global | BOOLEAN | DEFAULT TRUE | Global vs team-specific |
+| imported_at | TIMESTAMP | NULL | Import timestamp |
+| source_file | VARCHAR(255) | NULL | Source JSON file |
+| json_checksum | VARCHAR(64) | NULL | SHA256 checksum |
+| practice_version | INT | DEFAULT 1 | Practice version |
+| imported_by | VARCHAR(100) | NULL | Import actor |
+| source_git_sha | VARCHAR(40) | NULL | Source git SHA |
+| raw_json | JSONB | NULL | Original JSON payload |
 | created_at | TIMESTAMP | DEFAULT NOW() | Practice creation |
+| updated_at | TIMESTAMP | DEFAULT NOW() | Last update |
 
 **Indexes:**
 - PRIMARY KEY on `id`
-- INDEX on `category` - fast filtering
+- INDEX on `category_id`
+- INDEX on `title`
+- INDEX on `is_global`
 
 **Categories (Epic 2):**
 - VALEURS HUMAINES
@@ -180,12 +221,16 @@ The AAPR database uses a **normalized relational schema** (3NF) with the followi
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
 | id | SERIAL | PRIMARY KEY | Auto-increment ID |
-| name | VARCHAR(100) | UNIQUE, NOT NULL | Pillar name |
-| category | VARCHAR(50) | NOT NULL | Pillar category |
+| name | VARCHAR(255) | NOT NULL | Pillar name |
+| category_id | VARCHAR(50) | FK → categories(id) | Pillar category |
+| description | TEXT | NULL | Pillar description |
+| created_at | TIMESTAMP | DEFAULT NOW() | Creation timestamp |
+| updated_at | TIMESTAMP | DEFAULT NOW() | Last update |
 
 **Indexes:**
 - PRIMARY KEY on `id`
-- UNIQUE on `name`
+- UNIQUE on `(name, category_id)`
+- INDEX on `category_id`
 
 **Total Pillars:** 19 (across 5 categories)
 
@@ -197,13 +242,12 @@ The AAPR database uses a **normalized relational schema** (3NF) with the followi
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
-| id | SERIAL | PRIMARY KEY | Auto-increment ID |
 | practice_id | INT | FK → practices(id) CASCADE | Practice reference |
 | pillar_id | INT | FK → pillars(id) CASCADE | Pillar reference |
+| created_at | TIMESTAMP | DEFAULT NOW() | Created timestamp |
 
 **Indexes:**
-- PRIMARY KEY on `id`
-- UNIQUE on `(practice_id, pillar_id)`
+- PRIMARY KEY on `(practice_id, pillar_id)`
 - INDEX on `practice_id`
 - INDEX on `pillar_id`
 
@@ -289,6 +333,19 @@ The AAPR database uses a **normalized relational schema** (3NF) with the followi
 - Created `practice_pillars` junction table
 - Created `team_practices` junction table
 - Added indexes
+
+---
+
+## Seed Script Usage
+
+```powershell
+cd server
+npm run db:seed
+```
+
+**Seed order:**
+1. Categories and pillars
+2. Practices import from `docs/raw_practices/practices_reference.json`
 
 ---
 

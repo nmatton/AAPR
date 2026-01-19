@@ -9,10 +9,10 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "db:seed": "tsx src/scripts/seed-practices.ts"
+    "db:seed": "tsx src/scripts/seed-all.ts"
   },
   "prisma": {
-    "seed": "tsx src/scripts/seed-practices.ts"
+    "seed": "tsx src/scripts/seed-all.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.2.0",
@@ -30,7 +30,7 @@
     "pg": "^8.17.1",
     "prisma": "^7.2.0",
     "react-router-dom": "^7.12.0",
-    "zod": "^3.23.0",
+    "zod": "^4.3.0",
     "zustand": "^5.0.10"
   },
   "devDependencies": {

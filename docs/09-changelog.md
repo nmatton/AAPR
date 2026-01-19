@@ -14,6 +14,36 @@ Last Updated: January 19, 2026
 
 ---
 
+## Epic 2: Practice Catalog & Coverage
+
+**Status:** 🔄 IN PROGRESS  
+**Start Date:** January 19, 2026  
+**Team:** Nicolas (Dev)
+
+### Story 2-0: Import Practice Data from JSON
+
+**Status:** 🔄 In Review  
+**Date:** January 19, 2026  
+**Developer:** Nicolas
+
+**What Was Built:**
+
+**Backend:**
+- Practice catalog schema updates (categories, pillars, practices, practice_pillars)
+- Seed scripts for categories/pillars and practices
+- Practice JSON import service with validation, idempotency, and event logging
+- Practice repository for catalog queries (Story 2.1 readiness)
+
+**Testing:**
+- Manual validation of seed/import flows
+
+**Documentation Updated:**
+- Database schema documentation
+- Development guide version constraints
+
+
+---
+
 ### Story 1-0: Set Up Initial Project from Starter Template
 
 **Status:** ✅ Done  

@@ -66,9 +66,9 @@ const PRACTICE_TYPE_TO_CATEGORY: Record<string, string> = {
 
 /**
  * Map practice type to category
- * If no exact match found, use a default heuristic
+ * Returns null when no valid mapping found
  */
-function mapTypeToCategory(practiceType: string): string {
+function mapTypeToCategory(practiceType: string): string | null {
   // Try exact match first
   if (PRACTICE_TYPE_TO_CATEGORY[practiceType]) {
     return PRACTICE_TYPE_TO_CATEGORY[practiceType];
@@ -92,24 +92,40 @@ function mapTypeToCategory(practiceType: string): string {
     return 'ORGANISATION_AUTONOMIE';
   }
   
-  // Default fallback
-  console.warn(`[WARN] No category mapping for practice type: ${practiceType}, using default: ORGANISATION_AUTONOMIE`);
-  return 'ORGANISATION_AUTONOMIE';
+  // No match found
+  console.warn(`[WARN] No category mapping for practice type: ${practiceType}`);
+  return null;
 }
 
 /**
  * Calculate SHA256 checksum for a practice JSON object
  * Used for idempotency - detect if practice content has changed
  */
+function stableStringify(value: unknown): string {
+  if (value === undefined) {
+    return 'null';
+  }
+
+  if (value === null) {
+    return 'null';
+  }
+
+  if (Array.isArray(value)) {
+    return `[${value.map(stableStringify).join(',')}]`;
+  }
+
+  if (typeof value === 'object') {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([key, val]) => `${JSON.stringify(key)}:${stableStringify(val)}`);
+    return `{${entries.join(',')}}`;
+  }
+
+  return JSON.stringify(value);
+}
+
 function calculateChecksum(practice: Practice): string {
-  const content = JSON.stringify({
-    name: practice.name,
-    type: practice.type,
-    objective: practice.objective,
-    description: practice.description,
-    practice_goal: practice.practice_goal,
-  });
-  
+  const content = stableStringify(practice);
   return crypto.createHash('sha256').update(content).digest('hex');
 }
 
@@ -194,6 +210,16 @@ export async function importPractices(
       
       // Map practice type to category
       const categoryId = mapTypeToCategory(practice.type);
+      if (!categoryId) {
+        errors.push({
+          practice: practice.name,
+          field: 'type',
+          error: `Unrecognized practice type: ${practice.type}`,
+          code: 'invalid_category',
+        });
+        skippedCount++;
+        continue;
+      }
       
       // Check for existing practice (idempotency)
       const existing = await prisma.practice.findFirst({
@@ -283,7 +309,7 @@ export async function importPractices(
             teamId: 0, // System-level event
             entityType: 'practice',
             entityId: createdPractice.id,
-            action: 'imported',
+            action: 'practice.imported',
             payload: {
               practiceId: createdPractice.id,
               title: practice.name,
@@ -323,12 +349,13 @@ export async function importPractices(
         teamId: 0,
         entityType: 'practice',
         entityId: null,
-        action: 'imported',
+        action: 'practices.imported',
         payload: {
           count: importedCount,
           skipped: skippedCount,
           errors: errors.length,
           duration_ms: duration,
+          timestamp: new Date().toISOString(),
           source_file: sourceFile,
           imported_by: importedBy,
           git_sha: process.env.GIT_SHA || 'unknown',
