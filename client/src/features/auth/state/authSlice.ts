@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { User } from '../api/authApi'
+import { User, loginUser, logoutUser, refreshAccessToken } from '../api/authApi'
 
 /**
  * Authentication state
@@ -10,12 +10,17 @@ interface AuthState {
   isAuthenticated: boolean
   isLoading: boolean
   error: string | null
+  lastRefreshTime?: number
 }
 
 /**
  * Authentication actions
  */
 interface AuthActions {
+  login: (email: string, password: string) => Promise<User>
+  logout: () => Promise<void>
+  refreshSession: () => Promise<void>
+  setCurrentUser: (user: User) => void
   setUser: (user: User) => void
   setLoading: (isLoading: boolean) => void
   setError: (error: string | null) => void
@@ -29,7 +34,8 @@ const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
   isLoading: false,
-  error: null
+  error: null,
+  lastRefreshTime: undefined
 }
 
 /**
@@ -41,6 +47,53 @@ export const useAuthStore = create<AuthState & AuthActions>()(
   persist(
     (set) => ({
       ...initialState,
+
+      login: async (email, password) => {
+        set({ isLoading: true, error: null })
+        try {
+          const response = await loginUser(email, password)
+          set({
+            user: response.user,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null
+          })
+          return response.user
+        } catch (error) {
+          const message = error && typeof error === 'object' && 'message' in error
+            ? String((error as { message: string }).message)
+            : 'Login failed. Please try again.'
+          set({ error: message, isLoading: false })
+          throw error
+        }
+      },
+
+      logout: async () => {
+        try {
+          await logoutUser()
+        } finally {
+          set(initialState)
+        }
+      },
+
+      refreshSession: async () => {
+        try {
+          await refreshAccessToken()
+          set({ lastRefreshTime: Date.now() })
+        } catch (error) {
+          // If refresh fails, reset auth state and throw for caller to handle
+          set(initialState)
+          throw error
+        }
+      },
+
+      setCurrentUser: (user) =>
+        set({
+          user,
+          isAuthenticated: true,
+          isLoading: false,
+          error: null
+        }),
 
       setUser: (user) =>
         set({

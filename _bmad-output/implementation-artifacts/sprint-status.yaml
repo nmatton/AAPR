@@ -44,7 +44,7 @@ development_status:
   epic-1: in-progress
   1-0-set-up-initial-project-from-starter-template: review
   1-1-user-registration-with-email-validation: review
-  1-2-user-login-with-session-management: backlog
+  1-2-user-login-with-session-management: review
   1-3-teams-list-view-with-multi-team-support: backlog
   1-4-team-creation-with-practice-selection: backlog
   1-5-email-based-team-member-invitations: backlog

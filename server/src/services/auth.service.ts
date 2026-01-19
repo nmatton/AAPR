@@ -41,7 +41,7 @@ interface UserResponse {
  */
 interface TokenPayload {
   userId: number
-  email: string
+  email?: string
 }
 
 /**
@@ -166,6 +166,90 @@ export const generateTokens = (userId: number, email: string): TokenPair => {
 }
 
 /**
+ * Generate JWT refresh token (7 days expiry)
+ * 
+ * @param userId - User identifier
+ * @returns Refresh token string
+ */
+export const generateRefreshToken = (userId: number): string => {
+  const payload: TokenPayload = { userId }
+
+  return jwt.sign(payload, JWT_SECRET, {
+    expiresIn: REFRESH_TOKEN_EXPIRY,
+    algorithm: 'HS256'
+  })
+}
+
+/**
+ * Verify user credentials against stored bcrypt hash
+ * 
+ * @param email - User email
+ * @param password - Plain text password
+ * @returns User object without password
+ * @throws AppError with code 'invalid_credentials' for any mismatch
+ */
+export const verifyCredentials = async (
+  email: string,
+  password: string,
+  ipAddress: string
+): Promise<UserResponse> => {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      password: true,
+      createdAt: true
+    }
+  })
+
+  if (!user) {
+    throw new AppError(
+      'invalid_credentials',
+      'Invalid email or password',
+      { field: 'credentials' },
+      401
+    )
+  }
+
+  const isValid = await bcrypt.compare(password, user.password)
+
+  if (!isValid) {
+    throw new AppError(
+      'invalid_credentials',
+      'Invalid email or password',
+      { field: 'credentials' },
+      401
+    )
+  }
+
+  await prisma.event.create({
+    data: {
+      eventType: 'user.login_success',
+      actorId: user.id,
+      teamId: null,
+      entityType: 'user',
+      entityId: user.id,
+      action: 'login',
+      payload: {
+        email: user.email,
+        timestamp: new Date().toISOString(),
+        ipAddress
+      },
+      schemaVersion: 'v1'
+    }
+  })
+
+  return {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    createdAt: user.createdAt
+  }
+}
+
+/**
  * Verify JWT token signature and expiration
  * 
  * @param token - JWT token string
@@ -188,4 +272,28 @@ export const verifyToken = (token: string): TokenPayload => {
     }
     throw new AppError('token_verification_failed', 'Token verification failed', {}, 401)
   }
+}
+
+/**
+ * Fetch user by ID without exposing password
+ * 
+ * @param userId - User identifier
+ * @returns User response data
+ */
+export const getUserById = async (userId: number): Promise<UserResponse> => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      createdAt: true
+    }
+  })
+
+  if (!user) {
+    throw new AppError('user_not_found', 'User not found', {}, 404)
+  }
+
+  return user
 }

@@ -24,4 +24,21 @@ export const registerSchema = z.object({
     .min(8, 'Password must be at least 8 characters')
 })
 
+/**
+ * Login validation schema
+ * - Email: Valid format
+ * - Password: 8+ characters
+ */
+export const loginSchema = z.object({
+  email: z.string()
+    .email('Invalid email format')
+    .max(255, 'Email must not exceed 255 characters')
+    .toLowerCase()
+    .trim(),
+
+  password: z.string()
+    .min(8, 'Password must be at least 8 characters')
+})
+
 export type RegisterDto = z.infer<typeof registerSchema>
+export type LoginDto = z.infer<typeof loginSchema>

@@ -2,7 +2,8 @@
 process.env.JWT_SECRET = 'test_secret_for_unit_tests_12345678901234567890'
 
 import bcrypt from 'bcrypt'
-import { registerUser, generateTokens, verifyToken, AppError } from '../auth.service'
+import jwt from 'jsonwebtoken'
+import { registerUser, generateTokens, verifyToken, AppError, verifyCredentials, generateRefreshToken } from '../auth.service'
 import { prisma } from '../../lib/prisma'
 
 // Mock Prisma client
@@ -193,6 +194,103 @@ describe('Auth Service', () => {
 
       expect(decoded.userId).toBe(userId)
       expect(decoded.email).toBe(email)
+    })
+
+    it('should set correct expiry for access and refresh tokens', () => {
+      const tokens = generateTokens(1, 'expiry@example.com')
+
+      const decodedAccess = jwt.decode(tokens.accessToken) as jwt.JwtPayload
+      const decodedRefresh = jwt.decode(tokens.refreshToken) as jwt.JwtPayload
+
+      expect(decodedAccess.exp).toBeDefined()
+      expect(decodedAccess.iat).toBeDefined()
+      expect(decodedRefresh.exp).toBeDefined()
+      expect(decodedRefresh.iat).toBeDefined()
+
+      const accessLifetime = (decodedAccess.exp ?? 0) - (decodedAccess.iat ?? 0)
+      const refreshLifetime = (decodedRefresh.exp ?? 0) - (decodedRefresh.iat ?? 0)
+
+      expect(accessLifetime).toBe(60 * 60)
+      expect(refreshLifetime).toBe(7 * 24 * 60 * 60)
+    })
+  })
+
+  describe('verifyCredentials', () => {
+    const userRecord = {
+      id: 10,
+      name: 'Verified User',
+      email: 'verified@example.com',
+      password: 'hashed-password',
+      createdAt: new Date('2026-01-10T10:00:00.000Z')
+    }
+
+    it('should return user without password when credentials are valid', async () => {
+      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(userRecord)
+      const compareSpy = jest.spyOn(bcrypt, 'compare') as jest.MockedFunction<typeof bcrypt.compare>
+      compareSpy.mockImplementation(async () => true)
+
+      const result = await verifyCredentials(userRecord.email, 'valid-password', '127.0.0.1')
+
+      expect(result).toMatchObject({
+        id: userRecord.id,
+        name: userRecord.name,
+        email: userRecord.email
+      })
+      expect(result).not.toHaveProperty('password')
+      expect(bcrypt.compare).toHaveBeenCalledWith('valid-password', userRecord.password)
+    })
+
+    it('should throw invalid_credentials when password is incorrect', async () => {
+      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(userRecord)
+      const compareSpy = jest.spyOn(bcrypt, 'compare') as jest.MockedFunction<typeof bcrypt.compare>
+      compareSpy.mockImplementation(async () => false)
+
+      await expect(verifyCredentials(userRecord.email, 'wrong-password', '127.0.0.1')).rejects.toMatchObject({
+        code: 'invalid_credentials',
+        statusCode: 401
+      })
+    })
+
+    it('should throw invalid_credentials when user does not exist', async () => {
+      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
+
+      await expect(verifyCredentials('missing@example.com', 'any-password', '127.0.0.1')).rejects.toMatchObject({
+        code: 'invalid_credentials',
+        statusCode: 401
+      })
+    })
+
+    it('should log login success event with IP address', async () => {
+      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(userRecord)
+      const compareSpy = jest.spyOn(bcrypt, 'compare') as jest.MockedFunction<typeof bcrypt.compare>
+      compareSpy.mockImplementation(async () => true)
+
+      await verifyCredentials(userRecord.email, 'valid-password', '192.168.1.10')
+
+      expect(prisma.event.create).toHaveBeenCalledWith({
+        data: expect.objectContaining({
+          eventType: 'user.login_success',
+          actorId: userRecord.id,
+          teamId: null,
+          entityType: 'user',
+          entityId: userRecord.id,
+          action: 'login',
+          payload: expect.objectContaining({
+            email: userRecord.email,
+            ipAddress: '192.168.1.10'
+          }),
+          schemaVersion: 'v1'
+        })
+      })
+    })
+  })
+
+  describe('generateRefreshToken', () => {
+    it('should generate refresh token containing userId', () => {
+      const refreshToken = generateRefreshToken(123)
+      const decoded = verifyToken(refreshToken)
+
+      expect(decoded.userId).toBe(123)
     })
   })
 
