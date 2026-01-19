@@ -1,6 +1,6 @@
 # Version Manifest
 
-Generated: 2026-01-16
+Generated: 2026-01-19
 
 ## Frontend (client)
 - react: 18.2.0
@@ -12,6 +12,7 @@ Generated: 2026-01-16
 - tailwindcss: 3.4.19
 - postcss: 8.4.0
 - autoprefixer: 10.4.0
+ - @testing-library/react: 16.3.2
 
 ## Backend (server)
 - node (runtime): 22.20.0
@@ -22,5 +23,6 @@ Generated: 2026-01-16
 - typescript: 5.9.3
 - @types/express: 4.17.0
 - @types/cors: 2.8.17
-- @types/node: 20.0.0
+- @types/node: 25.0.9
 - tsx: 4.7.0
+ - zod: 4.3.5
