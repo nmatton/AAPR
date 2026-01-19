@@ -137,32 +137,155 @@ model TeamInvite {
   @@map("team_invites")
 }
 
+/// Category entity - the 5 high-level categories from APR framework
+/// Isolation: Categories are global reference data
+model Category {
+  /// Category identifier (VARCHAR, not auto-increment)
+  id          String   @id @db.VarChar(50)
+  
+  /// Category name
+  name        String   @unique @db.VarChar(255)
+  
+  /// Category description
+  description String?  @db.Text
+  
+  /// Display order for UI presentation
+  displayOrder Int    @map("display_order")
+  
+  /// Category creation timestamp
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  /// Last update timestamp
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  // Relationships
+  pillars     Pillar[]
+  practices   Practice[]
+  
+  @@map("categories")
+}
+
+/// Pillar entity - the 19 agile pillars from APR framework
+/// Isolation: Pillars are global reference data
+model Pillar {
+  /// Auto-incrementing pillar identifier
+  id          Int      @id @default(autoincrement())
+  
+  /// Pillar name (unique)
+  name        String   @db.VarChar(255)
+  
+  /// Category this pillar belongs to
+  categoryId  String   @map("category_id") @db.VarChar(50)
+  
+  /// Pillar description
+  description String?  @db.Text
+  
+  /// Pillar creation timestamp
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  /// Last update timestamp
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  // Relationships
+  category        Category         @relation(fields: [categoryId], references: [id])
+  practicePillars PracticePillar[]
+  
+  @@unique([name, categoryId], map: "uq_pillars_name_category")
+  @@index([categoryId], map: "idx_pillars_category")
+  @@map("pillars")
+}
+
 /// Practice entity - agile practices catalog
 /// Isolation: Practices are global (isGlobal=true) or team-specific
 model Practice {
   /// Auto-incrementing practice identifier
-  id          Int      @id @default(autoincrement())
+  id                   Int       @id @default(autoincrement())
   
-  /// Practice title (3-100 characters)
-  title       String   @db.VarChar(100)
+  /// Practice title (2-100 characters)
+  title                String    @db.VarChar(100)
   
-  /// Practice goal/description
-  goal        String   @db.Text
+  /// Practice goal/objective (1-500 chars)
+  goal                 String    @db.VarChar(500)
   
-  /// Practice category
-  category    String   @db.VarChar(50)
+  /// Full practice description (optional, max 10,000 chars)
+  description          String?   @db.Text
+  
+  /// Practice category (FK to categories)
+  categoryId           String    @map("category_id") @db.VarChar(50)
+  
+  /// Framework/method (Scrum, XP, Kanban, etc.)
+  method               String?   @db.VarChar(50)
+  
+  /// Behavioral tags (Visual/Tactile, Async-Ready, etc.)
+  tags                 Json?
+  
+  /// Structured activities (sequence, name, description)
+  activities           Json?
+  
+  /// Roles involved (role, responsibility/RACI)
+  roles                Json?
+  
+  /// Work products/artifacts created
+  workProducts         Json?     @map("work_products")
+  
+  /// Completion criteria / Definition of Done
+  completionCriteria   String?   @map("completion_criteria") @db.Text
+  
+  /// Success metrics
+  metrics              Json?
+  
+  /// Resource guidelines (links, guides)
+  guidelines           Json?
+  
+  /// Common pitfalls to avoid
+  pitfalls             Json?
+  
+  /// Practice benefits
+  benefits             Json?
+  
+  /// Associated practices (relationships)
+  associatedPractices  Json?     @map("associated_practices")
   
   /// Is this a global practice (available to all teams)
-  isGlobal    Boolean  @default(true) @map("is_global")
+  isGlobal             Boolean   @default(true) @map("is_global")
+  
+  /// When practice was imported
+  importedAt           DateTime? @map("imported_at")
+  
+  /// Source file name
+  sourceFile           String?   @map("source_file") @db.VarChar(255)
+  
+  /// JSON checksum (SHA256) for idempotency
+  jsonChecksum         String?   @map("json_checksum") @db.VarChar(64)
+  
+  /// Practice version number
+  practiceVersion      Int       @default(1) @map("practice_version")
+  
+  /// Who imported this practice
+  importedBy           String?   @map("imported_by") @db.VarChar(100)
+  
+  /// Git SHA of source at import time
+  sourceGitSha         String?   @map("source_git_sha") @db.VarChar(40)
+  
+  /// Raw JSON for debugging and provenance
+  rawJson              Json?     @map("raw_json")
   
   /// Practice creation timestamp
-  createdAt   DateTime @default(now()) @map("created_at")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  
+  /// Last update timestamp
+  updatedAt            DateTime  @updatedAt @map("updated_at")
   
   // Relationships
-  teamPractices TeamPractice[]
-  practicePillars PracticePillar[]
+  category         Category         @relation(fields: [categoryId], references: [id])
+  teamPractices    TeamPractice[]
+  practicePillars  PracticePillar[]
   
-  @@index([category], map: "idx_practices_category")
+  @@unique([title, categoryId], map: "uq_practices_title_category")
+  @@index([categoryId], map: "idx_practices_category")
+  @@index([title], map: "idx_practices_title")
+  @@index([isGlobal], map: "idx_practices_is_global")
+  @@index([method], map: "idx_practices_method")
   @@map("practices")
 }
 
@@ -191,41 +314,23 @@ model TeamPractice {
   @@map("team_practices")
 }
 
-/// Pillar entity - the 19 agile pillars from APR framework
-/// Isolation: Pillars are global reference data
-model Pillar {
-  /// Auto-incrementing pillar identifier
-  id       Int      @id @default(autoincrement())
-  
-  /// Pillar name (unique)
-  name     String   @unique @db.VarChar(100)
-  
-  /// Pillar category (e.g., 'Team Structure', 'Development Process')
-  category String   @db.VarChar(50)
-  
-  // Relationships
-  practicePillars PracticePillar[]
-  
-  @@map("pillars")
-}
-
 /// PracticePillar entity - maps practices to pillars they cover
 /// Isolation: Used for coverage calculation
 model PracticePillar {
-  /// Auto-incrementing identifier
-  id         Int      @id @default(autoincrement())
-  
   /// Practice identifier
   practiceId Int      @map("practice_id")
   
   /// Pillar identifier
   pillarId   Int      @map("pillar_id")
   
+  /// When relationship was created
+  createdAt  DateTime @default(now()) @map("created_at")
+  
   // Relationships
   practice   Practice @relation(fields: [practiceId], references: [id], onDelete: Cascade)
   pillar     Pillar   @relation(fields: [pillarId], references: [id], onDelete: Cascade)
   
-  @@unique([practiceId, pillarId])
+  @@id([practiceId, pillarId])
   @@index([practiceId], map: "idx_practice_pillars_practice")
   @@index([pillarId], map: "idx_practice_pillars_pillar")
   @@map("practice_pillars")
