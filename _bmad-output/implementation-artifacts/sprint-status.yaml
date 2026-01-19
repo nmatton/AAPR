@@ -41,7 +41,7 @@ story_location: _bmad-output/implementation-artifacts
 
 development_status:
   # Epic 1: Authentication & Team Onboarding
-  epic-1: in-progress
+  epic-1: done
   1-0-set-up-initial-project-from-starter-template: done
   1-1-user-registration-with-email-validation: done
   1-2-user-login-with-session-management: done
@@ -49,7 +49,7 @@ development_status:
   1-4-team-creation-with-practice-selection: done
   1-5-email-based-team-member-invitations: done
   1-6-invite-status-management-and-membership-view: done
-  epic-1-retrospective: optional
+  epic-1-retrospective: done
 
   # Epic 2: Practice Catalog & Coverage
   epic-2: backlog

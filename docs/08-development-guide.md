@@ -577,15 +577,20 @@ git push origin feature/2-1-practice-catalog
    - [ ] Manual testing completed
    - [ ] No regressions
 
-3. **Documentation:**
-   - [ ] README updated (if needed)
-   - [ ] API docs updated (if endpoints changed)
-   - [ ] Database docs updated (if schema changed)
-   - [ ] Changelog updated
+3. **Documentation (MANDATORY):**
+   - [ ] **Changelog updated** ([09-changelog.md](09-changelog.md) - ALWAYS required)
+   - [ ] **API docs updated** ([05-backend-api.md](05-backend-api.md) - if endpoints added/changed)
+   - [ ] **Database docs updated** ([04-database.md](04-database.md) - if schema changed)
+   - [ ] **Frontend docs updated** ([06-frontend.md](06-frontend.md) - if components/routes added)
+   - [ ] **Architecture docs updated** ([03-architecture.md](03-architecture.md) - if ADR added/modified)
+   - [ ] **Infrastructure docs updated** ([07-infrastructure.md](07-infrastructure.md) - if env vars/deployment changed)
+   - [ ] README updated (if setup process changed)
+   - [ ] "Last Updated" dates updated in all modified docs
 
 4. **Code Review:**
    - [ ] PR approved by 1+ reviewer
    - [ ] All feedback addressed
+   - [ ] **Reviewer verified documentation accuracy**
 
 5. **Deployment:**
    - [ ] Merged to `main`
@@ -595,6 +600,8 @@ git push origin feature/2-1-practice-catalog
 6. **Research Integrity (AAPR-specific):**
    - [ ] Events logged for significant actions
    - [ ] No breaking changes to event schema (or migration documented)
+
+**⚠️ IMPORTANT:** Documentation updates are **NOT OPTIONAL**. PRs without documentation updates will be rejected during code review.
 
 ---
 

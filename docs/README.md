@@ -84,29 +84,54 @@ This documentation describes the **actual implemented state** of the AAPR platfo
 
 ---
 
-## Document Maintenance
+## Maintaining This Documentation
 
-**Definition of Done for All Epics:**
-- Documentation in `/docs` must be updated to reflect new features
-- All new API endpoints documented in `05-backend-api.md`
-- All new database changes documented in `04-database.md`
-- Changelog updated in `09-changelog.md`
+**🚨 CRITICAL REQUIREMENT:** Documentation updates are **MANDATORY** for every story implementation.
+
+**Ownership:** All developers are responsible for keeping this documentation up-to-date.
+
+**When to Update:**
+- **EVERY STORY:** Documentation updates are part of Definition of Done
+- After implementing a new feature
+- When fixing a bug that changes behavior
+- When refactoring architecture
+- When adding/modifying API endpoints
+- When changing database schema
+- At the end of each Epic (Changelog update)
+
+**How to Update:**
+1. Identify affected documentation files during story planning
+2. Update content to reflect current state as you implement
+3. Update "Last Updated" date at the top of the file
+4. Include documentation updates in your PR (required for approval)
+5. Reviewer must verify documentation accuracy
+
+**Which Files to Update Per Story Type:**
+- **New API endpoint:** [05-backend-api.md](05-backend-api.md), [09-changelog.md](09-changelog.md)
+- **Database change:** [04-database.md](04-database.md), [09-changelog.md](09-changelog.md)
+- **New UI component:** [06-frontend.md](06-frontend.md), [09-changelog.md](09-changelog.md)
+- **Architecture decision:** [03-architecture.md](03-architecture.md)
+- **Infrastructure change:** [07-infrastructure.md](07-infrastructure.md)
+- **New development practice:** [08-development-guide.md](08-development-guide.md)
+- **Story completion:** [09-changelog.md](09-changelog.md) (always update)
 
 **Last Epic Documented:** Epic 1 (Authentication & Team Onboarding)  
 **Next Documentation Update:** Epic 2 (Practice Catalog & Coverage)
 
 ---
 
-## Contributing to Documentation
+## Definition of Done for All Epics
 
-When implementing new features:
-1. Update relevant sections in existing docs
-2. Add new sections if introducing new subsystems
-3. Keep examples up-to-date with actual code
-4. Document architectural decisions (add to ADRs in `03-architecture.md`)
-5. Update changelog with summary of changes
+Documentation in `/docs` must be updated with every story:
+- [ ] Changelog updated ([09-changelog.md](09-changelog.md)) - **ALWAYS required**
+- [ ] API docs updated ([05-backend-api.md](05-backend-api.md)) - if endpoints added/changed
+- [ ] Database docs updated ([04-database.md](04-database.md)) - if schema changed
+- [ ] Frontend docs updated ([06-frontend.md](06-frontend.md)) - if components/routes added
+- [ ] Architecture docs updated ([03-architecture.md](03-architecture.md)) - if ADR added/modified
+- [ ] "Last Updated" dates refreshed in all modified docs
+- [ ] Reviewer verified documentation accuracy
 
-**Documentation is part of the deliverable, not an afterthought.**
+**Documentation is not optional—it's part of the deliverable.**
 
 ---
 

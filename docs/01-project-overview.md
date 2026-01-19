@@ -5,6 +5,8 @@
 Last Updated: January 19, 2026  
 Status: Epic 1 Complete
 
+**📋 Documentation Policy:** As of Epic 1, comprehensive documentation updates are **MANDATORY** for every story. See [README](README.md#maintaining-this-documentation) for details.
+
 ---
 
 ## What is AAPR?

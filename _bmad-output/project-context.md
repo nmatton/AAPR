@@ -1,8 +1,10 @@
 ---
 projectName: AAPR
 createdDate: 2026-01-15
+lastUpdated: 2026-01-19
 sectionsCompleted: [1, 2, 3, 4, 5, 6]
 status: complete
+epicCompleted: Epic 1 (Authentication & Team Onboarding)
 ---
 
 # Project Context - AAPR
@@ -35,15 +37,15 @@ status: complete
 - **Node.js 18+ LTS** (native ES modules, async/await)
 - **Express 4.18+** (HTTP framework, NOT NestJS)
 - **TypeScript 5.2+** (strict mode: true required)
-- **Prisma 5.0+** (ORM, schema-first)
+- **Prisma 7.2+** (ORM, schema-first with prisma.config.ts)
 - **PostgreSQL 14+** (database, Prisma adapter support)
-- **Jest 29.7+** (testing framework)
+- **Jest 30.0+** (testing framework)
 
 **Critical Peer Dependencies:**
-- `@prisma/client` runtime MUST match `prisma` CLI version (e.g., 5.0.0 both)
+- `@prisma/client` runtime MUST match `prisma` CLI version (e.g., 7.2.0 both)
 - `@types/express` MUST match `express` major version
 - `@types/node` MUST match Node.js version (e.g., 20.x for Node 20)
-- bcrypt 5.1+ (password hashing, version 4.x has performance issues)
+- bcrypt 6.0+ (password hashing, version 5.x deprecated)
 
 ### Dependency Chain Constraints
 
@@ -61,14 +63,15 @@ Vitest → Vite (shared config)
 
 **Backend Chain:**
 ```
-Prisma 5.0 → @prisma/client (runtime)
+Prisma 7.2 → @prisma/client (runtime)
+          → @prisma/adapter-pg (PostgreSQL driver adapter)
           → prisma (CLI) - MUST match versions
-          → PostgreSQL adapter (DB specific)
+          → prisma.config.ts (configuration file, NEW in Prisma 7)
 Express 4.18 → Node 18+ (required)
             → TypeScript 5.2+ (transpilation)
-jsonwebtoken 9.1 → JWT signing/verification
-bcrypt 5.1 → 10+ rounds for hashing (performance critical)
-Jest 29.7 → ts-jest (TypeScript support)
+jsonwebtoken 9.0 → JWT signing/verification
+bcrypt 6.0 → 10+ rounds for hashing (security critical)
+Jest 30.0 → ts-jest (TypeScript support)
 ```
 
 ### Version Pinning Rules for AI Agents
@@ -159,19 +162,20 @@ Jest 29.7 → ts-jest (TypeScript support)
 
 | Frontend | Backend | Node | TypeScript | Status |
 |----------|---------|------|------------|--------|
-| React 18.2 + Vite 5 | Express 4.18 + Prisma 5 | 18.17+ | 5.2+ | ✅ MVP Stack (LOCKED) |
-| React 18.2 + Vite 4 | Express 4.18 + Prisma 5 | 18.17+ | 5.2+ | ⚠️ Works, not recommended |
-| React 19.2 + Vite 5 | Express 4.18 + Prisma 5 | 18.17+ | 5.2+ | ❌ Post-MVP only |
+| React 18.2 + Vite 5 | Express 4.18 + Prisma 7.2 | 18.17+ | 5.2+ | ✅ MVP Stack (LOCKED) |
+| React 18.2 + Vite 4 | Express 4.18 + Prisma 7.2 | 18.17+ | 5.2+ | ⚠️ Works, not recommended |
+| React 19.2 + Vite 5 | Express 4.18 + Prisma 7.2 | 18.17+ | 5.2+ | ❌ Post-MVP only |
 
 ### What Could Break (Anti-Patterns)
 
 **NEVER MIX:**
 - ❌ React 18.0 with @types/react 18.2 (type mismatch)
-- ❌ Prisma 4.x with prisma CLI 5.x (major version mismatch)
+- ❌ Prisma 6.x with prisma CLI 7.x (major version mismatch)
 - ❌ Node 16 with Vite (HMR incompatible)
 - ❌ TailwindCSS v2 with PostCSS 8 (compatibility break)
 - ❌ TypeScript strict: false anywhere (loses type safety)
-- ❌ bcrypt < 5.0 (performance issues, security concerns)
+- ❌ bcrypt < 6.0 (deprecated, security concerns)
+- ❌ Missing prisma.config.ts file with Prisma 7+ (required for configuration)
 
 **ALWAYS VERIFY:**
 - After npm install: `npm ls typescript` (single version)
@@ -255,10 +259,9 @@ export const createIssue = async (dto: CreateIssueDto) => { ... }
 export { TeamCoverageCard } from './TeamCoverageCard'
 export { IssueList } from './IssueList'
 
-// ✅ Absolute imports using path aliases
-// tsconfig.json: "baseUrl": ".", "paths": { "@/*": ["src/*"] }
-import { TeamCoverageCard } from '@/components/TeamCoverageCard'
-import { calculateCoverage } from '@/services/coverage.service'
+// ✅ Relative imports for feature modules (NO path aliases configured)
+import { TeamCoverageCard } from '../components/TeamCoverageCard'
+import { calculateCoverage } from '../services/coverage.service'
 ```
 
 **NEVER DO:**
@@ -268,10 +271,7 @@ export default TeamCoverageCard
 export const IssueList = () => { ... }
 
 // ❌ Wildcard imports in application code
-import * as utils from '@/utils'
-
-// ❌ Relative imports for cross-feature modules
-import { CoverageService } from '../../../services/coverage'
+import * as utils from './utils'
 
 // ❌ Circular imports
 // ComponentA imports from ComponentB, B imports from A = build error
@@ -908,7 +908,118 @@ export const process(data: any) { }
 
 ---
 
-## 6. Critical Don't-Miss Rules (Anti-Patterns & Edge Cases)
+## 6. Documentation Requirements (Mandatory)
+
+### Documentation Update Policy
+
+**🚨 CRITICAL REQUIREMENT:** Documentation updates are **MANDATORY** for every story implementation.
+
+**Location:** All documentation lives in `/docs` directory
+
+**Files to Maintain:**
+1. `docs/01-project-overview.md` - Project state, tech stack, NFRs
+2. `docs/02-getting-started.md` - Setup instructions, troubleshooting
+3. `docs/03-architecture.md` - ADRs, system design, security
+4. `docs/04-database.md` - Schema, ER diagrams, migrations
+5. `docs/05-backend-api.md` - Endpoints, request/response formats
+6. `docs/06-frontend.md` - Components, routes, state management
+7. `docs/07-infrastructure.md` - Docker, deployment, environment
+8. `docs/08-development-guide.md` - Standards, testing, workflow
+9. `docs/09-changelog.md` - Epic/story implementation history
+
+**Epic 1 Status:** ✅ All documentation updated (January 19, 2026)
+
+### When to Update Documentation
+
+**EVERY STORY requires documentation updates as part of Definition of Done:**
+
+**Story Type → Required Documentation Updates:**
+
+| Story Type | Files to Update |
+|------------|----------------|
+| **New API endpoint** | `05-backend-api.md`, `09-changelog.md` |
+| **Database change** | `04-database.md`, `09-changelog.md` |
+| **New UI component** | `06-frontend.md`, `09-changelog.md` |
+| **Architecture decision** | `03-architecture.md`, `09-changelog.md` |
+| **Infrastructure change** | `07-infrastructure.md`, `09-changelog.md` |
+| **New dev practice** | `08-development-guide.md`, `09-changelog.md` |
+| **ANY story completion** | `09-changelog.md` (ALWAYS required) |
+
+### How to Update Documentation
+
+**MUST DO:**
+```markdown
+1. Identify affected docs during story planning
+2. Update content as you implement (not after)
+3. Update "Last Updated: YYYY-MM-DD" at top of file
+4. Include doc updates in your PR (required for merge)
+5. Reviewer MUST verify documentation accuracy
+```
+
+**Documentation Quality Standards:**
+```markdown
+✅ CORRECT: Current state documentation
+- "Epic 1 implemented user authentication with JWT cookies"
+- "POST /api/auth/signup endpoint accepts {name, email, password}"
+- "Database has 8 tables: users, teams, team_members, ..."
+
+❌ WRONG: Outdated or missing documentation
+- "TODO: Document authentication" (never updated)
+- "API endpoints will be added in Sprint 2" (stale planning doc)
+- No mention of new /api/teams endpoint (missing)
+```
+
+**Special Requirement for Research Project:**
+- Documentation enables reproducibility for PhD committee
+- Audit trail must match implementation timeline
+- Architecture decisions (ADRs) must link to research NFRs
+
+### Documentation in Definition of Done
+
+**Story is NOT DONE until documentation is updated:**
+
+**Documentation Checklist (include in every PR):**
+- [ ] Changelog updated (`09-changelog.md`) - **ALWAYS required**
+- [ ] API docs updated (`05-backend-api.md`) - if endpoints changed
+- [ ] Database docs updated (`04-database.md`) - if schema changed
+- [ ] Frontend docs updated (`06-frontend.md`) - if components/routes added
+- [ ] Architecture docs updated (`03-architecture.md`) - if ADR added
+- [ ] Infrastructure docs updated (`07-infrastructure.md`) - if env vars/deployment changed
+- [ ] "Last Updated" date refreshed in all modified files
+- [ ] Reviewer verified documentation matches implementation
+
+**PR Review Requirements:**
+- Reviewer MUST check documentation completeness
+- PRs without documentation updates will be REJECTED
+- Documentation accuracy is as important as code correctness
+
+**Example Story Documentation Update:**
+```markdown
+## Story 2-1: Practice Catalog API
+
+Files Modified:
+- server/src/routes/practices.routes.ts (new endpoint)
+- server/src/controllers/practices.controller.ts (new controller)
+- server/src/services/practice.service.ts (business logic)
+
+Documentation Updated:
+✅ docs/05-backend-api.md
+  - Added "GET /api/practices" endpoint documentation
+  - Added request parameters: ?category=, ?search=
+  - Added response format with pillar mappings
+  - Added error codes: 400, 401, 500
+
+✅ docs/09-changelog.md
+  - Added Story 2-1 section under Epic 2
+  - Documented what was built, technical decisions
+  - Updated "Last Updated" date to 2026-01-20
+
+Reviewer: Verified endpoints match documentation ✓
+```
+
+---
+
+## 7. Critical Don't-Miss Rules (Anti-Patterns & Edge Cases)
 
 ### Team Isolation - DO NOT SKIP
 
@@ -1086,24 +1197,66 @@ useEffect(() => {
 8. ✅ **Naming consistency:** PascalCase/camelCase/UPPER_SNAKE_CASE per type
 9. ✅ **React dependencies:** Dependency arrays complete
 10. ✅ **Error handling:** Structured AppError, no silent failures
+11. ✅ **Documentation updates:** MANDATORY for every story (see Definition of Done below)
 
 **Violations will:**
 - Fail linting (ESLint rules)
 - Fail type checking (TypeScript strict mode)
 - Fail tests (pattern compliance)
 - Be caught in code review (architectural validation)
+- PR rejection if documentation not updated (mandatory)
 
 ---
 
-**Status:** Project context file complete and ready for AI agent implementation.
+**Status:** Project context file complete and verified against Epic 1 implementation.
+
+**Last Verified:** January 19, 2026 (End of Epic 1)
 
 **Location:** `_bmad-output/project-context.md`
 
-**Next Steps:**
-1. Review complete architecture document: `_bmad-output/planning-artifacts/architecture.md`
-2. Review complete project context: `_bmad-output/project-context.md`
-3. Share both documents with development team
-4. Begin Week 1 infrastructure setup from Architecture document
-5. AI agents read both documents before implementing each story
+---
+
+## Epic 1 Implementation Update (January 19, 2026)
+
+After completing Epic 1 (Authentication & Team Onboarding), this document has been **verified and updated** to reflect the actual implementation:
+
+### Version Updates Applied:
+- ✅ **Prisma:** Updated from 5.0+ to 7.2+ (with `@prisma/adapter-pg` and `prisma.config.ts`)
+- ✅ **Jest:** Updated from 29.7+ to 30.0+
+- ✅ **bcrypt:** Updated from 5.1+ to 6.0+
+- ✅ **Zustand:** Updated from 4.4+ to 5.0+
+- ✅ **React Router:** Added 7.12+ (new dependency)
+- ✅ **Zod:** Added 4.3+ (validation library)
+- ✅ **Nodemailer:** Added 7.0+ (email invitations)
+
+### Configuration Corrections Applied:
+- ✅ **Path Aliases:** Removed incorrect claims about `@/*` path aliases (NOT configured in project)
+- ✅ **TypeScript Config:** Updated to show actual tsconfig.json settings (no baseUrl/paths)
+- ✅ **Import Strategy:** Clarified use of relative imports (NOT absolute with aliases)
+- ✅ **Prisma 7 Changes:** Added note about `prisma.config.ts` requirement and adapter pattern
+
+### Implementation Reality Confirmed:
+- ✅ All 7 stories in Epic 1 completed successfully
+- ✅ Database schema has 9 tables (users, teams, team_members, team_invites, practices, team_practices, pillars, practice_pillars, events)
+- ✅ Authentication using JWT in HTTP-only cookies
+- ✅ Event logging implemented for audit trail
+- ✅ Team isolation enforced via middleware
+- ✅ Email invitations working via Nodemailer
+
+### Known Deviations from Original Plan:
+1. **No path aliases configured** - Using relative imports instead
+2. **Prisma 7.x adopted** - Instead of Prisma 5.x (requires `prisma.config.ts`)
+3. **Jest 30.x adopted** - Instead of Jest 29.x
+4. **bcrypt 6.x adopted** - Instead of bcrypt 5.x
+
+### Next Steps:
+1. Review complete changelog: `docs/09-changelog.md`
+2. Share updated context with development team before Epic 2
+3. AI agents MUST read this updated context before implementing Epic 2 stories
+4. Continue maintaining this document as implementation progresses
+
+---
+
+**IMPORTANT:** This document is the **single source of truth** for implementation patterns and constraints. Any changes to tech stack, dependencies, or architectural decisions MUST be reflected here.
 
 **🎉 Workflow Complete!****
