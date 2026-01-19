@@ -6,6 +6,7 @@ import { randomUUID } from 'crypto'
 import { logProjectInitialized } from './logger/projectInit'
 import { authRouter } from './routes/auth.routes'
 import { teamsRouter } from './routes/teams.routes'
+import { errorHandler } from './middleware/errorHandler'
 
 dotenv.config()
 
@@ -41,6 +42,9 @@ app.get('/api/v1/health', (_req, res) => {
     version: '1.0.0',
   })
 })
+
+// Error handling middleware (must be registered after all routes)
+app.use(errorHandler)
 
 const port = Number(process.env.PORT) || 3000
 

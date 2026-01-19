@@ -10,3 +10,11 @@ export const teamsRouter = Router();
  * Protected by requireAuth middleware
  */
 teamsRouter.get('/', requireAuth, teamsController.getTeams);
+
+/**
+ * POST /api/v1/teams
+ * Create a new team with selected practices
+ * Protected by requireAuth middleware
+ * No team isolation middleware (creating new team, not accessing existing)
+ */
+teamsRouter.post('/', requireAuth, teamsController.createTeam);

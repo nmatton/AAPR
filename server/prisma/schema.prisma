@@ -45,8 +45,8 @@ model Team {
   /// Auto-incrementing team identifier
   id           Int            @id @default(autoincrement())
   
-  /// Team name (3-100 characters)
-  name         String         @db.VarChar(100)
+  /// Team name (3-100 characters, unique across platform)
+  name         String         @unique @db.VarChar(100)
   
   /// Team creation timestamp
   createdAt    DateTime       @default(now()) @map("created_at")

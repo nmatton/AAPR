@@ -72,3 +72,65 @@ export const getTeams = async (): Promise<Team[]> => {
     );
   }
 };
+
+/**
+ * Create a new team with selected practices
+ * @param name - Team name (3-100 chars)
+ * @param practiceIds - Array of practice IDs to associate with team
+ * @returns Created team
+ * @throws ApiError if request fails
+ */
+export const createTeam = async (
+  name: string,
+  practiceIds: number[]
+): Promise<Team> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/v1/teams`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Request-Id': crypto.randomUUID(),
+      },
+      body: JSON.stringify({ name, practiceIds }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        throw new ApiError('unauthorized', 'Not authenticated', {}, 401);
+      }
+      
+      const error = await response.json().catch(() => ({
+        code: 'unknown_error',
+        message: 'An unexpected error occurred'
+      }));
+      
+      throw new ApiError(
+        error.code || 'unknown_error',
+        error.message || 'An unexpected error occurred',
+        error.details,
+        response.status
+      );
+    }
+
+    const data = await response.json();
+    return data.team;
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    
+    if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      throw new ApiError(
+        'network_error',
+        'Connection failed. Check your internet and retry.'
+      );
+    }
+    
+    throw new ApiError(
+      'unknown_error',
+      'An unexpected error occurred',
+      { originalError: error }
+    );
+  }
+};

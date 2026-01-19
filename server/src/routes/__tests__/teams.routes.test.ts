@@ -184,3 +184,186 @@ describe('Team Isolation', () => {
     expect(userATeams.find((t: any) => t.id === 3)).toBeUndefined();
   });
 });
+
+describe('POST /api/v1/teams', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    
+    // Mock requireAuth to add user to request
+    (requireAuth as any).mockImplementation((req: any, _res: any, next: any) => {
+      req.user = { id: 1, email: 'test@example.com' };
+      next();
+    });
+  });
+
+  it('returns 201 with team object on success', async () => {
+    const mockTeam = {
+      id: 4,
+      name: 'Development Team Alpha',
+      memberCount: 1,
+      practiceCount: 8,
+      coverage: 74,
+      role: 'owner',
+      createdAt: '2026-01-19T10:30:00.000Z',
+    };
+
+    (teamsService.createTeam as jest.Mock).mockResolvedValue(mockTeam);
+
+    const response = await request(app)
+      .post('/api/v1/teams')
+      .send({
+        name: 'Development Team Alpha',
+        practiceIds: [1, 3, 5, 7, 9, 11, 13, 15],
+      });
+
+    expect(response.status).toBe(201);
+    expect(response.body).toEqual({
+      team: mockTeam,
+      requestId: 'test-request-id',
+    });
+    expect(teamsService.createTeam).toHaveBeenCalledWith(
+      1,
+      'Development Team Alpha',
+      [1, 3, 5, 7, 9, 11, 13, 15]
+    );
+  });
+
+  it('returns 400 if name is missing', async () => {
+    const response = await request(app)
+      .post('/api/v1/teams')
+      .send({
+        practiceIds: [1, 2],
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe('validation_error');
+    expect(response.body.message).toBe('Request validation failed');
+  });
+
+  it('returns 400 if name is too short', async () => {
+    const response = await request(app)
+      .post('/api/v1/teams')
+      .send({
+        name: 'AB',
+        practiceIds: [1, 2],
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe('validation_error');
+  });
+
+  it('returns 400 if name has invalid characters', async () => {
+    const response = await request(app)
+      .post('/api/v1/teams')
+      .send({
+        name: 'Team@#$%',
+        practiceIds: [1, 2],
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe('validation_error');
+  });
+
+  it('returns 400 if practiceIds is empty', async () => {
+    const response = await request(app)
+      .post('/api/v1/teams')
+      .send({
+        name: 'Test Team',
+        practiceIds: [],
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe('validation_error');
+  });
+
+  it('returns 400 if practiceIds is missing', async () => {
+    const response = await request(app)
+      .post('/api/v1/teams')
+      .send({
+        name: 'Test Team',
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe('validation_error');
+  });
+
+  it('returns 409 if team name already exists', async () => {
+    const error: any = new Error('Team name already exists');
+    error.code = 'duplicate_team_name';
+    error.statusCode = 409;
+
+    (teamsService.createTeam as jest.Mock).mockRejectedValue(error);
+
+    const response = await request(app)
+      .post('/api/v1/teams')
+      .send({
+        name: 'Alpha',
+        practiceIds: [1, 2],
+      });
+
+    expect(response.status).toBe(409);
+    expect(response.body.code).toBe('duplicate_team_name');
+  });
+
+  it('returns 400 if practice IDs are invalid', async () => {
+    const error: any = new Error('Some practice IDs do not exist');
+    error.code = 'invalid_practice_ids';
+    error.statusCode = 400;
+    error.details = { invalid: [999] };
+
+    (teamsService.createTeam as jest.Mock).mockRejectedValue(error);
+
+    const response = await request(app)
+      .post('/api/v1/teams')
+      .send({
+        name: 'Test Team',
+        practiceIds: [1, 2, 999],
+      });
+
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe('invalid_practice_ids');
+  });
+
+  it('returns 401 without authentication', async () => {
+    // Mock requireAuth to reject
+    (requireAuth as any).mockImplementation((_req: any, _res: any, next: any) => {
+      const error: any = new Error('Unauthorized');
+      error.statusCode = 401;
+      error.code = 'unauthorized';
+      next(error);
+    });
+
+    const response = await request(app)
+      .post('/api/v1/teams')
+      .send({
+        name: 'Test Team',
+        practiceIds: [1, 2],
+      });
+
+    expect(response.status).toBe(401);
+    expect(response.body.code).toBe('unauthorized');
+  });
+
+  it('includes requestId in response', async () => {
+    const mockTeam = {
+      id: 5,
+      name: 'Test Team',
+      memberCount: 1,
+      practiceCount: 2,
+      coverage: 42,
+      role: 'owner',
+      createdAt: '2026-01-19T10:30:00.000Z',
+    };
+
+    (teamsService.createTeam as jest.Mock).mockResolvedValue(mockTeam);
+
+    const response = await request(app)
+      .post('/api/v1/teams')
+      .send({
+        name: 'Test Team',
+        practiceIds: [1, 2],
+      });
+
+    expect(response.body.requestId).toBe('test-request-id');
+  });
+});
