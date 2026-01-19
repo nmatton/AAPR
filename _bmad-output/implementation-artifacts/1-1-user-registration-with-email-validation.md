@@ -480,7 +480,7 @@ Claude Sonnet 4.5 (via GitHub Copilot)
 ✅ **Database Layer (Task 1):**
 - Created `users` and `events` tables in Prisma schema with proper mappings (@map for snake_case DB columns)
 - Ran migration successfully: `20260116142444_add_users_and_events_tables`
-- PostgreSQL 14 running in Docker container (aappr-postgres)
+- PostgreSQL 14 running in Docker container (aapr-postgres)
 - Configured Prisma 7.x with @prisma/adapter-pg for connection pooling
 
 ✅ **Backend Services (Tasks 2-4):**

@@ -1,6 +1,6 @@
 # generated: 2026-01-16
-# project: AAPPR
-# project_key: AAPPR
+# project: AAPR
+# project_key: AAPR
 # tracking_system: file-system
 # story_location: _bmad-output/implementation-artifacts
 
@@ -34,8 +34,8 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
 generated: 2026-01-16
-project: AAPPR
-project_key: AAPPR
+project: AAPR
+project_key: AAPR
 tracking_system: file-system
 story_location: _bmad-output/implementation-artifacts
 

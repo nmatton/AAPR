@@ -1,4 +1,4 @@
-# AAPPR - Agile Adaptation Platform for Practice Research
+# AAPR - Adaptative Agile Practice Repository
 
 Research-grade web application for systematic identification and resolution of agile practice friction points through personality-informed collective decision-making.
 

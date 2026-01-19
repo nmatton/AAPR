@@ -1,11 +1,11 @@
 ---
-projectName: AAPPR
+projectName: AAPR
 createdDate: 2026-01-15
 sectionsCompleted: [1, 2, 3, 4, 5, 6]
 status: complete
 ---
 
-# Project Context - AAPPR
+# Project Context - AAPR
 
 **Purpose:** This document captures critical implementation rules and patterns that AI agents MUST follow when writing code for this project. It focuses on unobvious details and version constraints that prevent costly mistakes.
 

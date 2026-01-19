@@ -86,7 +86,7 @@
 
 ### Task 3: Configure and Start Backend Server (AC3)
 - [x] Create `/server/.env` file with placeholder values
-- [x] Add `DATABASE_URL=postgresql://localhost:5432/aappr`
+- [x] Add `DATABASE_URL=postgresql://localhost:5432/aapr`
 - [x] Add `JWT_SECRET=placeholder_secret_change_in_production`
 - [x] Add `PORT=3000`
 - [x] Run `npm run dev` in server directory

@@ -40,6 +40,19 @@ app.get('/api/v1/health', (_req, res) => {
   })
 })
 
+// Global error handler middleware (must be last)
+app.use((err: Error, req: express.Request, res: express.Response, next: express.NextFunction) => {
+  console.error('Unhandled error:', err)
+  
+  const requestId = res.getHeader('x-request-id') as string
+  
+  res.status(500).json({
+    code: 'internal_error',
+    message: 'An unexpected error occurred',
+    requestId
+  })
+})
+
 const port = Number(process.env.PORT) || 3000
 
 app.listen(port, () => {

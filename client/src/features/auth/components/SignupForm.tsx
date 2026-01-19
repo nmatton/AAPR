@@ -1,4 +1,5 @@
 import React, { useState, FormEvent } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { registerUser } from '../api/authApi'
 import { useAuthStore } from '../state/authSlice'
 
@@ -17,6 +18,7 @@ interface FormErrors {
  * Implements AC1-AC4: validation, error handling, duplicate email detection
  */
 export const SignupForm: React.FC = () => {
+  const navigate = useNavigate()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -117,8 +119,8 @@ export const SignupForm: React.FC = () => {
       const response = await registerUser(name, email, password)
       setUser(response.user)
 
-      // Redirect to /teams (will be handled by router in Task 7)
-      window.location.href = '/teams'
+      // Redirect to /teams using React Router
+      navigate('/teams')
     } catch (error: unknown) {
       setLoading(false)
 
