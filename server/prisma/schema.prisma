@@ -32,7 +32,156 @@ model User {
   /// Last update timestamp
   updatedAt DateTime @updatedAt @map("updated_at")
   
+  // Relationships
+  teamMembers TeamMember[]
+  
   @@map("users")
+}
+
+/// Team entity - represents a research team using the platform
+/// Isolation: team_id is the primary boundary for all queries
+/// Privacy: Team names are not anonymized in research exports
+model Team {
+  /// Auto-incrementing team identifier
+  id           Int            @id @default(autoincrement())
+  
+  /// Team name (3-100 characters)
+  name         String         @db.VarChar(100)
+  
+  /// Team creation timestamp
+  createdAt    DateTime       @default(now()) @map("created_at")
+  
+  /// Last update timestamp
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  
+  // Relationships
+  teamMembers  TeamMember[]
+  teamPractices TeamPractice[]
+  
+  @@index([name], map: "idx_teams_name")
+  @@map("teams")
+}
+
+/// TeamMember entity - represents user membership in teams
+/// Isolation: Queries must filter by both teamId and userId
+model TeamMember {
+  /// Auto-incrementing member identifier
+  id       Int      @id @default(autoincrement())
+  
+  /// Team identifier
+  teamId   Int      @map("team_id")
+  
+  /// User identifier
+  userId   Int      @map("user_id")
+  
+  /// Member role (owner, member)
+  role     String   @default("member") @db.VarChar(20)
+  
+  /// Membership creation timestamp
+  joinedAt DateTime @default(now()) @map("joined_at")
+  
+  // Relationships
+  team     Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([teamId, userId])
+  @@index([teamId], map: "idx_team_members_team")
+  @@index([userId], map: "idx_team_members_user")
+  @@map("team_members")
+}
+
+/// Practice entity - agile practices catalog
+/// Isolation: Practices are global (isGlobal=true) or team-specific
+model Practice {
+  /// Auto-incrementing practice identifier
+  id          Int      @id @default(autoincrement())
+  
+  /// Practice title (3-100 characters)
+  title       String   @db.VarChar(100)
+  
+  /// Practice goal/description
+  goal        String   @db.Text
+  
+  /// Practice category
+  category    String   @db.VarChar(50)
+  
+  /// Is this a global practice (available to all teams)
+  isGlobal    Boolean  @default(true) @map("is_global")
+  
+  /// Practice creation timestamp
+  createdAt   DateTime @default(now()) @map("created_at")
+  
+  // Relationships
+  teamPractices TeamPractice[]
+  practicePillars PracticePillar[]
+  
+  @@index([category], map: "idx_practices_category")
+  @@map("practices")
+}
+
+/// TeamPractice entity - links teams to practices they use
+/// Isolation: Queries must filter by teamId
+model TeamPractice {
+  /// Auto-incrementing identifier
+  id         Int      @id @default(autoincrement())
+  
+  /// Team identifier
+  teamId     Int      @map("team_id")
+  
+  /// Practice identifier
+  practiceId Int      @map("practice_id")
+  
+  /// When practice was added to team
+  addedAt    DateTime @default(now()) @map("added_at")
+  
+  // Relationships
+  team       Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  practice   Practice @relation(fields: [practiceId], references: [id], onDelete: Cascade)
+  
+  @@unique([teamId, practiceId])
+  @@index([teamId], map: "idx_team_practices_team")
+  @@index([practiceId], map: "idx_team_practices_practice")
+  @@map("team_practices")
+}
+
+/// Pillar entity - the 19 agile pillars from APR framework
+/// Isolation: Pillars are global reference data
+model Pillar {
+  /// Auto-incrementing pillar identifier
+  id       Int      @id @default(autoincrement())
+  
+  /// Pillar name (unique)
+  name     String   @unique @db.VarChar(100)
+  
+  /// Pillar category (e.g., 'Team Structure', 'Development Process')
+  category String   @db.VarChar(50)
+  
+  // Relationships
+  practicePillars PracticePillar[]
+  
+  @@map("pillars")
+}
+
+/// PracticePillar entity - maps practices to pillars they cover
+/// Isolation: Used for coverage calculation
+model PracticePillar {
+  /// Auto-incrementing identifier
+  id         Int      @id @default(autoincrement())
+  
+  /// Practice identifier
+  practiceId Int      @map("practice_id")
+  
+  /// Pillar identifier
+  pillarId   Int      @map("pillar_id")
+  
+  // Relationships
+  practice   Practice @relation(fields: [practiceId], references: [id], onDelete: Cascade)
+  pillar     Pillar   @relation(fields: [pillarId], references: [id], onDelete: Cascade)
+  
+  @@unique([practiceId, pillarId])
+  @@index([practiceId], map: "idx_practice_pillars_practice")
+  @@index([pillarId], map: "idx_practice_pillars_pillar")
+  @@map("practice_pillars")
 }
 
 /// Event entity - immutable audit log for research data integrity

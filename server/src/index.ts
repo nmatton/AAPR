@@ -5,6 +5,7 @@ import cookieParser from 'cookie-parser'
 import { randomUUID } from 'crypto'
 import { logProjectInitialized } from './logger/projectInit'
 import { authRouter } from './routes/auth.routes'
+import { teamsRouter } from './routes/teams.routes'
 
 dotenv.config()
 
@@ -30,6 +31,7 @@ app.use((req, res, next) => {
 
 // API routes
 app.use('/api/v1/auth', authRouter)
+app.use('/api/v1/teams', teamsRouter)
 
 // Health check endpoint with proper API versioning and headers
 app.get('/api/v1/health', (_req, res) => {
