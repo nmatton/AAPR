@@ -6,6 +6,7 @@ import { randomUUID } from 'crypto'
 import { logProjectInitialized } from './logger/projectInit'
 import { authRouter } from './routes/auth.routes'
 import { teamsRouter } from './routes/teams.routes'
+import { practicesRouter } from './routes/practices.routes'
 import { errorHandler } from './middleware/errorHandler'
 
 dotenv.config()
@@ -26,6 +27,7 @@ app.use(cookieParser())
 // Request ID middleware
 app.use((req, res, next) => {
   const requestId = (req.headers['x-request-id'] as string) || randomUUID()
+  ;(req as typeof req & { id?: string }).id = requestId
   res.setHeader('x-request-id', requestId)
   next()
 })
@@ -33,6 +35,7 @@ app.use((req, res, next) => {
 // API routes
 app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/teams', teamsRouter)
+app.use('/api/v1/practices', practicesRouter)
 
 // Health check endpoint with proper API versioning and headers
 app.get('/api/v1/health', (_req, res) => {

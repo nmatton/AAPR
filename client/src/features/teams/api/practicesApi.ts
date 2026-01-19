@@ -1,5 +1,6 @@
-import type { Team } from '../types/team.types';
 import { refreshAccessToken } from '../../auth/api/authApi';
+import { ApiError } from './teamsApi';
+import type { PracticesResponse } from '../types/practice.types';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -65,47 +66,7 @@ const requestWithRefresh = async <T>(
   return data as T;
 };
 
-/**
- * Custom error class for API errors
- */
-export class ApiError extends Error {
-  constructor(
-    public code: string,
-    public message: string,
-    public details?: any,
-    public statusCode?: number
-  ) {
-    super(message);
-    this.name = 'ApiError';
-  }
-}
-
-/**
- * Get all teams for the authenticated user
- * @returns Array of teams
- * @throws ApiError if request fails
- */
-export const getTeams = async (): Promise<Team[]> => {
-  const data = await requestWithRefresh<{ teams: Team[] }>('/api/v1/teams', {
-    method: 'GET'
-  });
-  return data.teams;
-};
-
-/**
- * Create a new team with selected practices
- * @param name - Team name (3-100 chars)
- * @param practiceIds - Array of practice IDs to associate with team
- * @returns Created team
- * @throws ApiError if request fails
- */
-export const createTeam = async (
-  name: string,
-  practiceIds: number[]
-): Promise<Team> => {
-  const data = await requestWithRefresh<{ team: Team }>('/api/v1/teams', {
-    method: 'POST',
-    body: JSON.stringify({ name, practiceIds })
-  });
-  return data.team;
+export const getPractices = async () => {
+  const data = await requestWithRefresh<PracticesResponse>('/api/v1/practices');
+  return data.practices;
 };

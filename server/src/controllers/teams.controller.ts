@@ -76,10 +76,10 @@ export const createTeam = async (
     const validationResult = createTeamSchema.safeParse(req.body);
     
     if (!validationResult.success) {
-      const details = validationResult.error.errors.map(err => ({
-        path: err.path.join('.'),
-        message: err.message,
-        code: err.code
+      const details = validationResult.error.issues.map((issue) => ({
+        path: issue.path.join('.'),
+        message: issue.message,
+        code: issue.code
       }));
       
       throw new AppError(

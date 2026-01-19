@@ -112,7 +112,7 @@ describe('TeamsList', () => {
 
     expect(screen.getByText('No teams yet')).toBeInTheDocument();
     expect(screen.getByText('Create one or wait for an invite.')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /create/i })).toBeInTheDocument();
+    expect(screen.getByLabelText('Create your first team')).toBeInTheDocument();
   });
 
   it('shows error message and retry button on fetch failure', async () => {

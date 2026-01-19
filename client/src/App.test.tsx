@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import App from './App'
 import * as authApi from './features/auth/api/authApi'
+import * as teamsApi from './features/teams/api/teamsApi'
 import { useAuthStore } from './features/auth/state/authSlice'
 
 const mockUser = {
@@ -42,6 +43,7 @@ describe('App auth flow integration', () => {
       ...mockUser,
       requestId: 'req-1'
     })
+    vi.spyOn(teamsApi, 'getTeams').mockResolvedValue([])
 
     window.history.pushState({}, '', '/login')
     render(<App />)
@@ -50,7 +52,7 @@ describe('App auth flow integration', () => {
     await userEvent.type(screen.getByLabelText(/password/i), 'password123')
     await userEvent.click(screen.getByRole('button', { name: /sign in/i }))
 
-    expect(await screen.findByRole('heading', { name: 'Teams', level: 1 })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'My Teams', level: 1 })).toBeInTheDocument()
   })
 
   it('restores session on refresh and stays on /teams', async () => {
@@ -58,6 +60,7 @@ describe('App auth flow integration', () => {
       ...mockUser,
       requestId: 'req-1'
     })
+    vi.spyOn(teamsApi, 'getTeams').mockResolvedValue([])
 
     useAuthStore.setState({
       user: mockUser,
@@ -68,7 +71,7 @@ describe('App auth flow integration', () => {
     render(<App />)
 
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: 'Teams', level: 1 })).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: 'My Teams', level: 1 })).toBeInTheDocument()
     })
   })
 
@@ -80,6 +83,7 @@ describe('App auth flow integration', () => {
       ...mockUser,
       requestId: 'req-1'
     })
+    vi.spyOn(teamsApi, 'getTeams').mockResolvedValue([])
 
     useAuthStore.setState({
       user: mockUser,

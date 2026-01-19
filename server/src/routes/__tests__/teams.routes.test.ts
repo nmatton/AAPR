@@ -36,7 +36,7 @@ describe('GET /api/v1/teams', () => {
     
     // Mock requireAuth to add user to request
     (requireAuth as any).mockImplementation((req: any, _res: any, next: any) => {
-      req.user = { id: 1, email: 'test@example.com' };
+      req.user = { userId: 1, email: 'test@example.com' };
       next();
     });
   });
@@ -124,7 +124,7 @@ describe('GET /api/v1/teams', () => {
   it('calls service with correct user ID from JWT', async () => {
     // Mock different user
     (requireAuth as any).mockImplementation((req: any, _res: any, next: any) => {
-      req.user = { id: 42, email: 'user42@example.com' };
+      req.user = { userId: 42, email: 'user42@example.com' };
       next();
     });
 
@@ -144,7 +144,7 @@ describe('Team Isolation', () => {
   it('user A cannot see user B teams', async () => {
     // User A (id: 1) with teams [1, 2]
     (requireAuth as any).mockImplementation((req: any, _res: any, next: any) => {
-      req.user = { id: 1, email: 'userA@example.com' };
+      req.user = { userId: 1, email: 'userA@example.com' };
       next();
     });
 
@@ -163,7 +163,7 @@ describe('Team Isolation', () => {
 
     // User B (id: 2) with teams [2, 3]
     (requireAuth as any).mockImplementation((req: any, _res: any, next: any) => {
-      req.user = { id: 2, email: 'userB@example.com' };
+      req.user = { userId: 2, email: 'userB@example.com' };
       next();
     });
 
@@ -191,7 +191,7 @@ describe('POST /api/v1/teams', () => {
     
     // Mock requireAuth to add user to request
     (requireAuth as any).mockImplementation((req: any, _res: any, next: any) => {
-      req.user = { id: 1, email: 'test@example.com' };
+      req.user = { userId: 1, email: 'test@example.com' };
       next();
     });
   });

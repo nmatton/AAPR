@@ -1,6 +1,6 @@
 # Story 1.4: Team Creation with Practice Selection
 
-**Status:** ready-for-dev  
+**Status:** in-progress  
 **Epic:** 1 - Authentication & Team Onboarding  
 **Story ID:** 1.4  
 **Created:** 2026-01-19
@@ -1036,13 +1036,13 @@ describe('CreateTeamForm', () => {
 ## Tasks / Subtasks
 
 ### Task 1: Backend - Extend Teams Service Layer (AC1, AC3, AC5)
-- [ ] Add `createTeam(userId, name, practiceIds)` function to `services/teams.service.ts`:
+- [x] Add `createTeam(userId, name, practiceIds)` function to `services/teams.service.ts`:
   - Pre-validate: check team name uniqueness
   - Pre-validate: check practice IDs exist
   - Transaction: create team + add creator as owner + add practices + log event
   - Post-transaction: calculate coverage using existing `calculateTeamCoverage()`
   - Return team with stats
-- [ ] Add unit tests for `createTeam()`:
+- [x] Add unit tests for `createTeam()`:
   - Success case: team created with practices and creator as owner
   - Error case: duplicate team name → 409
   - Error case: invalid practice IDs → 400 with details
@@ -1050,10 +1050,10 @@ describe('CreateTeamForm', () => {
   - Coverage calculation: verify correct percentage
 
 ### Task 2: Backend - Team Creation API Endpoint (AC1, AC3, AC4)
-- [ ] Add POST `/api/v1/teams` route to `routes/teams.routes.ts`:
+- [x] Add POST `/api/v1/teams` route to `routes/teams.routes.ts`:
   - Middleware: requireAuth (extracts userId from JWT)
   - No team isolation middleware (creating new team, not accessing existing)
-- [ ] Create `createTeam` controller in `controllers/teams.controller.ts`:
+- [x] Create `createTeam` controller in `controllers/teams.controller.ts`:
   - Parse request body: `{name, practiceIds}`
   - Validate using Zod schema:
     - name: required, string, 3-100 chars, pattern: `^[a-zA-Z0-9\s\-]+$`
@@ -1065,7 +1065,7 @@ describe('CreateTeamForm', () => {
     - Duplicate name → 409
     - Invalid practice IDs → 400 with details
     - Database error → 500
-- [ ] Add integration tests:
+- [x] Add integration tests:
   - POST /api/v1/teams returns 201 with team
   - POST /api/v1/teams returns 400 if name missing
   - POST /api/v1/teams returns 400 if practiceIds empty
@@ -1073,7 +1073,7 @@ describe('CreateTeamForm', () => {
   - POST /api/v1/teams returns 401 without JWT
 
 ### Task 3: Frontend - Extend Teams API Client (AC3)
-- [ ] Add `createTeam(name, practiceIds)` to `features/teams/api/teamsApi.ts`:
+- [x] Add `createTeam(name, practiceIds)` to `features/teams/api/teamsApi.ts`:
   - POST /api/v1/teams with body `{name, practiceIds}`
   - Include credentials: 'include' (JWT in cookie)
   - Include X-Request-Id header
@@ -1083,14 +1083,14 @@ describe('CreateTeamForm', () => {
     - 409 duplicate → throw with code
     - 500 server error → throw with message
   - Return `{team, requestId}`
-- [ ] Add unit tests for `createTeam()`:
+- [x] Add unit tests for `createTeam()`:
   - Success: returns team object
   - 400 validation: throws with details
   - 409 duplicate: throws with code
   - 401: triggers auto-refresh and retries
 
 ### Task 4: Frontend - Extend Teams State Management (AC3)
-- [ ] Add `createTeam(name, practiceIds)` action to `features/teams/state/teamsSlice.ts`:
+- [x] Add `createTeam(name, practiceIds)` action to `features/teams/state/teamsSlice.ts`:
   - State: add `isCreating` boolean
   - Action:
     - Set `isCreating: true`, `error: null`
@@ -1098,7 +1098,7 @@ describe('CreateTeamForm', () => {
     - On success: call `fetchTeams()` to refresh list, return team
     - On error: set error message, set `isCreating: false`, re-throw
   - Reset: clear `isCreating` state
-- [ ] Add unit tests for `createTeam` action:
+- [x] Add unit tests for `createTeam` action:
   - Sets `isCreating` true during creation
   - Refreshes teams list after success
   - Sets error message on failure
@@ -1573,7 +1573,7 @@ const handleCreateTeam = async () => {
 
 ## Completion Status
 
-**Story Status:** ✅ ready-for-dev (Ultimate context engine analysis completed)
+**Story Status:** 🔄 in-progress (Code review fixes applied)
 
 **Developer Preparation:** All context, requirements, database schema, API endpoints, frontend architecture, transaction patterns, validation strategies, and testing requirements documented for flawless implementation.
 
@@ -1592,7 +1592,7 @@ const handleCreateTeam = async () => {
 **Created:** 2026-01-19  
 **Story ID:** 1.4  
 **Epic:** 1 - Authentication & Team Onboarding  
-**Status:** review
+**Status:** in-progress
 
 ---
 
@@ -1637,19 +1637,27 @@ Implementation Date: 2026-01-19
 ✅ **Task 5-8: Frontend Components**
 - **TeamNameStep**: Form with validation (3-100 chars, pattern check), character counter, inline errors, disabled submit until valid
 - **PracticeSelectionStep**: Search filter, toggle selection, visual indicators (checkmark, blue border/background), selection count, validation warning (0 selected), disabled create button logic, loading spinner
-- **CreateTeamForm**: Multi-step container with progress indicator (2 steps with circles and labels), state management (step, teamName, selectedPracticeIds), error display banner, navigation to /teams on success
-- Used MOCK_PRACTICES for MVP (8 practices covering different categories)
+- **CreateTeamForm**: Multi-step container with progress indicator (2 steps with circles and labels), state management (step, teamName, selectedPracticeIds), error display banner, navigation to /teams/:id on success
+- Practices loaded from API with pillar filter and badges
 
-✅ **Task 9: Routing & Navigation**
+⚠️ **Task 9: Routing & Navigation (partial)**
 - Route /teams/create already exists (updated CreateTeamForm.tsx from placeholder to full implementation)
-- Navigation to /teams after successful creation
+- Navigation to /teams/:id after successful creation
 - Back navigation preserved in PracticeSelectionStep
 
-✅ **Task 10: Styling & UX Polish**
+⚠️ **Task 10: Styling & UX Polish (partial)**
 - TailwindCSS design system applied: forms, buttons (primary/disabled/loading), progress indicator, practice cards with hover/selected states
 - Loading states: spinner + "Creating..." text, disabled button during creation
 - Validation feedback: inline errors (red), warning banner (yellow), success flow
 - Accessibility: proper form labels, disabled states, keyboard navigation
+
+✅ **Code Review Fixes (2026-01-19)**
+- Added GET /api/v1/practices with pillars for selection UI
+- Practice selection now loads from API, filters by pillar, and shows pillar badges
+- Team creation redirects to /teams/:id and dashboard displays coverage
+- Added refresh-and-retry on 401 for teams API
+- Added createTeam tests for teams API client and teams store
+- Fixed requireAuth mock shape in route tests (userId)
 
 ### File List
 
@@ -1660,13 +1668,25 @@ Implementation Date: 2026-01-19
 - server/src/controllers/teams.controller.ts (added createTeam handler with Zod validation)
 - server/src/routes/teams.routes.ts (added POST /api/v1/teams route)
 - server/src/routes/__tests__/teams.routes.test.ts (added 9 integration tests)
+- server/src/repositories/practices.repository.ts (added practice catalog repository)
+- server/src/services/practices.service.ts (added practice catalog service)
+- server/src/controllers/practices.controller.ts (added practice catalog controller)
+- server/src/routes/practices.routes.ts (added GET /api/v1/practices route)
+- server/src/routes/__tests__/practices.routes.test.ts (added practices route tests)
+- server/src/index.ts (attached requestId to req)
 
 **Frontend Files Modified/Created:**
 - client/src/features/teams/api/teamsApi.ts (added createTeam function)
+- client/src/features/teams/api/teamsApi.test.ts (added createTeam tests + 401 refresh retry)
+- client/src/features/teams/api/practicesApi.ts (added practice catalog API client)
 - client/src/features/teams/state/teamsSlice.ts (added isCreating state and createTeam action)
+- client/src/features/teams/state/teamsSlice.test.ts (added createTeam action tests)
 - client/src/features/teams/components/TeamNameStep.tsx (created)
-- client/src/features/teams/components/PracticeSelectionStep.tsx (created)
-- client/src/features/teams/components/CreateTeamForm.tsx (replaced placeholder with full implementation)
+- client/src/features/teams/components/PracticeSelectionStep.tsx (loads practices + pillar filter)
+- client/src/features/teams/components/CreateTeamForm.tsx (redirects to /teams/:id)
+- client/src/features/teams/components/TeamDashboard.tsx (shows coverage)
+- client/src/features/teams/components/TeamsList.tsx (header Create Team button)
+- client/src/features/teams/types/practice.types.ts (practice + pillar types)
 
 **Migration Files:**
 - server/prisma/migrations/20260119_add_unique_team_name/migration.sql (created)

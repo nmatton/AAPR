@@ -1,8 +1,22 @@
+import { useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTeamsStore } from '../state/teamsSlice';
 
 export const TeamDashboard = () => {
   const { teamId } = useParams<{ teamId: string }>();
   const navigate = useNavigate();
+  const { teams, isLoading, fetchTeams, error } = useTeamsStore();
+
+  useEffect(() => {
+    if (teams.length === 0) {
+      fetchTeams();
+    }
+  }, [teams.length, fetchTeams]);
+
+  const selectedTeam = useMemo(() => {
+    const id = Number(teamId);
+    return teams.find((team) => team.id === id);
+  }, [teamId, teams]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -27,15 +41,43 @@ export const TeamDashboard = () => {
           Back to Teams
         </button>
         
-        <div className="flex flex-col items-center justify-center py-12 text-center">
-          <h2 className="text-3xl font-bold text-gray-700 mb-4">Team Dashboard</h2>
-          <p className="text-gray-500 mb-4">
-            Team ID: {teamId}
-          </p>
-          <p className="text-gray-500">
-            Coming soon in Story 1.4+
-          </p>
-        </div>
+        {isLoading && (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <p className="text-gray-500">Loading team dashboard...</p>
+          </div>
+        )}
+
+        {!isLoading && error && (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <p className="text-red-600">{error}</p>
+          </div>
+        )}
+
+        {!isLoading && !error && !selectedTeam && (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <p className="text-gray-500">Team not found.</p>
+          </div>
+        )}
+
+        {!isLoading && !error && selectedTeam && (
+          <div className="space-y-6">
+            <h2 className="text-3xl font-bold text-gray-700">{selectedTeam.name}</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="p-4 bg-white border rounded-lg">
+                <p className="text-sm text-gray-500">Members</p>
+                <p className="text-2xl font-semibold text-gray-800">{selectedTeam.memberCount}</p>
+              </div>
+              <div className="p-4 bg-white border rounded-lg">
+                <p className="text-sm text-gray-500">Practices</p>
+                <p className="text-2xl font-semibold text-gray-800">{selectedTeam.practiceCount}</p>
+              </div>
+              <div className="p-4 bg-white border rounded-lg">
+                <p className="text-sm text-gray-500">Coverage</p>
+                <p className="text-2xl font-semibold text-gray-800">{selectedTeam.coverage}%</p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

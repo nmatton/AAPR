@@ -34,7 +34,7 @@ export const useTeamsStore = create<TeamsState>((set, get) => ({
     } catch (error: any) {
       let errorMessage = 'Failed to fetch teams';
       
-      if (error.statusCode === 401) {
+      if (error.statusCode === 401 || error.code === 'session_expired') {
         errorMessage = 'Session expired. Please log in again.';
       } else if (error.code === 'network_error') {
         errorMessage = 'Connection failed. Check your internet and retry.';
@@ -62,7 +62,7 @@ export const useTeamsStore = create<TeamsState>((set, get) => ({
     } catch (error: any) {
       let errorMessage = 'Failed to create team';
       
-      if (error.statusCode === 401) {
+      if (error.statusCode === 401 || error.code === 'session_expired') {
         errorMessage = 'Session expired. Please log in again.';
       } else if (error.code === 'duplicate_team_name') {
         errorMessage = 'Team name already exists. Try another name.';

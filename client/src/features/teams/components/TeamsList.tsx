@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTeamsStore } from '../state/teamsSlice';
 import { TeamCard } from './TeamCard';
 import { EmptyState } from './EmptyState';
@@ -6,6 +7,7 @@ import { EmptyState } from './EmptyState';
 export const TeamsList = () => {
   const { teams, isLoading, error, fetchTeams } = useTeamsStore();
   const [minLoadTime, setMinLoadTime] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchTeams();
@@ -29,7 +31,16 @@ export const TeamsList = () => {
   if (isLoading || !minLoadTime) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">My Teams</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">My Teams</h1>
+          <button
+            type="button"
+            onClick={() => navigate('/teams/create')}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Create Team
+          </button>
+        </div>
         <div className="animate-pulse space-y-4">
           <div className="bg-gray-200 h-32 rounded-lg"></div>
           <div className="bg-gray-200 h-32 rounded-lg"></div>
@@ -42,7 +53,16 @@ export const TeamsList = () => {
   if (error) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">My Teams</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">My Teams</h1>
+          <button
+            type="button"
+            onClick={() => navigate('/teams/create')}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Create Team
+          </button>
+        </div>
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <svg
             className="w-16 h-16 text-red-400 mb-4"
@@ -73,7 +93,16 @@ export const TeamsList = () => {
   if (teams.length === 0) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-8">My Teams</h1>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">My Teams</h1>
+          <button
+            type="button"
+            onClick={() => navigate('/teams/create')}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            Create Team
+          </button>
+        </div>
         <EmptyState />
       </div>
     );
@@ -81,7 +110,16 @@ export const TeamsList = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">My Teams</h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold text-gray-800">My Teams</h1>
+        <button
+          type="button"
+          onClick={() => navigate('/teams/create')}
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          Create Team
+        </button>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {teams.map((team) => (

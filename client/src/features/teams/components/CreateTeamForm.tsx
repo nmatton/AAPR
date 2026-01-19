@@ -4,18 +4,6 @@ import { useTeamsStore } from '../state/teamsSlice';
 import { TeamNameStep } from './TeamNameStep';
 import { PracticeSelectionStep } from './PracticeSelectionStep';
 
-// Mock practices data for MVP - in real implementation, this would be fetched from API
-const MOCK_PRACTICES = [
-  { id: 1, title: 'Daily Standup', goal: 'Synchronize team daily', category: 'FEEDBACK & APPRENTISSAGE' },
-  { id: 2, title: 'Sprint Planning', goal: 'Plan upcoming sprint work', category: 'PLANIFICATION' },
-  { id: 3, title: 'Sprint Review', goal: 'Demo completed work', category: 'FEEDBACK & APPRENTISSAGE' },
-  { id: 4, title: 'Sprint Retrospective', goal: 'Reflect on process improvements', category: 'FEEDBACK & APPRENTISSAGE' },
-  { id: 5, title: 'Pair Programming', goal: 'Two developers working together', category: 'PRATIQUES TECHNIQUES' },
-  { id: 6, title: 'Code Review', goal: 'Peer review of code changes', category: 'PRATIQUES TECHNIQUES' },
-  { id: 7, title: 'Test-Driven Development', goal: 'Write tests before implementation', category: 'PRATIQUES TECHNIQUES' },
-  { id: 8, title: 'Continuous Integration', goal: 'Automated build and test', category: 'PRATIQUES TECHNIQUES' },
-];
-
 export const CreateTeamForm = () => {
   const [step, setStep] = useState<'name' | 'practices'>('name');
   const [teamName, setTeamName] = useState('');
@@ -36,8 +24,7 @@ export const CreateTeamForm = () => {
   const handleCreateTeam = async () => {
     try {
       const team = await createTeam(teamName, selectedPracticeIds);
-      // Navigate to teams list (team dashboard would be /teams/${team.id} when implemented)
-      navigate('/teams');
+      navigate(`/teams/${team.id}`);
     } catch (error) {
       // Error handled by state; component displays error message
       console.error('Failed to create team:', error);
@@ -76,7 +63,6 @@ export const CreateTeamForm = () => {
       
       {step === 'practices' && (
         <PracticeSelectionStep
-          practices={MOCK_PRACTICES}
           onBack={() => setStep('name')}
           onSubmit={handlePracticeSelection}
           onCreate={handleCreateTeam}
