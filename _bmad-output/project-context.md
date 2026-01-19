@@ -185,6 +185,12 @@ Jest 30.0 → ts-jest (TypeScript support)
 
 ---
 
+### Current Documentation of Updated Dependencies
+
+When a new depencendency is added or updated, always check current version using the MCP context7 and document it here.
+
+If some error related to a method, etc. usage of a library, checking the documentation using context7 is also good practice to avoid misue of the libraries
+
 ## 2. Language-Specific Rules (TypeScript)
 
 ### TypeScript Configuration Requirements
@@ -1259,4 +1265,4 @@ After completing Epic 1 (Authentication & Team Onboarding), this document has be
 
 **IMPORTANT:** This document is the **single source of truth** for implementation patterns and constraints. Any changes to tech stack, dependencies, or architectural decisions MUST be reflected here.
 
-**🎉 Workflow Complete!****
+**🎉 Workflow Complete!**
