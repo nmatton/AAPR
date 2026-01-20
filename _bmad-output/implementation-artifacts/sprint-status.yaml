@@ -54,7 +54,7 @@ development_status:
   # Epic 2: Practice Catalog & Coverage
   epic-2: in-progress
   2-0-import-practice-data-from-json: done
-  2-1-load-and-display-practice-catalog: backlog
+  2-1-load-and-display-practice-catalog: in-progress
   2-2-search-and-filter-practices-by-pillar: backlog
   2-3-add-selected-practices-to-team-portfolio: backlog
   2-4-remove-practices-from-team-portfolio: backlog

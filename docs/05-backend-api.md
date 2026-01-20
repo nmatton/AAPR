@@ -593,15 +593,85 @@ Response (200):
 
 ---
 
-## Next Steps (Epic 2)
+### Practices Catalog
 
-### New Endpoints
-- `GET /api/practices` - Get practice catalog with pillar mappings
-- `GET /api/practices?category=EXCELLENCE_TECHNIQUE` - Filter by category
-- `POST /api/teams/:teamId/practices` - Add practices to team
-- `DELETE /api/teams/:teamId/practices/:practiceId` - Remove practice
-- `GET /api/teams/:teamId/coverage` - Detailed coverage breakdown
+#### GET /api/v1/practices
+Get paginated list of all practices with pillar mappings
+
+**Authentication:** Not required (public endpoint)
+
+**Query Parameters:**
+- `page` (int, optional, default: 1) - Page number (1-indexed)
+- `pageSize` (int, optional, default: 20) - Results per page (max: 100)
+- `category` (string, optional) - Filter by pillar category
+
+**Response (200):**
+```json
+{
+  "items": [
+    {
+      "id": 1,
+      "title": "Daily Standup",
+      "goal": "Team synchronization and blockers",
+      "categoryId": "FEEDBACK_APPRENTISSAGE",
+      "categoryName": "FEEDBACK & APPRENTISSAGE",
+      "pillars": [
+        {
+          "id": 5,
+          "name": "Communication",
+          "category": "FEEDBACK & APPRENTISSAGE"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Sprint Planning",
+      "goal": "Define sprint goals and tasks",
+      "categoryId": "PLANIFICATION",
+      "categoryName": "PLANIFICATION",
+      "pillars": [
+        {
+          "id": 10,
+          "name": "Strategic Planning",
+          "category": "PLANIFICATION"
+        }
+      ]
+    }
+  ],
+  "page": 1,
+  "pageSize": 20,
+  "total": 47,
+  "requestId": "req_abc123xyz"
+}
+```
+
+**Pagination Math:**
+- `skip` = `(page - 1) * pageSize`
+- `take` = `pageSize`
+- Total pages: `ceil(total / pageSize)`
+
+**Validation:**
+- `page`: Minimum 1
+- `pageSize`: 1-100 (default 20)
+
+**Errors:**
+- 400: `{ "error": "Invalid pagination parameters", "code": "VALIDATION_ERROR", "details": { "page": "Must be >= 1" } }`
+- 400: `{ "error": "Invalid page size", "code": "VALIDATION_ERROR", "details": { "pageSize": "Must be between 1 and 100" } }`
+
+**Events Logged:**
+- No event logged (public endpoint)
 
 ---
 
-**Last Updated:** January 19, 2026
+## Next Steps (Epic 2)
+
+### Enhancements
+- `POST /api/teams/:teamId/practices` - Add practices to team
+- `DELETE /api/teams/:teamId/practices/:practiceId` - Remove practice
+- `GET /api/teams/:teamId/coverage` - Detailed coverage breakdown
+- `POST /api/v1/events` - Log client-side events (catalog view, practice selection)
+- Pagination filters by category/pillar
+
+---
+
+**Last Updated:** January 20, 2026

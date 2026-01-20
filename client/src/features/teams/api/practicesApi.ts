@@ -66,7 +66,7 @@ const requestWithRefresh = async <T>(
   return data as T;
 };
 
-export const getPractices = async () => {
-  const data = await requestWithRefresh<PracticesResponse>('/api/v1/practices');
-  return data.practices;
+export const getPractices = async (page = 1, pageSize = 20) => {
+  const data = await requestWithRefresh<PracticesResponse>(`/api/v1/practices?page=${page}&pageSize=${pageSize}`);
+  return data.items;
 };

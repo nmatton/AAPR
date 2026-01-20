@@ -655,25 +655,317 @@ export default defineConfig({
 
 ---
 
-## Next Steps (Epic 2)
+### practicesSlice
 
-### New Features
+**File:** `src/features/practices/state/practices.slice.ts`
 
-1. **Practice Catalog View:**
-   - Browse practices by category
-   - Search/filter practices
-   - View pillar mappings
+**State:**
+```typescript
+{
+  practices: Practice[],
+  isLoading: boolean,
+  error: string | null,
+  page: number,
+  pageSize: number,
+  total: number,
+  currentDetail: Practice | null,
+  catalogViewed: boolean
+}
+```
 
-2. **Coverage Visualization:**
-   - Bar chart of pillars covered
-   - Coverage breakdown by category
-   - Highlight gaps
+**Practice Type:**
+```typescript
+interface Practice {
+  id: number;
+  title: string;
+  goal: string;
+  categoryId: string;
+  categoryName: string;
+  pillars: Array<{
+    id: number;
+    name: string;
+    category: string;
+  }>;
+}
+```
 
-3. **Team Practice Management:**
-   - Add/remove practices from team
-   - View practice details modal
-   - "Recommended Practices" suggestions
+**Actions:**
+```typescript
+loadPractices(page: number, pageSize: number, category?: string | null): Promise<void>
+setCurrentDetail(practice: Practice | null): void
+retry(): Promise<void>
+```
+
+**Usage:**
+```tsx
+const { practices, isLoading, loadPractices } = usePracticesStore();
+
+useEffect(() => {
+  loadPractices(1, 20);
+}, []);
+```
 
 ---
 
-**Last Updated:** January 19, 2026
+## Practice Catalog Feature
+
+### PracticeCatalog Page
+**File:** `src/features/practices/pages/PracticeCatalog.tsx`
+
+**Features:**
+- Fetch practices on mount → GET `/api/v1/practices`
+- Display paginated grid of practice cards
+- Click card to view details in sidebar
+- Loading skeleton UI
+- Error state with retry
+- Empty state fallback
+
+**UI Layout:**
+```tsx
+<div className="min-h-screen bg-gray-50">
+  <header>Back to Teams | Practice Catalog | Logout</header>
+  <main>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {practices.map(p => <PracticeCard key={p.id} practice={p} />)}
+    </div>
+    {currentDetail && <PracticeCatalogDetail practice={currentDetail} />}
+  </main>
+</div>
+```
+
+**Pagination (Not Yet Implemented):**
+- Default: 20 items per page
+- Next/Previous buttons to paginate
+- Show "Page X of Y"
+
+---
+
+### PracticeCard Component
+**File:** `src/features/practices/components/PracticeCard.tsx`
+
+**Features:**
+- Display practice title and goal
+- Show category badge with tailored color
+- Display pillar names
+- Hover effect to indicate clickable
+- Click → Open detail sidebar
+
+**UI:**
+```tsx
+<div className="border rounded-lg p-4 hover:shadow-lg cursor-pointer">
+  <h3 className="font-bold text-lg">{practice.title}</h3>
+  <p className="text-gray-600 text-sm">{practice.goal}</p>
+  <span className={`inline-block px-2 py-1 rounded text-sm font-medium ${categoryColor}`}>
+    {practice.categoryName}
+  </span>
+  <div className="mt-2 flex flex-wrap gap-1">
+    {practice.pillars.map(p => (
+      <span key={p.id} className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+        {p.name}
+      </span>
+    ))}
+  </div>
+</div>
+```
+
+**Category Colors:**
+- `FEEDBACK & APPRENTISSAGE`: `bg-blue-500`
+- `PLANIFICATION`: `bg-green-500`
+- `EXCELLENCE_TECHNIQUE`: `bg-purple-500`
+- etc.
+
+---
+
+### PracticeCatalogDetail Component
+**File:** `src/features/practices/components/PracticeCatalogDetail.tsx`
+
+**Features:**
+- Sidebar modal showing full practice details
+- Close button (X) to dismiss
+- Display all pillar mappings
+- "Back to Catalog" button
+- Add to team button (Epic 2)
+
+**UI:**
+```tsx
+<div className="fixed right-0 top-0 h-full w-96 bg-white shadow-lg z-50">
+  <div className="p-6 flex flex-col h-full">
+    <button onClick={onClose} className="text-gray-500 hover:text-gray-700 mb-4">
+      ✕ Close
+    </button>
+    <h2 className="text-2xl font-bold">{practice.title}</h2>
+    <p className="text-gray-600 mt-2">{practice.goal}</p>
+    <div className="mt-6">
+      <h3 className="font-semibold">Pillars Covered:</h3>
+      <ul className="mt-2">
+        {practice.pillars.map(p => (
+          <li key={p.id} className="text-sm text-gray-700">• {p.name} ({p.category})</li>
+        ))}
+      </ul>
+    </div>
+  </div>
+</div>
+```
+
+---
+
+### PracticeCardSkeleton
+**File:** `src/features/practices/components/PracticeCardSkeleton.tsx`
+
+**Features:**
+- Animated placeholder during loading
+- Matches PracticeCard dimensions
+- Uses `animate-pulse` TailwindCSS class
+
+---
+
+### PracticeEmptyState
+**File:** `src/features/practices/components/PracticeEmptyState.tsx`
+
+**UI:**
+```tsx
+<div className="text-center py-12">
+  <p className="text-gray-500 text-lg">No practices available</p>
+  <p className="text-gray-400 text-sm mt-1">Check back soon for practice data</p>
+</div>
+```
+
+---
+
+### PracticeErrorState
+**File:** `src/features/practices/components/PracticeErrorState.tsx`
+
+**Features:**
+- Display error message
+- Retry button to re-fetch
+
+**UI:**
+```tsx
+<div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+  <h3 className="text-lg font-semibold text-red-700">Unable to load practices</h3>
+  <p className="text-red-600 mt-2">{message}</p>
+  <Button onClick={onRetry} className="mt-4 bg-red-600 hover:bg-red-700">
+    Try Again
+  </Button>
+</div>
+```
+
+---
+
+### practicesApi.ts
+
+**File:** `src/features/practices/api/practices.api.ts`
+
+**Functions:**
+```typescript
+export const fetchPractices = async (
+  page: number = 1,
+  pageSize: number = 20,
+  category?: string | null
+): Promise<PracticesResponse> => {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    pageSize: pageSize.toString(),
+  });
+  
+  if (category) {
+    params.append("category", category);
+  }
+  
+  const res = await fetch(`/api/v1/practices?${params}`, {
+    credentials: "include",
+  });
+  
+  if (!res.ok) {
+    const error = await res.json();
+    throw new ApiError(error.code || "unknown", error.error || "Failed to fetch");
+  }
+  
+  return res.json();
+};
+
+export const logCatalogViewed = async (teamId?: number) => {
+  try {
+    await fetch("/api/v1/events", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        event_type: "catalog_viewed",
+        team_id: teamId,
+      }),
+    });
+  } catch {
+    // Silently fail, don't block UX
+  }
+};
+
+export class ApiError extends Error {
+  constructor(
+    public code: string,
+    message: string
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+```
+
+**Response Type:**
+```typescript
+interface PracticesResponse {
+  items: Practice[];
+  page: number;
+  pageSize: number;
+  total: number;
+  requestId?: string;
+}
+```
+
+---
+
+## Routing Update
+
+**File:** `src/App.tsx`
+
+**New Routes:**
+```tsx
+<Route
+  path="/practices"
+  element={
+    <ProtectedRoute>
+      <PracticeCatalog />
+    </ProtectedRoute>
+  }
+/>
+```
+
+**Navigation:**
+- Header button "Practice Catalog" (visible when authenticated)
+- Navigates to `/practices`
+- Accessible from all authenticated pages
+
+---
+
+## Next Steps (Epic 2)
+
+### Enhancements
+
+1. **Pagination UI:**
+   - Previous/Next buttons
+   - Page indicator
+   - Jump to page input
+
+2. **Filtering & Search:**
+   - Filter by category dropdown
+   - Search by practice title
+   - Clear filters button
+
+3. **Coverage Dashboard:**
+   - Bar chart of pillar coverage
+   - Category breakdown
+   - Comparison with other teams
+
+---
+
+**Last Updated:** January 20, 2026

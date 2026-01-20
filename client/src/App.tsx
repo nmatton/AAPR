@@ -9,6 +9,7 @@ import { ProtectedRoute } from './features/auth/components/ProtectedRoute'
 import { useAuthStore } from './features/auth/state/authSlice'
 import { getCurrentUser } from './features/auth/api/authApi'
 import { TeamsList } from './features/teams/components/TeamsList'
+import { PracticeCatalog } from './features/practices/pages/PracticeCatalog'
 
 const TeamsPage = () => {
   const navigate = useNavigate()
@@ -24,14 +25,23 @@ const TeamsPage = () => {
       <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
            <h1 className="text-xl font-semibold text-gray-900">AAPR</h1>
-          <button
-            type="button"
-            onClick={handleLogout}
-            disabled={isLoading}
-            className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
-          >
-            Logout
-          </button>
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() => navigate('/practices')}
+              className="text-sm font-medium text-blue-600 hover:text-blue-800"
+            >
+              Practice Catalog
+            </button>
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={isLoading}
+              className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </header>
       <main>
@@ -101,6 +111,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
               <TeamsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/practices"
+        element={
+          <ProtectedRoute>
+            <PracticeCatalog />
           </ProtectedRoute>
         }
       />

@@ -10,7 +10,7 @@ import type { Practice, Pillar, Category } from '@prisma/client';
 export type PracticeWithRelations = Practice & {
   category: Category;
   practicePillars: Array<{
-    pillar: Pillar;
+    pillar: Pillar & { category: Category };
   }>;
 };
 
@@ -27,13 +27,47 @@ export async function findAll(): Promise<PracticeWithRelations[]> {
       category: true,
       practicePillars: {
         include: {
-          pillar: true,
+          pillar: {
+            include: {
+              category: true,
+            },
+          },
         },
       },
     },
     orderBy: {
       title: 'asc',
     },
+  });
+}
+
+/**
+ * Find practices with pagination
+ * @param skip - Records to skip (calculated from page/pageSize)
+ * @param take - Number of records to take
+ */
+export async function findPaginated(skip: number, take: number): Promise<PracticeWithRelations[]> {
+  return prisma.practice.findMany({
+    where: {
+      isGlobal: true,
+    },
+    include: {
+      category: true,
+      practicePillars: {
+        include: {
+          pillar: {
+            include: {
+              category: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      title: 'asc',
+    },
+    skip,
+    take,
   });
 }
 
@@ -49,7 +83,11 @@ export async function findById(id: number): Promise<PracticeWithRelations | null
       category: true,
       practicePillars: {
         include: {
-          pillar: true,
+          pillar: {
+            include: {
+              category: true,
+            },
+          },
         },
       },
     },
@@ -71,7 +109,11 @@ export async function findByCategory(categoryId: string): Promise<PracticeWithRe
       category: true,
       practicePillars: {
         include: {
-          pillar: true,
+          pillar: {
+            include: {
+              category: true,
+            },
+          },
         },
       },
     },
@@ -100,7 +142,11 @@ export async function findByPillar(pillarId: number): Promise<PracticeWithRelati
       category: true,
       practicePillars: {
         include: {
-          pillar: true,
+          pillar: {
+            include: {
+              category: true,
+            },
+          },
         },
       },
     },
@@ -133,7 +179,11 @@ export async function search(searchTerm: string): Promise<PracticeWithRelations[
       category: true,
       practicePillars: {
         include: {
-          pillar: true,
+          pillar: {
+            include: {
+              category: true,
+            },
+          },
         },
       },
     },
@@ -170,7 +220,11 @@ export async function findByMethod(method: string): Promise<PracticeWithRelation
       category: true,
       practicePillars: {
         include: {
-          pillar: true,
+          pillar: {
+            include: {
+              category: true,
+            },
+          },
         },
       },
     },

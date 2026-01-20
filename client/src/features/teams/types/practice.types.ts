@@ -1,17 +1,23 @@
 export interface PracticePillar {
   id: number;
   name: string;
+  category: string;
+  description?: string | null;
 }
 
 export interface Practice {
   id: number;
   title: string;
   goal: string;
-  category: string;
+  categoryId: string;
+  categoryName: string;
   pillars: PracticePillar[];
 }
 
 export interface PracticesResponse {
-  practices: Practice[];
-  requestId: string;
+  items: Practice[];
+  page: number;
+  pageSize: number;
+  total: number;
+  requestId?: string;
 }

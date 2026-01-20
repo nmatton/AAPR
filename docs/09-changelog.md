@@ -2,7 +2,7 @@
 
 **Implementation History for AAPR Platform**
 
-Last Updated: January 19, 2026
+Last Updated: January 20, 2026
 
 ---
 
@@ -20,9 +20,124 @@ Last Updated: January 19, 2026
 **Start Date:** January 19, 2026  
 **Team:** Nicolas (Dev)
 
+### Story 2-1: Load and Display Practice Catalog
+
+**Status:** ✅ COMPLETE  
+**Date:** January 19-20, 2026  
+**Developer:** Nicolas
+
+**What Was Built:**
+
+**Backend:**
+- **Endpoint:** `GET /api/v1/practices` (public, no auth required)
+- **Query Parameters:**
+  - `page` (default: 1, min: 1)
+  - `pageSize` (default: 20, min: 1, max: 100)
+  - `category` (optional filter by pillar category)
+- **Response:**
+  ```json
+  {
+    "items": [...Practice[]],
+    "page": 1,
+    "pageSize": 20,
+    "total": 47,
+    "requestId": "req_abc123"
+  }
+  ```
+- **Validation:**
+  - Throws `AppError` on invalid page/pageSize
+  - Calculates skip: `(page - 1) * pageSize`
+  - Includes pillar category mapping in query
+- **Service Layer:** `PracticesService.getPractices()`
+  - Paginated fetch via repository
+  - Pillar/category mapping
+  - Consistent response structure
+- **Repository:** `findPaginated()` method
+  - Includes pillar.category in all relations
+  - Calculates skip/take for database query
+- **Testing:**
+  - `practices.service.test.ts`: Pagination skip math, category/pillar mapping
+  - `practices.routes.test.ts`: Endpoint validation, default params, query params
+  - Coverage: 90%+ (new code)
+
+**Frontend:**
+- **Route:** `GET /practices` (protected)
+- **Page Component:** `PracticeCatalog.tsx`
+  - Fetches practices on mount: `loadPractices(1, 20, null)`
+  - Shows loading skeleton (10 placeholder cards)
+  - Displays paginated grid of practice cards (3 columns on desktop)
+  - Handles error state with retry button
+  - Shows empty state if no practices
+  - Click card to open detail sidebar
+  - Header with back-to-teams and logout controls
+- **State:** `practices.slice.ts` (Zustand)
+  - `practices: Practice[]`
+  - `isLoading`, `error`, `page`, `pageSize`, `total`
+  - `currentDetail: Practice | null` (for sidebar)
+  - `catalogViewed: boolean` flag
+  - `loadPractices()` action
+  - `setCurrentDetail()` for sidebar toggle
+  - `retry()` for error recovery
+- **Components:**
+  - `PracticeCard.tsx`: Shows title, goal, category badge, pillar names; clickable
+  - `PracticeCardSkeleton.tsx`: Animated placeholder during load
+  - `PracticeEmptyState.tsx`: "No practices available" message
+  - `PracticeErrorState.tsx`: Error message + retry button
+  - `PracticeCatalogDetail.tsx`: Sidebar modal showing full practice details
+- **API Client:** `practices.api.ts`
+  - `fetchPractices(page, pageSize, category?)`: GET `/api/v1/practices` with query params
+  - `logCatalogViewed(teamId?)`: POST `/api/v1/events` (best-effort, no error block)
+  - `ApiError` class for structured error handling
+- **Testing:**
+  - `PracticeCatalog.test.tsx`: Loading, list render, empty state, error state (4 tests)
+  - `PracticeCard.test.tsx`: Card rendering (1 test)
+  - `practices.slice.test.ts`: Store actions, error handling (2 tests)
+  - `practices.api.test.ts`: API calls (3 tests)
+  - Coverage: 88%+ (new code)
+  - All 68 frontend tests passing
+
+**Routing & Navigation:**
+- Added `/practices` route in `App.tsx` (protected)
+- Header button "Practice Catalog" navigates to `/practices`
+- From catalog page: "Back to Teams" button and "Logout" button
+
+**Database:**
+- No new migrations (uses existing practices, categories, pillars tables)
+- Queries now include pillar.category in all relations
+
+**Event Logging:**
+- `logCatalogViewed` endpoint not yet implemented on backend
+- API client prepared for future POST `/api/v1/events` endpoint
+
+**Documentation Updated:**
+- `docs/05-backend-api.md`: Added GET /api/v1/practices endpoint docs
+- `docs/06-frontend.md`: Added practices feature architecture, components, API client
+
+**Files Created/Modified:**
+- Backend: `practices.controller.ts`, `practices.service.ts`, `practices.repository.ts`, `practices.routes.ts`, tests
+- Frontend: New `features/practices/` folder with types, api, state, components, pages, tests
+- Routes: `App.tsx` with new `/practices` route and header link
+
+**Validation Results:**
+- Backend tests: 90/90 passing ✅
+- Frontend tests: 68/68 passing ✅
+
+**Known Limitations:**
+- Pagination UI (next/previous buttons) not yet implemented
+- Category filter not yet integrated in UI
+- Event logging endpoint (`POST /api/v1/events`) pending backend implementation
+
+**Next Steps (Story 2-2):**
+- Add pagination UI controls
+- Implement category filter dropdown
+- Add search by practice title
+- Create practice selection modal for team assignment
+
+---
+
 ### Story 2-0: Import Practice Data from JSON
 
-**Status:** 🔄 In Review  
+**Status:** ✅ COMPLETE  
 **Date:** January 19, 2026  
 **Developer:** Nicolas
 
@@ -36,6 +151,7 @@ Last Updated: January 19, 2026
 
 **Testing:**
 - Manual validation of seed/import flows
+- Unit and integration tests for import service
 
 **Documentation Updated:**
 - Database schema documentation
