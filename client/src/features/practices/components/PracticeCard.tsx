@@ -2,20 +2,31 @@ import type { Practice } from '../types'
 
 const CATEGORY_COLORS: Record<string, string> = {
   VALEURS_HUMAINES: 'bg-red-100 text-red-700 border-red-200',
-  'FEEDBACK_APPRENTISSAGE': 'bg-blue-100 text-blue-700 border-blue-200',
+  FEEDBACK_APPRENTISSAGE: 'bg-blue-100 text-blue-700 border-blue-200',
   EXCELLENCE_TECHNIQUE: 'bg-purple-100 text-purple-700 border-purple-200',
   ORGANISATION_AUTONOMIE: 'bg-green-100 text-green-700 border-green-200',
   FLUX_RAPIDITE: 'bg-amber-100 text-amber-700 border-amber-200'
 }
 
-const getCategoryClass = (categoryId: string) => CATEGORY_COLORS[categoryId] ?? 'bg-gray-100 text-gray-700 border-gray-200'
+const normalizeCategoryKey = (value: string) =>
+  value
+    .toUpperCase()
+    .replace(/&/g, ' ')
+    .replace(/\s+/g, '_')
+    .replace(/__+/g, '_')
+    .replace(/[^A-Z_]/g, '')
+    .trim()
+
+const getCategoryClass = (categoryId: string) => CATEGORY_COLORS[normalizeCategoryKey(categoryId)] ?? 'bg-gray-100 text-gray-700 border-gray-200'
 
 const getPillarColor = (category: string) => {
-  if (category.includes('VALEURS')) return 'bg-red-100 text-red-700'
-  if (category.includes('FEEDBACK')) return 'bg-blue-100 text-blue-700'
-  if (category.includes('EXCELLENCE')) return 'bg-purple-100 text-purple-700'
-  if (category.includes('ORGANISATION')) return 'bg-green-100 text-green-700'
-  if (category.includes('FLUX')) return 'bg-amber-100 text-amber-700'
+  const key = normalizeCategoryKey(category)
+  const base = CATEGORY_COLORS[key]
+  if (base?.includes('red')) return 'bg-red-100 text-red-700'
+  if (base?.includes('blue')) return 'bg-blue-100 text-blue-700'
+  if (base?.includes('purple')) return 'bg-purple-100 text-purple-700'
+  if (base?.includes('green')) return 'bg-green-100 text-green-700'
+  if (base?.includes('amber')) return 'bg-amber-100 text-amber-700'
   return 'bg-gray-100 text-gray-700'
 }
 

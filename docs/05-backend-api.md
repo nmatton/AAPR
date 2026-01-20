@@ -605,6 +605,9 @@ Get paginated list of all practices with pillar mappings
 - `pageSize` (int, optional, default: 20) - Results per page (max: 100)
 - `category` (string, optional) - Filter by pillar category
 
+**Headers:**
+- `X-Request-Id` (string, optional) - propagated to response for tracing
+
 **Response (200):**
 ```json
 {
@@ -654,12 +657,22 @@ Get paginated list of all practices with pillar mappings
 - `page`: Minimum 1
 - `pageSize`: 1-100 (default 20)
 
+**Error Response (400):**
+```json
+{
+  "code": "validation_error",
+  "message": "Invalid pagination parameters",
+  "details": { "page": 0, "pageSize": 200 },
+  "requestId": "req_abc123xyz"
+}
+```
+
 **Errors:**
-- 400: `{ "error": "Invalid pagination parameters", "code": "VALIDATION_ERROR", "details": { "page": "Must be >= 1" } }`
-- 400: `{ "error": "Invalid page size", "code": "VALIDATION_ERROR", "details": { "pageSize": "Must be between 1 and 100" } }`
+- 400: Validation errors (bad page/pageSize)
+- 500: `{ "code": "server_error", "message": "Failed to fetch practices", "requestId": "..." }`
 
 **Events Logged:**
-- No event logged (public endpoint)
+- Client logs `catalog.viewed` (teamId, practiceCount, timestamp) via POST `/api/v1/events` after successful fetch
 
 ---
 

@@ -64,7 +64,7 @@ export const fetchPractices = async (
     page: data.page,
     pageSize: data.pageSize,
     total: data.total,
-    requestId: data.requestId
+    requestId: data.requestId ?? 'unknown'
   }
 }
 

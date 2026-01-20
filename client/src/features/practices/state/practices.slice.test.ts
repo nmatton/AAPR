@@ -68,4 +68,18 @@ describe('practices.slice', () => {
     await usePracticesStore.getState().loadPractices()
     expect(usePracticesStore.getState().error).toBe('boom')
   })
+
+  it('retries with last page params and logs with teamId', async () => {
+    mockedApi.fetchPractices.mockResolvedValue(mockPractices)
+    mockedApi.logCatalogViewed.mockResolvedValue(undefined)
+
+    await usePracticesStore.getState().loadPractices(2, 5, 99)
+    mockedApi.fetchPractices.mockResolvedValue(mockPractices)
+
+    await usePracticesStore.getState().retry()
+
+    expect(mockedApi.fetchPractices).toHaveBeenNthCalledWith(1, 2, 5)
+    expect(mockedApi.fetchPractices).toHaveBeenNthCalledWith(2, 2, 5)
+    expect(mockedApi.logCatalogViewed).toHaveBeenCalledWith(99, mockPractices.items.length)
+  })
 })

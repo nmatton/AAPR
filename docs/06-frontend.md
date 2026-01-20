@@ -2,7 +2,7 @@
 
 **Frontend Architecture & UI for AAPR Platform**
 
-Last Updated: January 19, 2026  
+Last Updated: January 20, 2026  
 Stack: React 18.2, TypeScript 5.2+, Vite 5.0+, TailwindCSS 3.0+
 
 ---
@@ -69,6 +69,7 @@ client/
 | `/teams` | `TeamsList` | Required | List user's teams |
 | `/teams/create` | `CreateTeamForm` | Required | Create new team |
 | `/teams/:id` | `TeamDetail` | Required | Team practices (Epic 2) |
+| `/practices` | `PracticeCatalog` | Required | Global practice catalog (Story 2.1) |
 
 ### Route Guards
 
@@ -91,6 +92,66 @@ client/
 
 **Library:** Zustand 4.4+  
 **Pattern:** Feature-based slices (no global store)
+
+### Practices Slice
+
+**File:** [src/features/practices/state/practices.slice.ts](../client/src/features/practices/state/practices.slice.ts)
+
+**State:**
+```typescript
+{
+  practices: Practice[],
+  isLoading: boolean,
+  error: string | null,
+  total: number,
+  page: number,
+  pageSize: number,
+  currentDetail: Practice | null,
+  catalogViewed: boolean
+}
+```
+
+**Actions:**
+```typescript
+loadPractices(page = 1, pageSize = 20, teamId?: number | null): Promise<void>
+setCurrentDetail(practice | null): void
+retry(): Promise<void>
+```
+
+**Side effects:**
+- Calls `fetchPractices(page, pageSize)` and updates state
+- After success, logs `catalog.viewed` with `{ teamId, practiceCount, timestamp }`
+- On error, captures message and exposes `retry()` with last page params
+
+---
+
+## Practice Catalog (Story 2.1)
+
+**Route:** `/practices` (protected)
+
+**Page:** [PracticeCatalog.tsx](../client/src/features/practices/pages/PracticeCatalog.tsx)
+- Fetch on mount: `loadPractices(1, 20, teamIdFromQuery)` where `teamId` is read from `?teamId=` query param
+- States handled: loading skeleton (10 cards), error with retry, empty state, success grid
+- Detail sidebar: click a card to open; closes on overlay click, ESC, or [X]; body scroll locked while open
+- Header: Back to Teams, Logout
+
+**Components:**
+- `PracticeCard.tsx`: Title, goal, category badge, pillar badges (category-color mapped)
+- `PracticeCardSkeleton.tsx`: Shimmer placeholders (10 items)
+- `PracticeEmptyState.tsx`: "No practices available. Please contact support."
+- `PracticeErrorState.tsx`: Error copy + [Retry]
+- `PracticeCatalogDetail.tsx`: Slide-in sidebar with goal, category, pillars, notes
+
+**API Client:** [practices.api.ts](../client/src/features/practices/api/practices.api.ts)
+- `fetchPractices(page, pageSize)` → `{ items, page, pageSize, total, requestId }`
+- Adds `X-Request-Id` header; tolerates missing `requestId` in response
+- `logCatalogViewed(teamId, practiceCount)` best-effort POST `/api/v1/events`
+
+**Testing:**
+- `PracticeCatalog.test.tsx`: loading, list render, empty state, error state
+- `PracticeCard.test.tsx`: content render and click handler
+- `practices.slice.test.ts`: load success, error, retry uses last params and logs teamId
+- `practices.api.test.ts`: happy path, network failure, non-ok response
 
 ### authSlice
 

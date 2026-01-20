@@ -83,4 +83,18 @@ describe('GET /api/v1/practices', () => {
     expect(response.body.code).toBe('validation_error');
     expect(response.body.requestId).toBe('test-request-id');
   });
+
+  it('rejects non-integer pagination params', async () => {
+    const response = await request(app).get('/api/v1/practices?page=abc&pageSize=2.5');
+
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe('validation_error');
+  });
+
+  it('rejects negative pagination params', async () => {
+    const response = await request(app).get('/api/v1/practices?page=-1&pageSize=-5');
+
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe('validation_error');
+  });
 });

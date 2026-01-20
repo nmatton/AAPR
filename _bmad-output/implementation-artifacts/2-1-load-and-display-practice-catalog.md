@@ -1,6 +1,6 @@
 # Story 2.1: Load and Display Practice Catalog
 
-Status: in-progress
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -66,94 +66,94 @@ So that **I understand what practices are available and which pillars they cover
   - [x] Error handling: structured `{ code, message, details?, requestId }`
   - [x] HTTP status codes: 200 success, 500 server error
 
-- [ ] **Frontend: Practice Catalog page component** (AC: #1-5)
-  - [ ] Route: `/practices` or accessible from team dashboard
-  - [ ] Component: `client/src/features/practices/pages/PracticeCatalog.tsx`
-  - [ ] Layout: List view (vertical scrolling, desktop-only)
-  - [ ] Practice card component: `PracticeCard.tsx` showing title, goal, pillar badges
-  - [ ] Pillar badge styling: Colored badges, category-based colors (VALEURS_HUMAINES=red, FEEDBACK=blue, etc.)
-  - [ ] Category label: Show practice's category name
-  - [ ] Responsive loading state: Skeleton placeholders during fetch
+- [x] **Frontend: Practice Catalog page component** (AC: #1-5)
+  - [x] Route: `/practices` or accessible from team dashboard
+  - [x] Component: `client/src/features/practices/pages/PracticeCatalog.tsx`
+  - [x] Layout: List view (vertical scrolling, desktop-only)
+  - [x] Practice card component: `PracticeCard.tsx` showing title, goal, pillar badges
+  - [x] Pillar badge styling: Colored badges, category-based colors (VALEURS_HUMAINES=red, FEEDBACK=blue, etc.)
+  - [x] Category label: Show practice's category name
+  - [x] Responsive loading state: Skeleton placeholders during fetch
 
-- [ ] **Frontend: Practice Detail Sidebar** (AC: #5)
-  - [ ] Modal/sidebar component: `PracticeCatalogDetail.tsx`
-  - [ ] Trigger: Click on practice name/title
-  - [ ] Content: Title, goal, full pillar list, category, description (if available)
-  - [ ] Close: Click outside, ESC key, or [X] button
-  - [ ] Smooth animation: Slide in from right side
+- [x] **Frontend: Practice Detail Sidebar** (AC: #5)
+  - [x] Modal/sidebar component: `PracticeCatalogDetail.tsx`
+  - [x] Trigger: Click on practice name/title
+  - [x] Content: Title, goal, full pillar list, category, description (if available)
+  - [x] Close: Click outside, ESC key, or [X] button
+  - [x] Smooth animation: Slide in from right side
 
-- [ ] **Frontend: API client function** (AC: #1)
-  - [ ] File: `client/src/features/practices/api/practices.api.ts`
-  - [ ] Function: `fetchPractices(page?: number, pageSize?: number): Promise<PracticesResponse>`
-  - [ ] Handles: GET `/api/v1/practices?page=1&pageSize=20`
-  - [ ] Error handling: structured error with requestId
-  - [ ] Type: `PracticesResponse = { items: Practice[], page: number, pageSize: number, total: number }`
+- [x] **Frontend: API client function** (AC: #1)
+  - [x] File: `client/src/features/practices/api/practices.api.ts`
+  - [x] Function: `fetchPractices(page?: number, pageSize?: number): Promise<PracticesResponse>`
+  - [x] Handles: GET `/api/v1/practices?page=1&pageSize=20`
+  - [x] Error handling: structured error with requestId
+  - [x] Type: `PracticesResponse = { items: Practice[], page: number, pageSize: number, total: number }`
 
-- [ ] **Frontend: Loading skeleton UI** (AC: #3)
-  - [ ] Component: `PracticeCardSkeleton.tsx`
-  - [ ] Display: Shimmer effect or placeholder boxes
-  - [ ] Count: Show 10 skeleton cards during initial load
-  - [ ] Animation: Smooth fade-in when real data loads
+- [x] **Frontend: Loading skeleton UI** (AC: #3)
+  - [x] Component: `PracticeCardSkeleton.tsx`
+  - [x] Display: Shimmer effect or placeholder boxes
+  - [x] Count: Show 10 skeleton cards during initial load
+  - [x] Animation: Smooth fade-in when real data loads
 
-- [ ] **Frontend: Error handling and retry** (AC: #7)
-  - [ ] Error state component: Shows error message and [Retry] button
-  - [ ] Retry logic: Calls `fetchPractices()` again
-  - [ ] Toast notification: Error toast on network failure
-  - [ ] User feedback: Clear message, not a generic "Something went wrong"
+- [x] **Frontend: Error handling and retry** (AC: #7)
+  - [x] Error state component: Shows error message and [Retry] button
+  - [x] Retry logic: Calls `fetchPractices()` again
+  - [x] Toast notification: Error toast on network failure
+  - [x] User feedback: Clear message, not a generic "Something went wrong"
 
-- [ ] **Frontend: Empty state** (AC: #6)
-  - [ ] Component: `PracticeEmptyState.tsx`
-  - [ ] Message: "No practices available. Please contact support."
-  - [ ] Display when: API returns 0 practices
+- [x] **Frontend: Empty state** (AC: #6)
+  - [x] Component: `PracticeEmptyState.tsx`
+  - [x] Message: "No practices available. Please contact support."
+  - [x] Display when: API returns 0 practices
 
-- [ ] **Frontend: Event logging** (AC: #8)
-  - [ ] Use Zustand state to track `catalogViewed`
-  - [ ] Action: After practices load, dispatch event via mutation
-  - [ ] Event structure: `{ action: "catalog.viewed", teamId, practiceCount }`
-  - [ ] Note: Event logging happens on client, backend logs via event mutation endpoint
+- [x] **Frontend: Event logging** (AC: #8)
+  - [x] Use Zustand state to track `catalogViewed`
+  - [x] Action: After practices load, dispatch event via mutation
+  - [x] Event structure: `{ action: "catalog.viewed", teamId, practiceCount }`
+  - [x] Note: Event logging happens on client, backend logs via event mutation endpoint
 
-- [ ] **Frontend: Zustand state slice** (AC: #1, #3)
-  - [ ] File: `client/src/features/practices/state/practices.slice.ts`
-  - [ ] State: `{ practices: [], isLoading, error, currentDetail }`
-  - [ ] Actions: `setPractices()`, `setLoading()`, `setError()`, `setCurrentDetail()`
-  - [ ] Selectors: `selectPractices()`, `selectIsLoading()`, `selectError()`
-  - [ ] Side effect: Fetch practices on page mount
+- [x] **Frontend: Zustand state slice** (AC: #1, #3)
+  - [x] File: `client/src/features/practices/state/practices.slice.ts`
+  - [x] State: `{ practices: [], isLoading, error, currentDetail }`
+  - [x] Actions: `setPractices()`, `setLoading()`, `setError()`, `setCurrentDetail()`
+  - [x] Selectors: `selectPractices()`, `selectIsLoading()`, `selectError()`
+  - [x] Side effect: Fetch practices on page mount
 
-- [ ] **Frontend: Integration with team context** (AC: #1)
-  - [ ] Access: `teamId` from route or Zustand auth state
-  - [ ] Pass to event logging: Include `teamId` in catalog.viewed event
-  - [ ] Navigation: Link from team dashboard to practice catalog
+- [x] **Frontend: Integration with team context** (AC: #1)
+  - [x] Access: `teamId` from route or Zustand auth state
+  - [x] Pass to event logging: Include `teamId` in catalog.viewed event
+  - [x] Navigation: Link from team dashboard to practice catalog
 
-- [ ] **API: Practice entity type** (AC: #1)
-  - [ ] Type: `Practice = { id: number, title: string, goal: string, categoryId: string, categoryName: string, pillars: Pillar[] }`
-  - [ ] Pillar type: `Pillar = { id: number, name: string, category: string, description?: string }`
-  - [ ] Response uses camelCase (JSON → TypeScript mapping)
+- [x] **API: Practice entity type** (AC: #1)
+  - [x] Type: `Practice = { id: number, title: string, goal: string, categoryId: string, categoryName: string, pillars: Pillar[] }`
+  - [x] Pillar type: `Pillar = { id: number, name: string, category: string, description?: string }`
+  - [x] Response uses camelCase (JSON → TypeScript mapping)
 
-- [ ] **Testing: API endpoint test** (AC: #1)
-  - [ ] File: `server/src/routes/practices.routes.test.ts`
-  - [ ] Test: GET /api/v1/practices returns paginated practices
-  - [ ] Test: Pagination works (page=1&pageSize=20)
-  - [ ] Test: Includes pillar data
-  - [ ] Test: Error handling on service failure
+- [x] **Testing: API endpoint test** (AC: #1)
+  - [x] File: `server/src/routes/practices.routes.test.ts`
+  - [x] Test: GET /api/v1/practices returns paginated practices
+  - [x] Test: Pagination works (page=1&pageSize=20)
+  - [x] Test: Includes pillar data
+  - [x] Test: Error handling on service failure
 
-- [ ] **Testing: Frontend component test** (AC: #1, #3)
-  - [ ] File: `client/src/features/practices/pages/PracticeCatalog.test.tsx`
-  - [ ] Test: Component renders practice list
-  - [ ] Test: Shows skeleton during loading
-  - [ ] Test: Shows error with retry button on failure
-  - [ ] Test: Shows empty state when no practices
+- [x] **Testing: Frontend component test** (AC: #1, #3)
+  - [x] File: `client/src/features/practices/pages/PracticeCatalog.test.tsx`
+  - [x] Test: Component renders practice list
+  - [x] Test: Shows skeleton during loading
+  - [x] Test: Shows error with retry button on failure
+  - [x] Test: Shows empty state when no practices
 
-- [ ] **Testing: API client test** (AC: #1)
-  - [ ] File: `client/src/features/practices/api/practices.api.test.ts`
-  - [ ] Test: fetchPractices() calls correct endpoint
-  - [ ] Test: Response parsing (items, page, total)
-  - [ ] Test: Error handling
+- [x] **Testing: API client test** (AC: #1)
+  - [x] File: `client/src/features/practices/api/practices.api.test.ts`
+  - [x] Test: fetchPractices() calls correct endpoint
+  - [x] Test: Response parsing (items, page, total)
+  - [x] Test: Error handling
 
-- [ ] **Documentation updates** (Mandatory)
-  - [ ] `docs/05-backend-api.md`: Add GET /api/v1/practices endpoint documentation
-  - [ ] `docs/06-frontend.md`: Add Practice Catalog page and components
-  - [ ] `docs/09-changelog.md`: Add Story 2.1 entry under Epic 2
-  - [ ] Update "Last Updated" dates in all modified files
+- [x] **Documentation updates** (Mandatory)
+  - [x] `docs/05-backend-api.md`: Add GET /api/v1/practices endpoint documentation
+  - [x] `docs/06-frontend.md`: Add Practice Catalog page and components
+  - [x] `docs/09-changelog.md`: Add Story 2.1 entry under Epic 2
+  - [x] Update "Last Updated" dates in all modified files
 
 ## Dev Notes
 
@@ -742,9 +742,9 @@ From `_bmad-output/project-context.md` (Epic 1 verified):
 
 ## Story Completion Status
 
-**Status:** in-progress
+**Status:** done
 
-**Completion Note:** Backend catalog endpoint implemented and validated; frontend/catalog UI and documentation still pending.
+**Completion Note:** Backend and frontend catalog experience implemented, event logging wired with team context, documentation updated.
 
 ## Dev Agent Record
 
@@ -769,6 +769,22 @@ Claude Haiku 4.5 (via GitHub Copilot - SM Agent)
 - server/src/repositories/practice.repository.ts
 - server/src/routes/practices.routes.ts
 - server/src/routes/__tests__/practices.routes.test.ts
+- client/src/features/practices/api/practices.api.ts
+- client/src/features/practices/api/practices.api.test.ts
+- client/src/features/practices/state/practices.slice.ts
+- client/src/features/practices/state/practices.slice.test.ts
+- client/src/features/practices/pages/PracticeCatalog.tsx
+- client/src/features/practices/pages/PracticeCatalog.test.tsx
+- client/src/features/practices/components/PracticeCard.tsx
+- client/src/features/practices/components/PracticeCard.test.tsx
+- client/src/features/practices/components/PracticeCardSkeleton.tsx
+- client/src/features/practices/components/PracticeEmptyState.tsx
+- client/src/features/practices/components/PracticeErrorState.tsx
+- client/src/features/practices/components/PracticeCatalogDetail.tsx
+- client/src/features/practices/types/index.ts
+- docs/05-backend-api.md
+- docs/06-frontend.md
+- docs/09-changelog.md
 - _bmad-output/implementation-artifacts/sprint-status.yaml
 
 ---

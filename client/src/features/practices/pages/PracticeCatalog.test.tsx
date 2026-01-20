@@ -26,7 +26,8 @@ vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom')
   return {
     ...actual,
-    useNavigate: vi.fn()
+    useNavigate: vi.fn(),
+    useSearchParams: () => [new URLSearchParams(), vi.fn()]
   }
 })
 
@@ -51,7 +52,7 @@ const mockStore = {
 describe('PracticeCatalog', () => {
   beforeEach(() => {
     mockedUsePracticesStore.mockReturnValue(mockStore)
-    mockedUseAuthStore.mockReturnValue({ logout: mockLogout, isLoading: false })
+    mockedUseAuthStore.mockReturnValue({ logout: mockLogout, isLoading: false, user: { id: 42 } })
     mockedUseNavigate.mockReturnValue(mockNavigate)
     mockStore.practices = []
     mockStore.isLoading = true

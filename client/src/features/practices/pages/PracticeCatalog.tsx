@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { usePracticesStore } from '../state/practices.slice'
 import { PracticeCard } from '../components/PracticeCard'
 import { PracticeCardSkeleton } from '../components/PracticeCardSkeleton'
@@ -10,7 +10,8 @@ import { useAuthStore } from '../../auth/state/authSlice'
 
 export const PracticeCatalog = () => {
   const navigate = useNavigate()
-  const { logout, isLoading: isAuthLoading } = useAuthStore()
+  const [searchParams] = useSearchParams()
+  const { logout, isLoading: isAuthLoading, user } = useAuthStore()
   const {
     practices,
     isLoading,
@@ -22,8 +23,22 @@ export const PracticeCatalog = () => {
   } = usePracticesStore()
 
   useEffect(() => {
-    void loadPractices(1, 20, null)
-  }, [loadPractices])
+    const teamIdParam = searchParams.get('teamId')
+    const parsedTeamId = teamIdParam ? Number(teamIdParam) : null
+    const teamId = Number.isFinite(parsedTeamId) ? parsedTeamId : user?.id ?? null
+    void loadPractices(1, 20, teamId)
+  }, [loadPractices, searchParams, user?.id])
+
+  useEffect(() => {
+    if (currentDetail) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [currentDetail])
 
   const handleLogout = async () => {
     await logout()
