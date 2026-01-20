@@ -29,11 +29,23 @@ const parseJsonSafely = async <T>(response: Response): Promise<T | null> => {
 
 export const fetchPractices = async (
   page = 1,
-  pageSize = 20
+  pageSize = 20,
+  search?: string,
+  pillars?: number[]
 ): Promise<PracticesResponse> => {
   let response: Response
   try {
-    response = await fetch(`${API_BASE_URL}/api/v1/practices?page=${page}&pageSize=${pageSize}`, {
+    const params = new URLSearchParams();
+    params.append('page', page.toString());
+    params.append('pageSize', pageSize.toString());
+    if (search && search.trim()) {
+      params.append('search', search.trim());
+    }
+    if (pillars && pillars.length > 0) {
+      params.append('pillars', pillars.join(','));
+    }
+
+    response = await fetch(`${API_BASE_URL}/api/v1/practices?${params.toString()}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

@@ -233,3 +233,131 @@ export async function findByMethod(method: string): Promise<PracticeWithRelation
     },
   });
 }
+
+/**
+ * Validate that all provided pillar IDs exist in the database
+ * @param pillarIds - Array of pillar IDs to validate
+ * @returns Array of invalid pillar IDs (empty if all valid)
+ */
+export async function validatePillarIds(pillarIds: number[]): Promise<number[]> {
+  const existingPillars = await prisma.pillar.findMany({
+    where: {
+      id: {
+        in: pillarIds,
+      },
+    },
+    select: {
+      id: true,
+    },
+  });
+
+  const existingIds = new Set(existingPillars.map((p) => p.id));
+  return pillarIds.filter((id) => !existingIds.has(id));
+}
+
+/**
+ * Search and filter practices with combined conditions
+ * @param options - Search and filter options
+ * @returns Array of matching practices
+ */
+export async function searchAndFilter(options: {
+  search?: string;
+  pillars?: number[];
+  skip: number;
+  take: number;
+}): Promise<PracticeWithRelations[]> {
+  const { search, pillars, skip, take } = options;
+
+  const whereConditions: any[] = [{ isGlobal: true }];
+
+  // Add search condition (OR logic for title/goal/description)
+  if (search && search.trim()) {
+    whereConditions.push({
+      OR: [
+        { title: { contains: search.trim(), mode: 'insensitive' } },
+        { goal: { contains: search.trim(), mode: 'insensitive' } },
+        { description: { contains: search.trim(), mode: 'insensitive' } },
+      ],
+    });
+  }
+
+  // Add pillar filter (OR logic for multiple pillars)
+  if (pillars && pillars.length > 0) {
+    whereConditions.push({
+      practicePillars: {
+        some: {
+          pillarId: {
+            in: pillars,
+          },
+        },
+      },
+    });
+  }
+
+  return prisma.practice.findMany({
+    where: {
+      AND: whereConditions,
+    },
+    include: {
+      category: true,
+      practicePillars: {
+        include: {
+          pillar: {
+            include: {
+              category: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      title: 'asc',
+    },
+    skip,
+    take,
+  });
+}
+
+/**
+ * Count practices matching search/filter criteria
+ * @param options - Search and filter options
+ * @returns Total count of matching practices
+ */
+export async function countFiltered(options: {
+  search?: string;
+  pillars?: number[];
+}): Promise<number> {
+  const { search, pillars } = options;
+
+  const whereConditions: any[] = [{ isGlobal: true }];
+
+  // Add search condition
+  if (search && search.trim()) {
+    whereConditions.push({
+      OR: [
+        { title: { contains: search.trim(), mode: 'insensitive' } },
+        { goal: { contains: search.trim(), mode: 'insensitive' } },
+        { description: { contains: search.trim(), mode: 'insensitive' } },
+      ],
+    });
+  }
+
+  // Add pillar filter
+  if (pillars && pillars.length > 0) {
+    whereConditions.push({
+      practicePillars: {
+        some: {
+          pillarId: {
+            in: pillars,
+          },
+        },
+      },
+    });
+  }
+
+  return prisma.practice.count({
+    where: {
+      AND: whereConditions,
+    },
+  });
+}

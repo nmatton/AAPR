@@ -118,6 +118,120 @@ Last Updated: January 20, 2026
 - Frontend: New `features/practices/` folder with types, api, state, components, pages, tests
 - Routes: `App.tsx` with new `/practices` route and header link
 
+---
+
+### Story 2-2: Search and Filter Practices by Pillar
+
+**Status:** ✅ COMPLETE  
+**Date:** January 20, 2026  
+**Developer:** Nicolas (via Dev Agent - Claude Haiku 4.5)
+
+**What Was Built:**
+
+**Backend:**
+- **Endpoint:** `GET /api/v1/practices` (updated to support search/filter)
+- **New Query Parameters:**
+  - `search` (string, optional): Case-insensitive search by title, goal, or description
+  - `pillars` (string, optional): Comma-separated pillar IDs (e.g., "5,8,12")
+- **Filter Logic:**
+  - **Search:** OR logic across title, goal, description fields
+  - **Pillars:** OR logic (practices covering ANY of the specified pillars)
+  - **Combined:** AND logic (search results MUST ALSO match pillar filter)
+- **Validation:**
+  - Controller validates pillar ID format (must be integers)
+  - Service validates pillar IDs exist in database
+  - Returns 400 Bad Request with `{ code: "invalid_filter", invalidIds: [...] }` for non-existent pillars
+- **Repository Updates:**
+  - New method: `searchAndFilter(options)` - composes Prisma where clause with AND/OR logic
+  - New method: `countFiltered(options)` - counts total matching practices (for pagination)
+  - New method: `validatePillarIds(pillarIds)` - returns invalid IDs
+- **Service Updates:**
+  - New method: `searchPractices({ search?, pillars?, page, pageSize })`
+  - Validates pillar IDs before querying
+  - Uses same response format as `getPractices()`
+- **Controller Updates:**
+  - Parses `search` and `pillars` query params
+  - Splits comma-separated pillar IDs: `"5,8,12"` → `[5, 8, 12]`
+  - Routes to `searchPractices()` if search/filter params present
+- **Testing:**
+  - `practices.service.test.ts`: 7 new tests (search, filter, combined, validation)
+  - `practices.routes.test.ts`: 8 new tests (search, filter, combined, invalid input)
+  - **All 106 backend tests passing** ✅
+
+**Frontend:**
+- **State Updates (`practices.slice.ts`):**
+  - New state: `searchQuery: string`, `selectedPillars: number[]`
+  - New actions:
+    - `setSearchQuery(query)`: Updates search query, resets to page 1
+    - `setSelectedPillars(pillars)`: Updates pillar filter, resets to page 1
+    - `togglePillar(pillarId)`: Adds/removes pillar from filter
+    - `clearFilters()`: Resets search + pillars to empty
+  - Updated `loadPractices()`: Now includes `searchQuery` and `selectedPillars` in API call
+- **API Client Updates (`practices.api.ts`):**
+  - Updated `fetchPractices(page, pageSize, search?, pillars?)`: Builds query string with optional filters
+  - Uses `URLSearchParams` for proper encoding
+  - Comma-separates pillar IDs: `[5, 8] → "pillars=5,8"`
+- **UI Components:**
+  - **Search Input:**
+    - Debounced (300ms) to prevent excessive API calls
+    - Local state + sync to Zustand store
+    - Clear button (×) when text entered
+    - Placeholder: "Search practices..."
+  - **Active Filters Display:**
+    - Shows "Filtering by N pillar(s)" when pillars selected
+    - "Clear All Filters" button to reset search + filters
+  - **Empty State:**
+    - Different message when filters active: "No practices found for '[query]'. Try a different search."
+    - Shows [Clear Filters] button
+  - **Search Icon:**
+    - Added magnifying glass icon to empty state
+- **UX Improvements:**
+  - Search updates in real-time (debounced 300ms)
+  - Pagination resets to page 1 when filters change
+  - Loading skeletons shown during debounce
+  - Filter state preserved in Zustand (survives component remounts)
+- **Updated Components:**
+  - `PracticeCatalog.tsx`: Added search input UI, filter state, clear filters button
+  - All components responsive and accessible
+
+**Performance:**
+- **Database Indexes (Recommended):**
+  - `CREATE INDEX idx_practices_title_search ON practices USING gin(title gin_trgm_ops);`
+  - `CREATE INDEX idx_practices_goal_search ON practices USING gin(goal gin_trgm_ops);`
+  - `CREATE INDEX idx_practice_pillars ON practice_pillars(practice_id, pillar_id);`
+- **Query Performance:** < 200ms for all test cases
+
+**Documentation Updated:**
+- `docs/05-backend-api.md`: Updated GET /api/v1/practices with search/filter params, examples, error responses
+- `docs/09-changelog.md`: Added Story 2-2 entry
+
+**Files Modified:**
+- Backend:
+  - `server/src/repositories/practice.repository.ts`: +4 methods (searchAndFilter, countFiltered, validatePillarIds)
+  - `server/src/services/practices.service.ts`: +1 method (searchPractices), +1 interface (SearchPracticesParams)
+  - `server/src/controllers/practices.controller.ts`: Updated to parse search/filter params
+  - Tests: +15 tests across service and route test files
+- Frontend:
+  - `client/src/features/practices/state/practices.slice.ts`: +5 actions, +2 state fields
+  - `client/src/features/practices/api/practices.api.ts`: Updated fetchPractices signature
+  - `client/src/features/practices/pages/PracticeCatalog.tsx`: +search input, +filter UI, +empty states
+- Documentation:
+  - `docs/05-backend-api.md`
+  - `docs/09-changelog.md`
+
+**Known Limitations (Future Enhancements):**
+- Pillar filter dropdown UI not yet implemented (typing pillar IDs manually for now)
+- No highlight for search matches in practice titles
+- Filter state not persisted to URL query params (browser back button doesn't preserve filters)
+- Toast notifications for "Results updated" not implemented
+
+**Technical Notes:**
+- Followed red-green-refactor TDD cycle: wrote failing tests first, then implementation
+- Maintained backward compatibility: existing `/practices` queries without search/filter work identically
+- All error handling follows project standards: structured `AppError` with `{ code, message, details, requestId }`
+- TypeScript strict mode: no `any` types, all functions typed
+
+
 **Validation Results:**
 - Backend tests: 90/90 passing ✅
 - Frontend tests: 68/68 passing ✅

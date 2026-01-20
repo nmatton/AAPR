@@ -2,7 +2,7 @@
 
 **Database Schema & Design for AAPR Platform**
 
-Last Updated: January 19, 2026  
+Last Updated: January 20, 2026  
 Database: PostgreSQL 14+  
 ORM: Prisma 7.2+
 
@@ -203,6 +203,7 @@ The AAPR database uses a **normalized relational schema** (3NF) with the followi
 - PRIMARY KEY on `id`
 - INDEX on `category_id`
 - INDEX on `title`
+- INDEX on `goal`
 - INDEX on `is_global`
 
 **Categories (Epic 2):**
@@ -250,6 +251,7 @@ The AAPR database uses a **normalized relational schema** (3NF) with the followi
 - PRIMARY KEY on `(practice_id, pillar_id)`
 - INDEX on `practice_id`
 - INDEX on `pillar_id`
+- INDEX on `(practice_id, pillar_id)`
 
 ---
 
@@ -333,6 +335,10 @@ The AAPR database uses a **normalized relational schema** (3NF) with the followi
 - Created `practice_pillars` junction table
 - Created `team_practices` junction table
 - Added indexes
+
+### 20260120_add_practice_search_indexes
+- Added index on `practices.goal`
+- Added composite index on `practice_pillars(practice_id, pillar_id)`
 
 ---
 

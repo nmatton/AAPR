@@ -97,4 +97,169 @@ describe('GET /api/v1/practices', () => {
     expect(response.status).toBe(400);
     expect(response.body.code).toBe('validation_error');
   });
+
+  it('searches practices by keyword', async () => {
+    const mockResponse = {
+      items: [
+        {
+          id: 1,
+          title: 'Daily Standup',
+          goal: 'Synchronize team daily',
+          categoryId: 'FEEDBACK_APPRENTISSAGE',
+          categoryName: 'FEEDBACK & APPRENTISSAGE',
+          pillars: []
+        }
+      ],
+      page: 1,
+      pageSize: 20,
+      total: 1
+    };
+
+    (practicesService.searchPractices as jest.Mock).mockResolvedValue(mockResponse);
+
+    const response = await request(app).get('/api/v1/practices?search=standup');
+
+    expect(practicesService.searchPractices).toHaveBeenCalledWith({
+      search: 'standup',
+      pillars: undefined,
+      page: 1,
+      pageSize: 20
+    });
+    expect(response.status).toBe(200);
+    expect(response.body.items[0].title).toBe('Daily Standup');
+  });
+
+  it('filters practices by single pillar', async () => {
+    const mockResponse = {
+      items: [
+        {
+          id: 1,
+          title: 'Daily Standup',
+          goal: 'Synchronize team daily',
+          categoryId: 'FEEDBACK_APPRENTISSAGE',
+          categoryName: 'FEEDBACK & APPRENTISSAGE',
+          pillars: [{ id: 5, name: 'Communication', category: 'VALEURS HUMAINES' }]
+        }
+      ],
+      page: 1,
+      pageSize: 20,
+      total: 1
+    };
+
+    (practicesService.searchPractices as jest.Mock).mockResolvedValue(mockResponse);
+
+    const response = await request(app).get('/api/v1/practices?pillars=5');
+
+    expect(practicesService.searchPractices).toHaveBeenCalledWith({
+      search: undefined,
+      pillars: [5],
+      page: 1,
+      pageSize: 20
+    });
+    expect(response.status).toBe(200);
+    expect(response.body.items).toHaveLength(1);
+  });
+
+  it('filters practices by multiple pillars', async () => {
+    const mockResponse = {
+      items: [
+        {
+          id: 1,
+          title: 'Daily Standup',
+          goal: 'Synchronize team daily',
+          categoryId: 'FEEDBACK_APPRENTISSAGE',
+          categoryName: 'FEEDBACK & APPRENTISSAGE',
+          pillars: [{ id: 5, name: 'Communication', category: 'VALEURS HUMAINES' }]
+        },
+        {
+          id: 2,
+          title: 'Retrospective',
+          goal: 'Reflect and improve',
+          categoryId: 'FEEDBACK_APPRENTISSAGE',
+          categoryName: 'FEEDBACK & APPRENTISSAGE',
+          pillars: [{ id: 8, name: 'Feedback', category: 'FEEDBACK & APPRENTISSAGE' }]
+        }
+      ],
+      page: 1,
+      pageSize: 20,
+      total: 2
+    };
+
+    (practicesService.searchPractices as jest.Mock).mockResolvedValue(mockResponse);
+
+    const response = await request(app).get('/api/v1/practices?pillars=5,8');
+
+    expect(practicesService.searchPractices).toHaveBeenCalledWith({
+      search: undefined,
+      pillars: [5, 8],
+      page: 1,
+      pageSize: 20
+    });
+    expect(response.status).toBe(200);
+    expect(response.body.items).toHaveLength(2);
+  });
+
+  it('combines search and filter', async () => {
+    const mockResponse = {
+      items: [
+        {
+          id: 1,
+          title: 'Daily Standup',
+          goal: 'Synchronize team daily',
+          categoryId: 'FEEDBACK_APPRENTISSAGE',
+          categoryName: 'FEEDBACK & APPRENTISSAGE',
+          pillars: [{ id: 5, name: 'Communication', category: 'VALEURS HUMAINES' }]
+        }
+      ],
+      page: 1,
+      pageSize: 20,
+      total: 1
+    };
+
+    (practicesService.searchPractices as jest.Mock).mockResolvedValue(mockResponse);
+
+    const response = await request(app).get('/api/v1/practices?search=standup&pillars=5');
+
+    expect(practicesService.searchPractices).toHaveBeenCalledWith({
+      search: 'standup',
+      pillars: [5],
+      page: 1,
+      pageSize: 20
+    });
+    expect(response.status).toBe(200);
+    expect(response.body.items).toHaveLength(1);
+  });
+
+  it('returns validation error for invalid pillar IDs format', async () => {
+    const response = await request(app).get('/api/v1/practices?pillars=abc,xyz');
+
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe('validation_error');
+    expect(response.body.message).toContain('Invalid pillar IDs');
+  });
+
+  it('returns validation error for negative pillar IDs', async () => {
+    const response = await request(app).get('/api/v1/practices?pillars=5,-1');
+
+    expect(response.status).toBe(400);
+    expect(response.body.code).toBe('validation_error');
+    expect(response.body.message).toContain('Invalid pillar IDs');
+  });
+
+  it('returns empty results when no practices match search', async () => {
+    const mockResponse = {
+      items: [],
+      page: 1,
+      pageSize: 20,
+      total: 0
+    };
+
+    (practicesService.searchPractices as jest.Mock).mockResolvedValue(mockResponse);
+
+    const response = await request(app).get('/api/v1/practices?search=nonexistent');
+
+    expect(response.status).toBe(200);
+    expect(response.body.items).toHaveLength(0);
+    expect(response.body.total).toBe(0);
+  });
 });

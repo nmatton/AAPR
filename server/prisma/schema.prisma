@@ -284,6 +284,7 @@ model Practice {
   @@unique([title, categoryId], map: "uq_practices_title_category")
   @@index([categoryId], map: "idx_practices_category")
   @@index([title], map: "idx_practices_title")
+  @@index([goal], map: "idx_practices_goal")
   @@index([isGlobal], map: "idx_practices_is_global")
   @@index([method], map: "idx_practices_method")
   @@map("practices")
@@ -333,6 +334,7 @@ model PracticePillar {
   @@id([practiceId, pillarId])
   @@index([practiceId], map: "idx_practice_pillars_practice")
   @@index([pillarId], map: "idx_practice_pillars_pillar")
+  @@index([practiceId, pillarId], map: "idx_practice_pillars_practice_pillar")
   @@map("practice_pillars")
 }
 

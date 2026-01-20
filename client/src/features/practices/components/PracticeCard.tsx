@@ -30,12 +30,31 @@ const getPillarColor = (category: string) => {
   return 'bg-gray-100 text-gray-700'
 }
 
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
+const renderHighlightedText = (text: string, query?: string) => {
+  if (!query?.trim()) return text
+  const escaped = escapeRegExp(query.trim())
+  const parts = text.split(new RegExp(`(${escaped})`, 'gi'))
+  return parts.map((part, index) => {
+    if (part.toLowerCase() !== query.trim().toLowerCase()) {
+      return <span key={`${part}-${index}`}>{part}</span>
+    }
+    return (
+      <span key={`${part}-${index}`} className="bg-yellow-200 text-gray-900 rounded-sm px-1">
+        {part}
+      </span>
+    )
+  })
+}
+
 interface PracticeCardProps {
   practice: Practice
   onSelect: (practice: Practice) => void
+  highlightQuery?: string
 }
 
-export const PracticeCard = ({ practice, onSelect }: PracticeCardProps) => {
+export const PracticeCard = ({ practice, onSelect, highlightQuery }: PracticeCardProps) => {
   return (
     <button
       type="button"
@@ -45,7 +64,9 @@ export const PracticeCard = ({ practice, onSelect }: PracticeCardProps) => {
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
-            <h3 className="text-lg font-semibold text-gray-900">{practice.title}</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              {renderHighlightedText(practice.title, highlightQuery)}
+            </h3>
             <span className={`text-xs px-2 py-1 rounded-full border ${getCategoryClass(practice.categoryId)}`}>
               {practice.categoryName}
             </span>

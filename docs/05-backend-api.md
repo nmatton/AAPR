@@ -596,17 +596,26 @@ Response (200):
 ### Practices Catalog
 
 #### GET /api/v1/practices
-Get paginated list of all practices with pillar mappings
+Get paginated list of all practices with pillar mappings, with optional search and filter
 
 **Authentication:** Not required (public endpoint)
 
 **Query Parameters:**
 - `page` (int, optional, default: 1) - Page number (1-indexed)
 - `pageSize` (int, optional, default: 20) - Results per page (max: 100)
-- `category` (string, optional) - Filter by pillar category
+- `search` (string, optional) - Case-insensitive search by title, goal, or description
+- `pillars` (string, optional) - Comma-separated pillar IDs (e.g., "5,8,12") - OR logic (practices covering ANY of the specified pillars)
 
 **Headers:**
 - `X-Request-Id` (string, optional) - propagated to response for tracing
+
+**Examples:**
+```
+GET /api/v1/practices                            # All practices, page 1
+GET /api/v1/practices?search=standup             # Search for "standup"
+GET /api/v1/practices?pillars=5,8                # Practices covering pillar 5 OR 8
+GET /api/v1/practices?search=feedback&pillars=5  # Combines search AND filter
+```
 
 **Response (200):**
 ```json
@@ -622,7 +631,8 @@ Get paginated list of all practices with pillar mappings
         {
           "id": 5,
           "name": "Communication",
-          "category": "FEEDBACK & APPRENTISSAGE"
+          "category": "VALEURS HUMAINES",
+          "description": "Effective communication within and across teams"
         }
       ]
     },
@@ -630,13 +640,14 @@ Get paginated list of all practices with pillar mappings
       "id": 2,
       "title": "Sprint Planning",
       "goal": "Define sprint goals and tasks",
-      "categoryId": "PLANIFICATION",
-      "categoryName": "PLANIFICATION",
+      "categoryId": "ORGANISATION_AUTONOMIE",
+      "categoryName": "ORGANISATION & AUTONOMIE",
       "pillars": [
         {
           "id": 10,
-          "name": "Strategic Planning",
-          "category": "PLANIFICATION"
+          "name": "Self-Organization",
+          "category": "ORGANISATION & AUTONOMIE",
+          "description": "Team self-organization and autonomy"
         }
       ]
     }
@@ -656,6 +667,34 @@ Get paginated list of all practices with pillar mappings
 **Validation:**
 - `page`: Minimum 1
 - `pageSize`: 1-100 (default 20)
+- `pillars`: Must be valid integer IDs, comma-separated
+
+**Error Responses:**
+
+**400 Bad Request** (Invalid parameters):
+```json
+{
+  "code": "validation_error",
+  "message": "Invalid pillar IDs in query",
+  "details": { "invalidIds": [999, 1000] },
+  "requestId": "req_xyz"
+}
+```
+
+**400 Bad Request** (Invalid pillar IDs from service):
+```json
+{
+  "code": "invalid_filter",
+  "message": "Invalid pillar IDs provided",
+  "details": { "invalidIds": [999] },
+  "requestId": "req_xyz"
+}
+```
+
+**Filter Logic:**
+- **Search:** Case-insensitive matching on title, goal, or description (OR logic)
+- **Pillars:** Practices covering ANY of the specified pillars (OR logic)
+- **Combined:** Search AND filter (practices must match search AND cover at least one pillar)
 
 **Error Response (400):**
 ```json

@@ -55,7 +55,7 @@ development_status:
   epic-2: in-progress
   2-0-import-practice-data-from-json: done
   2-1-load-and-display-practice-catalog: done
-  2-2-search-and-filter-practices-by-pillar: backlog
+  2-2-search-and-filter-practices-by-pillar: review
   2-3-add-selected-practices-to-team-portfolio: backlog
   2-4-remove-practices-from-team-portfolio: backlog
   2-5-create-new-practice-from-scratch-or-as-template: backlog

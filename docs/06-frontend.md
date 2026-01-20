@@ -29,24 +29,10 @@ client/
 │   ├── index.css             # TailwindCSS imports
 │   ├── features/
 │   │   ├── auth/
-│   │   │   ├── SignupForm.tsx
-│   │   │   ├── LoginForm.tsx
-│   │   │   ├── authSlice.ts      # Zustand store
-│   │   │   └── authApi.ts        # API calls
-│   │   └── teams/
-│   │       ├── TeamsList.tsx
-│   │       ├── CreateTeamForm.tsx
-│   │       ├── TeamMembersPanel.tsx
-│   │       ├── InviteMembersPanel.tsx
-│   │       ├── teamsSlice.ts      # Zustand store
-│   │       └── teamsApi.ts        # API calls
+│   │   ├── teams/
+│   │   └── practices/
 │   ├── components/            # Shared UI components
-│   │   ├── Button.tsx
-│   │   ├── Input.tsx
-│   │   └── Navbar.tsx
 │   └── __tests__/             # Vitest tests
-│       ├── SignupForm.test.tsx
-│       └── TeamsList.test.tsx
 ├── index.html
 ├── vite.config.ts
 ├── tailwind.config.js
@@ -86,8 +72,6 @@ client/
 - If user exists → render component
 - If null → redirect to `/login`
 
----
-
 ## State Management
 
 **Library:** Zustand 4.4+  
@@ -101,26 +85,37 @@ client/
 ```typescript
 {
   practices: Practice[],
+  availablePillars: Pillar[],
+  isPillarsLoading: boolean,
   isLoading: boolean,
   error: string | null,
   total: number,
   page: number,
   pageSize: number,
   currentDetail: Practice | null,
-  catalogViewed: boolean
+  catalogViewed: boolean,
+  searchQuery: string,
+  selectedPillars: number[]
 }
 ```
 
 **Actions:**
 ```typescript
 loadPractices(page = 1, pageSize = 20, teamId?: number | null): Promise<void>
+loadAvailablePillars(): Promise<void>
 setCurrentDetail(practice | null): void
+setSearchQuery(query: string): void
+setSelectedPillars(pillars: number[]): void
+setPillarFilters(pillars: number[]): void
+togglePillar(pillarId: number): void
+clearFilters(): void
 retry(): Promise<void>
 ```
 
 **Side effects:**
 - Calls `fetchPractices(page, pageSize)` and updates state
-- After success, logs `catalog.viewed` with `{ teamId, practiceCount, timestamp }`
+- After success, logs `catalog.viewed` with `{ teamId, practiceCount, timestamp }` when no filters are active
+- After success, logs `catalog.searched` with `{ teamId, query, pillarsSelected, timestamp }` when filters are active
 - On error, captures message and exposes `retry()` with last page params
 
 ---
@@ -146,6 +141,31 @@ retry(): Promise<void>
 - `fetchPractices(page, pageSize)` → `{ items, page, pageSize, total, requestId }`
 - Adds `X-Request-Id` header; tolerates missing `requestId` in response
 - `logCatalogViewed(teamId, practiceCount)` best-effort POST `/api/v1/events`
+- `logCatalogSearched({ teamId, query, pillarsSelected, timestamp })` best-effort POST `/api/v1/events`
+
+### PracticeCatalog Enhancements (Story 2.2)
+
+**Search & Filter UI:**
+- Search input with 300ms debounce
+- Pillar filter dropdown (19 pillars, grouped by category)
+- Active filter badges with remove (×)
+- Empty state message includes query
+- “Results updated” toast on filter/search changes
+- Search term highlighting in practice titles
+
+**PillarFilterDropdown Component**
+**File:** `src/features/practices/components/PillarFilterDropdown.tsx`
+
+**Features:**
+- Shows all pillars grouped by category
+- Multi-select checkboxes (OR logic)
+- Badge with selected count on trigger button
+- Clear button inside dropdown
+- Category color coding
+
+**Event Logging:**
+- `catalog.viewed` when no filters are active
+- `catalog.searched` when search/filter is applied
 
 **Testing:**
 - `PracticeCatalog.test.tsx`: loading, list render, empty state, error state

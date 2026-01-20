@@ -11,12 +11,18 @@ export interface PracticesState {
   pageSize: number
   currentDetail: Practice | null
   catalogViewed: boolean
+  searchQuery: string
+  selectedPillars: number[]
   loadPractices: (page?: number, pageSize?: number, teamId?: number | null) => Promise<void>
   setCurrentDetail: (practice: Practice | null) => void
+  setSearchQuery: (query: string) => void
+  setSelectedPillars: (pillars: number[]) => void
+  togglePillar: (pillarId: number) => void
+  clearFilters: () => void
   retry: () => Promise<void>
 }
 
-const initialState: Omit<PracticesState, 'loadPractices' | 'setCurrentDetail' | 'retry'> = {
+const initialState: Omit<PracticesState, 'loadPractices' | 'setCurrentDetail' | 'setSearchQuery' | 'setSelectedPillars' | 'togglePillar' | 'clearFilters' | 'retry'> = {
   practices: [],
   isLoading: false,
   error: null,
@@ -24,7 +30,9 @@ const initialState: Omit<PracticesState, 'loadPractices' | 'setCurrentDetail' | 
   page: 1,
   pageSize: 20,
   currentDetail: null,
-  catalogViewed: false
+  catalogViewed: false,
+  searchQuery: '',
+  selectedPillars: []
 }
 
 export const usePracticesStore = create<PracticesState>((set, get) => ({
@@ -33,7 +41,13 @@ export const usePracticesStore = create<PracticesState>((set, get) => ({
   loadPractices: async (page = 1, pageSize = 20, teamId: number | null = null) => {
     set({ isLoading: true, error: null, page, pageSize })
     try {
-      const data = await fetchPractices(page, pageSize)
+      const { searchQuery, selectedPillars } = get()
+      const data = await fetchPractices(
+        page,
+        pageSize,
+        searchQuery || undefined,
+        selectedPillars.length > 0 ? selectedPillars : undefined
+      )
       set({
         practices: data.items,
         total: data.total,
@@ -51,6 +65,27 @@ export const usePracticesStore = create<PracticesState>((set, get) => ({
   },
 
   setCurrentDetail: (practice) => set({ currentDetail: practice }),
+
+  setSearchQuery: (query) => {
+    set({ searchQuery: query, page: 1 })
+    // Debounce will be handled in the component
+  },
+
+  setSelectedPillars: (pillars) => {
+    set({ selectedPillars: pillars, page: 1 })
+  },
+
+  togglePillar: (pillarId) => {
+    const { selectedPillars } = get()
+    const newPillars = selectedPillars.includes(pillarId)
+      ? selectedPillars.filter(id => id !== pillarId)
+      : [...selectedPillars, pillarId]
+    set({ selectedPillars: newPillars, page: 1 })
+  },
+
+  clearFilters: () => {
+    set({ searchQuery: '', selectedPillars: [], page: 1 })
+  },
 
   retry: async () => {
     const { page, pageSize } = get()
