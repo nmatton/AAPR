@@ -105,3 +105,10 @@ teamsRouter.get('/:teamId/practices/:practiceId/removal-impact', requireAuth, va
  * Protected by requireAuth + team membership validation
  */
 teamsRouter.delete('/:teamId/practices/:practiceId', requireAuth, validateTeamMembership, teamsController.removePracticeFromTeam);
+
+/**
+ * GET /api/v1/teams/:teamId/coverage/pillars
+ * Get pillar-level coverage for a team
+ * Protected by requireAuth + team membership validation
+ */
+teamsRouter.get('/:teamId/coverage/pillars', requireAuth, validateTeamMembership, teamsController.getTeamPillarCoverage);

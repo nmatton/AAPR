@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import * as teamsService from '../services/teams.service';
+import * as coverageService from '../services/coverage.service';
 import { AppError } from '../services/auth.service';
 
 // Extend Express Request type for middleware-added properties
@@ -376,6 +377,45 @@ export const removePracticeFromTeam = async (
 
     res.json({
       ...result,
+      requestId: req.id
+    });
+  } catch (error: any) {
+    if (error && req.id) {
+      error.requestId = req.id;
+    }
+    next(error);
+  }
+};
+
+/**
+ * GET /api/v1/teams/:teamId/coverage/pillars
+ * Get pillar-level coverage for a team
+ * 
+ * @param req - Express request with teamId param
+ * @param res - Express response
+ * @param next - Express next function
+ */
+export const getTeamPillarCoverage = async (
+  req: Request<{ teamId: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const teamId = parseInt(req.params.teamId, 10);
+
+    if (!Number.isInteger(teamId) || teamId <= 0) {
+      throw new AppError(
+        'invalid_team_id',
+        'Valid team ID is required',
+        { teamId: req.params.teamId },
+        400
+      );
+    }
+
+    const coverage = await coverageService.getTeamPillarCoverage(teamId);
+
+    res.json({
+      ...coverage,
       requestId: req.id
     });
   } catch (error: any) {

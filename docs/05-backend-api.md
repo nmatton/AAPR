@@ -1062,6 +1062,59 @@ This endpoint is called before showing the removal confirmation dialog to inform
 
 ---
 
+### GET /api/v1/teams/:teamId/coverage/pillars
+Get pillar-level coverage for a team
+
+**Authentication:** Required  
+**Authorization:** User must be a member of the team  
+
+**Parameters:**
+- `teamId` (path): Team identifier
+
+**Response (200):**
+```json
+{
+  "overallCoveragePct": 73.68,
+  "coveredCount": 14,
+  "totalCount": 19,
+  "coveredPillars": [
+    {
+      "id": 1,
+      "name": "Communication",
+      "categoryId": "values",
+      "categoryName": "Human Values",
+      "description": "Clear communication within teams"
+    }
+  ],
+  "gapPillars": [
+    {
+      "id": 2,
+      "name": "Transparency",
+      "categoryId": "values",
+      "categoryName": "Human Values",
+      "description": "Visible work and outcomes"
+    }
+  ],
+  "requestId": "req_cov_123"
+}
+```
+
+**Response Fields:**
+- `overallCoveragePct`: Coverage percent with two decimals
+- `coveredCount`: Number of covered pillars
+- `totalCount`: Total pillars in framework (19)
+- `coveredPillars`: Pillars covered by the team's selected practices
+- `gapPillars`: Pillars not yet covered by the team
+
+**Side Effects:**
+- Event logged: `coverage.calculated` (informational)
+
+**Errors:**
+- 400: `{ "code": "invalid_team_id", "message": "Valid team ID is required", "requestId": "..." }`
+- 403: `{ "code": "forbidden", "message": "Not a team member", "requestId": "..." }`
+
+---
+
 ## Next Steps (Epic 2+)
 
 ### Future Enhancements

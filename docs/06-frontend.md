@@ -584,17 +584,9 @@ await createTeam("Alpha Squad", [1, 5, 12]);
 
 #### TeamsList
 **File:** `src/features/teams/TeamsList.tsx`
-
 **Features:**
 - Fetch teams on mount → GET `/api/teams`
 - Display team cards with:
-  - Team name
-  - Member count
-  - Coverage % (colored badge)
-  - "View Team" button
-- "Create Team" button → Navigate to `/teams/create`
-
-**Coverage Badges:**
 - 0-33%: Red (`bg-red-500`)
 - 34-66%: Yellow (`bg-yellow-500`)
 - 67-100%: Green (`bg-green-500`)
@@ -615,7 +607,6 @@ await createTeam("Alpha Squad", [1, 5, 12]);
 
 #### CreateTeamForm
 **File:** `src/features/teams/CreateTeamForm.tsx`
-
 **Features:**
 - Team name input
 - Practice selection checkboxes (fetched from backend - Epic 2)
@@ -671,6 +662,42 @@ await createTeam("Alpha Squad", [1, 5, 12]);
   ))}
 </div>
 ```
+
+---
+
+#### TeamCoverageCard
+**File:** `src/features/teams/components/TeamCoverageCard.tsx`
+
+**Features:**
+- Fetches pillar coverage → GET `/api/v1/teams/:teamId/coverage/pillars`
+- Displays summary: `Coverage: X/19 pillars (Y%)` with progress bar
+- Covered Pillars (green badges) and Gap Pillars (gray badges)
+- Refresh button re-fetches coverage and team stats
+- Pillar click opens `PillarDetailModal`
+  - Covered pillar → lists practices covering it (via `fetchTeamPractices`)
+  - Gap pillar → suggests practices (via `fetchAvailablePractices`) with [Add]
+- Add action calls `addPracticeToTeam` and refreshes coverage
+
+**UI highlights:**
+```tsx
+<TeamCoverageCard
+  teamId={teamId}
+  coverage={coverage}
+  isLoading={isCoverageLoading}
+  error={coverageError}
+  onRefresh={refreshCoverage}
+/>
+```
+
+---
+
+#### PillarDetailModal
+**File:** `src/features/teams/components/PillarDetailModal.tsx`
+
+**Features:**
+- Shows pillar name, description, and category
+- Lists practices covering the pillar (covered mode)
+- Lists suggested practices with [Add] button (gap mode)
 
 ---
 

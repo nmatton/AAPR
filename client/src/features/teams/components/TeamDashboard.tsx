@@ -1,14 +1,17 @@
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTeamsStore } from '../state/teamsSlice';
+import { useCoverageStore } from '../state/coverageSlice';
 import { InviteMembersPanel } from './InviteMembersPanel';
 import { TeamMembersPanel } from './TeamMembersPanel';
 import { TeamPracticesPanel } from './TeamPracticesPanel';
+import { TeamCoverageCard } from './TeamCoverageCard';
 
 export const TeamDashboard = () => {
   const { teamId } = useParams<{ teamId: string }>();
   const navigate = useNavigate();
   const { teams, isLoading, fetchTeams, error } = useTeamsStore();
+  const { coverage, isLoading: isCoverageLoading, error: coverageError, fetchCoverage } = useCoverageStore();
 
   useEffect(() => {
     if (teams.length === 0) {
@@ -20,6 +23,17 @@ export const TeamDashboard = () => {
     const id = Number(teamId);
     return teams.find((team) => team.id === id);
   }, [teamId, teams]);
+
+  const refreshCoverage = useCallback(async () => {
+    if (!selectedTeam) return;
+    await Promise.all([fetchTeams(), fetchCoverage(selectedTeam.id)]);
+  }, [fetchCoverage, fetchTeams, selectedTeam]);
+
+  useEffect(() => {
+    if (selectedTeam) {
+      fetchCoverage(selectedTeam.id);
+    }
+  }, [fetchCoverage, selectedTeam]);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -100,9 +114,16 @@ export const TeamDashboard = () => {
                 <p className="text-2xl font-semibold text-gray-800">{selectedTeam.coverage}%</p>
               </div>
             </div>
+            <TeamCoverageCard
+              teamId={selectedTeam.id}
+              coverage={coverage}
+              isLoading={isCoverageLoading}
+              error={coverageError}
+              onRefresh={refreshCoverage}
+            />
             <InviteMembersPanel teamId={selectedTeam.id} teamName={selectedTeam.name} />
             <TeamMembersPanel teamId={selectedTeam.id} />
-            <TeamPracticesPanel teamId={selectedTeam.id} onPracticeRemoved={fetchTeams} />
+            <TeamPracticesPanel teamId={selectedTeam.id} onPracticeRemoved={refreshCoverage} />
           </div>
         )}
       </div>

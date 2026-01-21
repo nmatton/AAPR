@@ -112,4 +112,36 @@ describe('TeamPracticesPanel', () => {
     expect(await screen.findByText('Unable to remove practice. Please try again.')).toBeInTheDocument()
     expect(screen.getByText('Practice D')).toBeInTheDocument()
   })
+
+  it('calls onPracticeRemoved after successful removal', async () => {
+    const fetchMock = vi.mocked(teamPracticesApi.fetchTeamPractices)
+    const removeMock = vi.mocked(teamPracticesApi.removePracticeFromTeam)
+    const onPracticeRemoved = vi.fn()
+
+    fetchMock.mockResolvedValue({
+      items: [
+        {
+          id: 12,
+          title: 'Practice E',
+          goal: 'Goal E',
+          categoryId: 'kanban',
+          categoryName: 'Kanban',
+          pillars: [{ id: 14, name: 'Pillar Five', category: 'Flow' }]
+        }
+      ]
+    })
+    removeMock.mockResolvedValue({ teamPracticeId: 12, coverage: 52 })
+
+    render(<TeamPracticesPanel teamId={teamId} onPracticeRemoved={onPracticeRemoved} />)
+
+    expect(await screen.findByText('Practice E')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Remove' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Confirm Remove' }))
+
+    await waitFor(() => {
+      expect(removeMock).toHaveBeenCalledWith(teamId, 12)
+      expect(onPracticeRemoved).toHaveBeenCalled()
+    })
+  })
 })

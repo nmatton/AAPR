@@ -462,6 +462,50 @@ Last Updated: January 21, 2026
 
 ---
 
+### Story 2-6: View Team Coverage at Pillar Level
+
+**Status:** ✅ COMPLETE  
+**Date:** January 21, 2026  
+**Developer:** Nicolas (via Dev Agent - GPT-5.2-Codex)
+
+**What Was Built:**
+
+**Backend:**
+- **Endpoint:** `GET /api/v1/teams/:teamId/coverage/pillars`
+- **Service:** `coverage.service.getTeamPillarCoverage(teamId)`
+  - Loads team practices + pillars with single include
+  - Splits covered vs gap pillars
+  - Calculates coverage percentage to 2 decimals
+  - Logs `coverage.calculated` (informational)
+- **Repository:** `coverage.repository.findTeamPracticesWithPillars`, `coverage.repository.findAllPillars`
+
+**Frontend:**
+- **Component:** `TeamCoverageCard`
+  - Coverage summary + progress bar
+  - Covered/Gap pillars with clickable badges
+  - Refresh button re-fetches coverage + team stats
+- **Modal:** `PillarDetailModal`
+  - Covered pillar → shows practices covering it
+  - Gap pillar → suggests practices with [Add]
+- **State:** `coverageSlice` for loading/error + cached coverage
+- **API Client:** `coverageApi.getTeamPillarCoverage(teamId)` with pillar mapping
+- **Integration:** Team Dashboard displays coverage card; refreshes after add/remove
+
+**Testing:**
+- Backend:
+  - `coverage.service.test.ts`: coverage math, unique pillars, event payload
+  - `teams.coverage.routes.test.ts`: endpoint response, auth/membership validation
+- Frontend:
+  - `TeamCoverageCard.test.tsx`: summary, modal behavior, add practice refresh
+  - `TeamPracticesPanel.test.tsx`: onPracticeRemoved callback refresh
+
+**Documentation Updated:**
+- `docs/05-backend-api.md`: Added coverage/pillars endpoint
+- `docs/06-frontend.md`: Documented TeamCoverageCard + PillarDetailModal
+- `docs/09-changelog.md`: Added Story 2-6 entry
+
+---
+
 ### Story 2-0: Import Practice Data from JSON
 
 **Status:** ✅ COMPLETE  
