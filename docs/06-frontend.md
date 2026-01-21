@@ -248,6 +248,121 @@ RemovePracticeResponse: { teamPracticeId: number, coverage: number }
 - Duplicate practice (409): "Practice already added to team."
 - Invalid practice (400): "Invalid practice. Please try again."
 - Network error: "Connection failed. Check your internet and retry."
+
+---
+
+## Manage Team Practices (Story 2.4)
+
+**Route:** `/teams/:teamId/practices/manage` (protected)
+
+**Page:** [ManagePracticesView.tsx](../client/src/features/teams/pages/ManagePracticesView.tsx)
+- Tabbed interface: Available Practices | Selected Practices
+- Add practices from "Available" tab (same functionality as AddPracticesView)
+- Remove practices from "Selected" tab with impact preview
+- Removal confirmation modal showing pillar coverage impact
+- Gap pillar warnings when removing practices that cover unique pillars
+
+**State Management:**
+- [addPracticesSlice.ts](../client/src/features/teams/state/addPracticesSlice.ts) - Available practices
+- [managePracticesSlice.ts](../client/src/features/teams/state/managePracticesSlice.ts) - Selected practices removal
+
+**New State (managePracticesSlice):**
+```typescript
+{
+  teamPractices: Practice[],
+  isLoading: boolean,
+  error: string | null
+}
+```
+
+**New Actions:**
+```typescript
+loadTeamPractices(teamId: number): Promise<void>
+removePractice(teamId: number, practiceId: number): Promise<number> // Returns new coverage
+reset(): void
+```
+
+**Components:**
+- **ManagePracticesView:** Main page with tabs
+- **RemovePracticeModal:** Confirmation dialog with impact preview
+- **PracticeCard:** Reused with "Remove" action on Selected tab
+- **Success Toast:** Shows confirmation after add/remove
+- **Error State:** Inline error messages with retry
+
+**New Component: RemovePracticeModal** [RemovePracticeModal.tsx](../client/src/features/teams/components/RemovePracticeModal.tsx)
+
+**Props:**
+```typescript
+{
+  practice: Practice,
+  teamId: number,
+  onConfirm: () => void,
+  onCancel: () => void,
+  isRemoving: boolean
+}
+```
+
+**Features:**
+- Fetches removal impact on mount via `GET /api/v1/teams/:teamId/practices/:practiceId/removal-impact`
+- Displays affected pillars (names and count)
+- Shows warning if removing will create coverage gaps (willCreateGaps: true)
+- Shows success indicator if no gaps will be created
+- Disables confirm button while loading impact or during removal
+
+**API Client Extensions:** [teamPracticesApi.ts](../client/src/features/teams/api/teamPracticesApi.ts)
+
+**New Function:**
+```typescript
+fetchPracticeRemovalImpact(
+  teamId: number, 
+  practiceId: number
+): Promise<PracticeRemovalImpact>
+```
+
+**Response Type:**
+```typescript
+PracticeRemovalImpact: {
+  pillarIds: number[],
+  pillarNames: string[],
+  willCreateGaps: boolean,
+  requestId?: string
+}
+```
+
+**UX Flow - Remove Practice:**
+1. User navigates to "Selected Practices" tab
+2. Clicks "Remove" button on a practice card
+3. `RemovePracticeModal` opens and fetches removal impact
+4. Modal displays:
+   - Practice name
+  - Gap pillars that would lose coverage (names)
+   - Warning if gaps will be created (yellow alert)
+   - Success indicator if no gaps (green check)
+5. User confirms removal
+6. API call: `DELETE /api/v1/teams/:teamId/practices/:practiceId`
+7. On success:
+   - Practice removed from view
+   - Success toast: "[Practice Title] removed from team portfolio"
+   - Team stats refreshed (coverage updated)
+   - Modal closes
+8. On failure:
+   - Error message shown
+   - Practice remains in list
+   - Modal stays open
+
+**Error Handling:**
+- Session expired (401): "Session expired. Please log in again."
+- Practice not found (404): "Practice not found in team portfolio."
+- Network error: "Connection failed. Check your internet and retry."
+- Impact loading error: Shows in modal, allows retry
+
+**Gap Pillar Detection:**
+- Server-side calculation (not client-side)
+- `willCreateGaps: true` means at least one pillar loses all coverage
+- Modal shows explicit warning with gap pillar list
+- After removal, gap pillars are highlighted with suggestion: "Consider adding a practice that covers [Pillar Name]"
+
+---
 - Generic: "Failed to add practice"
 
 **Performance:**

@@ -318,6 +318,19 @@ export interface AddPracticeResult {
 export interface RemovePracticeResult {
   teamPracticeId: number;
   coverage: number;
+  gapPillarIds: number[];
+  gapPillarNames: string[];
+}
+
+/**
+ * Impact preview for removing a practice
+ */
+export interface PracticeRemovalImpact {
+  pillarIds: number[];
+  pillarNames: string[];
+  gapPillarIds: number[];
+  gapPillarNames: string[];
+  willCreateGaps: boolean;
 }
 
 /**
@@ -413,6 +426,99 @@ export const addPracticeToTeam = async (
 };
 
 /**
+ * Get removal impact preview for a practice
+ * Shows which pillars would be affected and if gaps would be created
+ * 
+ * @param teamId - Team identifier
+ * @param practiceId - Practice to remove
+ * @returns Impact preview with pillar information
+ * @throws AppError if practice not found in team (404) or invalid IDs (400)
+ */
+export const getPracticeRemovalImpact = async (
+  teamId: number,
+  practiceId: number
+): Promise<PracticeRemovalImpact> => {
+  if (!Number.isInteger(teamId) || teamId <= 0) {
+    throw new AppError(
+      'invalid_team_id',
+      'Valid team ID is required',
+      { teamId },
+      400
+    );
+  }
+
+  if (!Number.isInteger(practiceId) || practiceId <= 0) {
+    throw new AppError(
+      'invalid_practice_id',
+      'Valid practice ID is required',
+      { practiceId },
+      400
+    );
+  }
+
+  // Step 1: Validate practice exists in team portfolio
+  const teamPractice = await prisma.teamPractice.findUnique({
+    where: {
+      teamId_practiceId: {
+        teamId,
+        practiceId
+      }
+    },
+    include: {
+      practice: {
+        include: {
+          practicePillars: {
+            include: {
+              pillar: true
+            }
+          }
+        }
+      }
+    }
+  });
+
+  if (!teamPractice) {
+    throw new AppError(
+      'practice_not_found',
+      'Practice not found in team portfolio',
+      { teamId, practiceId },
+      404
+    );
+  }
+
+  // Step 2: Get pillars covered by this practice
+  const practicePillarIds = teamPractice.practice.practicePillars.map(pp => pp.pillar.id);
+  const practicePillarNames = teamPractice.practice.practicePillars.map(pp => pp.pillar.name);
+
+  // Step 3: Get all other team practices
+  const otherTeamPractices = await teamsRepository.getTeamPracticesWithPillars(teamId);
+  const otherPractices = otherTeamPractices.filter(tp => tp.practice.id !== practiceId);
+
+  // Step 4: Find pillars that would become gaps
+  const otherPillarIds = new Set<number>();
+  otherPractices.forEach(tp => {
+    tp.practice.practicePillars.forEach(pp => {
+      otherPillarIds.add(pp.pillar.id);
+    });
+  });
+
+  // Pillars that are covered by this practice but NOT by any other practice
+  const gapPillarIds = practicePillarIds.filter(id => !otherPillarIds.has(id));
+  const gapPillarNames = teamPractice.practice.practicePillars
+    .filter(pp => gapPillarIds.includes(pp.pillar.id))
+    .map(pp => pp.pillar.name);
+  const willCreateGaps = gapPillarIds.length > 0;
+
+  return {
+    pillarIds: practicePillarIds,
+    pillarNames: practicePillarNames,
+    gapPillarIds,
+    gapPillarNames,
+    willCreateGaps
+  };
+};
+
+/**
  * Remove a practice from team portfolio
  * Logs event transactionally and recalculates coverage
  * 
@@ -455,31 +561,28 @@ export const removePracticeFromTeam = async (
     );
   }
 
-  // Validate practice exists
-  const practice = await prisma.practice.findUnique({
-    where: { id: practiceId }
-  });
-
-  if (!practice) {
-    throw new AppError(
-      'practice_not_found',
-      'Practice not found',
-      { practiceId },
-      404
-    );
-  }
-
-  // Validate practice is currently selected by team
-  const existing = await prisma.teamPractice.findUnique({
+  // Validate practice exists in team portfolio and load pillar data
+  const teamPractice = await prisma.teamPractice.findUnique({
     where: {
       teamId_practiceId: {
         teamId,
         practiceId
       }
+    },
+    include: {
+      practice: {
+        include: {
+          practicePillars: {
+            include: {
+              pillar: true
+            }
+          }
+        }
+      }
     }
   });
 
-  if (!existing) {
+  if (!teamPractice) {
     throw new AppError(
       'practice_not_found',
       'Practice not found',
@@ -487,6 +590,23 @@ export const removePracticeFromTeam = async (
       404
     );
   }
+
+  const practicePillarIds = teamPractice.practice.practicePillars.map(pp => pp.pillar.id);
+
+  const otherTeamPractices = await teamsRepository.getTeamPracticesWithPillars(teamId);
+  const otherPractices = otherTeamPractices.filter(tp => tp.practice.id !== practiceId);
+
+  const otherPillarIds = new Set<number>();
+  otherPractices.forEach(tp => {
+    tp.practice.practicePillars.forEach(pp => {
+      otherPillarIds.add(pp.pillar.id);
+    });
+  });
+
+  const gapPillarIds = practicePillarIds.filter(id => !otherPillarIds.has(id));
+  const gapPillarNames = teamPractice.practice.practicePillars
+    .filter(pp => gapPillarIds.includes(pp.pillar.id))
+    .map(pp => pp.pillar.name);
 
   const removed = await prisma.$transaction(async (tx) => {
     const deleted = await teamsRepository.removePracticeFromTeam(teamId, practiceId, tx);
@@ -502,7 +622,9 @@ export const removePracticeFromTeam = async (
         payload: {
           teamId,
           practiceId,
-          practiceTitle: practice.title
+          pillarIds: practicePillarIds,
+          gapPillarsCreated: gapPillarIds,
+          practiceTitle: teamPractice.practice.title
         },
         createdAt: new Date()
       }
@@ -515,7 +637,9 @@ export const removePracticeFromTeam = async (
 
   return {
     teamPracticeId: removed.id,
-    coverage
+    coverage,
+    gapPillarIds,
+    gapPillarNames
   };
 };
 

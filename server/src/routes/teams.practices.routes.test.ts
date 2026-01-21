@@ -185,7 +185,9 @@ describe('teams routes - practices management', () => {
     it('should remove practice from team', async () => {
       const mockResult = {
         teamPracticeId: 12,
-        coverage: 58
+        coverage: 58,
+        gapPillarIds: [4],
+        gapPillarNames: ['Knowledge Sharing']
       };
 
       (teamsService.removePracticeFromTeam as jest.MockedFunction<typeof teamsService.removePracticeFromTeam>)
@@ -213,6 +215,15 @@ describe('teams routes - practices management', () => {
       expect(response.body.code).toBe('practice_not_found');
     });
 
+    it('should return 400 for invalid practiceId', async () => {
+      const response = await request(app)
+        .delete('/api/v1/teams/1/practices/invalid')
+        .set('Authorization', 'Bearer test-token');
+
+      expect(response.status).toBe(400);
+      expect(response.body.code).toBe('validation_error');
+    });
+
     it('should return 403 for non-member', async () => {
       (prisma.teamMember.findUnique as jest.MockedFunction<typeof prisma.teamMember.findUnique>).mockResolvedValueOnce(null);
 
@@ -221,6 +232,95 @@ describe('teams routes - practices management', () => {
         .set('Authorization', 'Bearer test-token');
 
       expect(response.status).toBe(403);
+    });
+  });
+
+  describe('GET /api/v1/teams/:teamId/practices/:practiceId/removal-impact', () => {
+    it('should return removal impact preview', async () => {
+      const mockImpact = {
+        pillarIds: [1, 2, 3],
+        pillarNames: ['Continuous Integration', 'Code Review', 'Test Automation'],
+        gapPillarIds: [2],
+        gapPillarNames: ['Code Review'],
+        willCreateGaps: false
+      };
+
+      (teamsService.getPracticeRemovalImpact as jest.MockedFunction<typeof teamsService.getPracticeRemovalImpact>)
+        .mockResolvedValue(mockImpact);
+
+      const response = await request(app)
+        .get('/api/v1/teams/1/practices/5/removal-impact')
+        .set('Authorization', 'Bearer test-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body.pillarIds).toEqual([1, 2, 3]);
+      expect(response.body.pillarNames).toHaveLength(3);
+      expect(response.body.gapPillarIds).toEqual([2]);
+      expect(response.body.gapPillarNames).toEqual(['Code Review']);
+      expect(response.body.willCreateGaps).toBe(false);
+      expect(response.body.requestId).toBeDefined();
+    });
+
+    it('should indicate gap creation when removing unique practice', async () => {
+      const mockImpact = {
+        pillarIds: [1],
+        pillarNames: ['Continuous Integration'],
+        gapPillarIds: [1],
+        gapPillarNames: ['Continuous Integration'],
+        willCreateGaps: true
+      };
+
+      (teamsService.getPracticeRemovalImpact as jest.MockedFunction<typeof teamsService.getPracticeRemovalImpact>)
+        .mockResolvedValue(mockImpact);
+
+      const response = await request(app)
+        .get('/api/v1/teams/1/practices/5/removal-impact')
+        .set('Authorization', 'Bearer test-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body.willCreateGaps).toBe(true);
+      expect(response.body.gapPillarIds).toEqual([1]);
+      expect(response.body.gapPillarNames).toEqual(['Continuous Integration']);
+    });
+
+    it('should return 404 for practice not in team', async () => {
+      (teamsService.getPracticeRemovalImpact as jest.MockedFunction<typeof teamsService.getPracticeRemovalImpact>)
+        .mockRejectedValue(new AppError(
+          'practice_not_found',
+          'Practice not found in team portfolio',
+          { teamId: 1, practiceId: 999 },
+          404
+        ));
+
+      const response = await request(app)
+        .get('/api/v1/teams/1/practices/999/removal-impact')
+        .set('Authorization', 'Bearer test-token');
+
+      expect(response.status).toBe(404);
+      expect(response.body.code).toBe('practice_not_found');
+    });
+
+    it('should return 400 for invalid practiceId', async () => {
+      (teamsService.getPracticeRemovalImpact as jest.MockedFunction<typeof teamsService.getPracticeRemovalImpact>)
+        .mockRejectedValue(new AppError(
+          'invalid_practice_id',
+          'Valid practice ID is required',
+          { practiceId: -1 },
+          400
+        ));
+
+      const response = await request(app)
+        .get('/api/v1/teams/1/practices/-1/removal-impact')
+        .set('Authorization', 'Bearer test-token');
+
+      expect(response.status).toBe(400);
+    });
+
+    it('should require authentication', async () => {
+      const response = await request(app)
+        .get('/api/v1/teams/1/practices/5/removal-impact');
+
+      expect(response.status).toBe(401);
     });
   });
 });

@@ -34,6 +34,17 @@ export interface TeamPracticesResponse {
 export interface RemovePracticeResponse {
   teamPracticeId: number;
   coverage: number;
+  gapPillarIds: number[];
+  gapPillarNames: string[];
+  requestId?: string;
+}
+
+export interface PracticeRemovalImpact {
+  pillarIds: number[];
+  pillarNames: string[];
+  gapPillarIds: number[];
+  gapPillarNames: string[];
+  willCreateGaps: boolean;
   requestId?: string;
 }
 
@@ -110,5 +121,21 @@ export const removePracticeFromTeam = async (
     {
       method: 'DELETE'
     }
+  );
+};
+
+/**
+ * Get removal impact preview for a practice
+ * Shows which pillars would be affected by removing this practice
+ * @param teamId - Team identifier
+ * @param practiceId - Practice identifier
+ * @returns Impact preview with pillar information
+ */
+export const fetchPracticeRemovalImpact = async (
+  teamId: number,
+  practiceId: number
+): Promise<PracticeRemovalImpact> => {
+  return apiClient<PracticeRemovalImpact>(
+    `/api/v1/teams/${teamId}/practices/${practiceId}/removal-impact`
   );
 };

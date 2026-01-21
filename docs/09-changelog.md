@@ -922,4 +922,42 @@ AAPR Team
 
 ---
 
-**Last Updated:** January 19, 2026
+**Last Updated:** January 21, 2026
+
+---
+
+## Story 2-4: Remove Practices from Team Portfolio
+
+**Status:** ✅ COMPLETE  
+**Date:** January 21, 2026  
+**Developer:** Nicolas (via Dev Agent - Claude Sonnet 4.5)
+
+**What Was Built:**
+
+**Backend:**
+- **New Endpoint:**
+  - `GET /api/v1/teams/:teamId/practices/:practiceId/removal-impact` - Preview pillar coverage impact before removal
+  - Returns: `{ pillarIds: number[], pillarNames: string[], willCreateGaps: boolean }`
+- **Service Layer:**
+  - `getPracticeRemovalImpact(teamId, practiceId)`: Server-side gap pillar detection
+  - Gap detection algorithm: Find pillars covered ONLY by this practice
+- **Testing:** 11 new tests (6 route tests + 5 service tests)
+  - **All 130 backend tests passing** ✅
+
+**Frontend:**
+- **New Components:**
+  - `ManagePracticesView.tsx`: Tabbed interface (Available | Selected)
+  - `RemovePracticeModal.tsx`: Confirmation dialog with impact preview
+  - `managePracticesSlice.ts`: Zustand slice for removal flow
+- **UX:** Server-side gap detection with explicit warnings in modal
+
+**Documentation Updated:**
+- `docs/05-backend-api.md`: Team Practice Management section
+- `docs/06-frontend.md`: Manage Team Practices section
+- `docs/09-changelog.md`: This entry
+
+**Acceptance Criteria:**
+- ✅ AC1-6: All acceptance criteria met
+
+---
+

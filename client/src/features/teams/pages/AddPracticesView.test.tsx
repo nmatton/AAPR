@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import { AddPracticesView } from './AddPracticesView';
 import { useTeamsStore } from '../state/teamsSlice';
 import { useAddPracticesStore } from '../state/addPracticesSlice';
@@ -9,17 +9,6 @@ import type { Practice } from '../types/practice.types';
 // Mock stores
 vi.mock('../state/teamsSlice');
 vi.mock('../state/addPracticesSlice');
-
-// Mock react-router-dom
-const mockNavigate = vi.fn();
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom');
-  return {
-    ...actual,
-    useParams: () => ({ teamId: '1' }),
-    useNavigate: () => mockNavigate,
-  };
-});
 
 describe('AddPracticesView', () => {
   const mockPractice: Practice = {
@@ -73,9 +62,11 @@ describe('AddPracticesView', () => {
 
   it('renders Add Practices view with practice list', async () => {
     render(
-      <BrowserRouter>
-        <AddPracticesView />
-      </BrowserRouter>
+      <MemoryRouter initialEntries={['/teams/1/practices/add']}>
+        <Routes>
+          <Route path="/teams/:teamId/practices/add" element={<AddPracticesView />} />
+        </Routes>
+      </MemoryRouter>
     );
 
     await waitFor(() => {
@@ -111,13 +102,17 @@ describe('AddPracticesView', () => {
     });
 
     render(
-      <BrowserRouter>
-        <AddPracticesView />
-      </BrowserRouter>
+      <MemoryRouter initialEntries={['/teams/1/practices/add']}>
+        <Routes>
+          <Route path="/teams/:teamId/practices/add" element={<AddPracticesView />} />
+        </Routes>
+      </MemoryRouter>
     );
 
-    const addButton = screen.getByRole('button', { name: /add to team/i });
-    fireEvent.click(addButton);
+    const addButtons = screen.getAllByRole('button', { name: /add to team/i });
+    const addButton = addButtons.find((button) => button.tagName === 'BUTTON');
+    expect(addButton).toBeDefined();
+    fireEvent.click(addButton!);
 
     await waitFor(() => {
       expect(mockAddPractice).toHaveBeenCalledWith(1, 1);
@@ -145,9 +140,11 @@ describe('AddPracticesView', () => {
     });
 
     render(
-      <BrowserRouter>
-        <AddPracticesView />
-      </BrowserRouter>
+      <MemoryRouter initialEntries={['/teams/1/practices/add']}>
+        <Routes>
+          <Route path="/teams/:teamId/practices/add" element={<AddPracticesView />} />
+        </Routes>
+      </MemoryRouter>
     );
 
     await waitFor(() => {
@@ -173,9 +170,11 @@ describe('AddPracticesView', () => {
     });
 
     render(
-      <BrowserRouter>
-        <AddPracticesView />
-      </BrowserRouter>
+      <MemoryRouter initialEntries={['/teams/1/practices/add']}>
+        <Routes>
+          <Route path="/teams/:teamId/practices/add" element={<AddPracticesView />} />
+        </Routes>
+      </MemoryRouter>
     );
 
     expect(screen.getByText('All practices already selected')).toBeInTheDocument();
@@ -200,9 +199,11 @@ describe('AddPracticesView', () => {
     });
 
     render(
-      <BrowserRouter>
-        <AddPracticesView />
-      </BrowserRouter>
+      <MemoryRouter initialEntries={['/teams/1/practices/add']}>
+        <Routes>
+          <Route path="/teams/:teamId/practices/add" element={<AddPracticesView />} />
+        </Routes>
+      </MemoryRouter>
     );
 
     expect(screen.getByText('Loading available practices...')).toBeInTheDocument();
@@ -228,9 +229,11 @@ describe('AddPracticesView', () => {
     });
 
     render(
-      <BrowserRouter>
-        <AddPracticesView />
-      </BrowserRouter>
+      <MemoryRouter initialEntries={['/teams/1/practices/add']}>
+        <Routes>
+          <Route path="/teams/:teamId/practices/add" element={<AddPracticesView />} />
+        </Routes>
+      </MemoryRouter>
     );
 
     const searchInput = screen.getByPlaceholderText('Search practices...');

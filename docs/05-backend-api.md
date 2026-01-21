@@ -493,6 +493,8 @@ Remove a practice from the team's portfolio
 {
   "teamPracticeId": 123,
   "coverage": 58,
+  "gapPillarIds": [4, 7],
+  "gapPillarNames": ["Knowledge Sharing", "Short Releases"],
   "requestId": "req_xyz789"
 }
 ```
@@ -884,15 +886,128 @@ GET /api/v1/practices?search=feedback&pillars=5  # Combines search AND filter
 
 ---
 
-## Next Steps (Epic 2)
+## Team Practice Management
 
-### Enhancements
-- `POST /api/teams/:teamId/practices` - Add practices to team
-- `DELETE /api/teams/:teamId/practices/:practiceId` - Remove practice
-- `GET /api/teams/:teamId/coverage` - Detailed coverage breakdown
-- `POST /api/v1/events` - Log client-side events (catalog view, practice selection)
-- Pagination filters by category/pillar
+### POST /api/v1/teams/:teamId/practices
+Add a practice to team portfolio
+
+**Authentication:** Required  
+**Authorization:** User must be a member of the team  
+
+**Parameters:**
+- `teamId` (path): Team identifier
+
+**Request Body:**
+```json
+{
+  "practiceId": 5
+}
+```
+
+**Response (201):**
+```json
+{
+  "teamPractice": {
+    "id": 42,
+    "teamId": 1,
+    "practiceId": 5,
+    "addedAt": "2026-01-21T10:30:00.000Z"
+  },
+  "coverage": 68,
+  "requestId": "req_abc123"
+}
+```
+
+**Side Effects:**
+- Practice added to `team_practices` table
+- Event logged: `practice.added` with practice details
+- Team coverage recalculated
+
+**Errors:**
+- 400: `{ "code": "invalid_practice_id", "message": "Practice does not exist", "requestId": "..." }`
+- 403: `{ "code": "forbidden", "message": "Not a team member", "requestId": "..." }`
+- 409: `{ "code": "duplicate_practice", "message": "Practice already added to team", "requestId": "..." }`
 
 ---
 
-**Last Updated:** January 20, 2026
+### DELETE /api/v1/teams/:teamId/practices/:practiceId
+Remove a practice from team portfolio
+
+**Authentication:** Required  
+**Authorization:** User must be a member of the team  
+
+**Parameters:**
+- `teamId` (path): Team identifier
+- `practiceId` (path): Practice identifier
+
+**Response (200):**
+```json
+{
+  "teamPracticeId": 42,
+  "coverage": 63,
+  "gapPillarIds": [4, 7],
+  "gapPillarNames": ["Knowledge Sharing", "Short Releases"],
+  "requestId": "req_xyz456"
+}
+```
+
+**Side Effects:**
+- Practice removed from `team_practices` table
+- Event logged: `practice.removed` with practice details
+- Team coverage recalculated
+
+**Errors:**
+- 403: `{ "code": "forbidden", "message": "Not a team member", "requestId": "..." }`
+- 404: `{ "code": "practice_not_found", "message": "Practice not found in team portfolio", "requestId": "..." }`
+
+---
+
+### GET /api/v1/teams/:teamId/practices/:practiceId/removal-impact
+Get removal impact preview for a practice
+
+**Authentication:** Required  
+**Authorization:** User must be a member of the team  
+
+**Parameters:**
+- `teamId` (path): Team identifier
+- `practiceId` (path): Practice identifier
+
+**Response (200):**
+```json
+{
+  "pillarIds": [1, 3, 7],
+  "pillarNames": ["Continuous Integration", "Code Review", "Test Automation"],
+  "gapPillarIds": [7],
+  "gapPillarNames": ["Test Automation"],
+  "willCreateGaps": false,
+  "requestId": "req_preview123"
+}
+```
+
+**Response Fields:**
+- `pillarIds`: Array of pillar IDs covered by this practice
+- `pillarNames`: Human-readable names of affected pillars
+- `gapPillarIds`: Pillar IDs that would lose coverage if removed
+- `gapPillarNames`: Human-readable names of gap pillars
+- `willCreateGaps`: `true` if removing this practice would leave some pillars with no coverage
+
+**Use Case:**
+This endpoint is called before showing the removal confirmation dialog to inform users about the coverage impact of removing a practice.
+
+**Errors:**
+- 400: `{ "code": "invalid_practice_id", "message": "Valid practice ID is required", "requestId": "..." }`
+- 403: `{ "code": "forbidden", "message": "Not a team member", "requestId": "..." }`
+- 404: `{ "code": "practice_not_found", "message": "Practice not found in team portfolio", "requestId": "..." }`
+
+---
+
+## Next Steps (Epic 2+)
+
+### Future Enhancements
+- `GET /api/teams/:teamId/coverage` - Detailed coverage breakdown by category
+- `POST /api/v1/events` - Log client-side events (catalog view, practice selection)
+- Advanced filtering by category combinations
+
+---
+
+**Last Updated:** January 21, 2026

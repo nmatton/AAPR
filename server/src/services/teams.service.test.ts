@@ -188,8 +188,31 @@ describe('teamsService.removePracticeFromTeam', () => {
     const practiceId = 5;
 
     (prisma.teamMember.findUnique as any).mockResolvedValue({ id: 10 });
-    (prisma.practice.findUnique as any).mockResolvedValue({ id: practiceId, title: 'Sprint Planning' });
-    (prisma.teamPractice.findUnique as any).mockResolvedValue({ id: 44, teamId, practiceId });
+    (prisma.teamPractice.findUnique as any).mockResolvedValue({
+      id: 44,
+      teamId,
+      practiceId,
+      practice: {
+        id: practiceId,
+        title: 'Sprint Planning',
+        practicePillars: [
+          { pillar: { id: 1, name: 'Communication' } },
+          { pillar: { id: 2, name: 'Transparency' } }
+        ]
+      }
+    });
+
+    (teamsRepository.getTeamPracticesWithPillars as any).mockResolvedValue([
+      {
+        practice: {
+          id: practiceId,
+          practicePillars: [
+            { pillar: { id: 1, name: 'Communication' } },
+            { pillar: { id: 2, name: 'Transparency' } }
+          ]
+        }
+      }
+    ]);
 
     const mockEventCreate = (jest.fn() as any).mockResolvedValue({});
     const mockTx = {
@@ -210,6 +233,8 @@ describe('teamsService.removePracticeFromTeam', () => {
 
     expect(result.teamPracticeId).toBe(44);
     expect(result.coverage).toBe(63);
+    expect(result.gapPillarIds).toEqual([1, 2]);
+    expect(result.gapPillarNames).toEqual(['Communication', 'Transparency']);
     expect(teamsRepository.removePracticeFromTeam).toHaveBeenCalledWith(teamId, practiceId, mockTx);
     expect(mockTx.event.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -217,7 +242,11 @@ describe('teamsService.removePracticeFromTeam', () => {
           eventType: 'practice.removed',
           teamId,
           actorId: userId,
-          entityId: practiceId
+          entityId: practiceId,
+          payload: expect.objectContaining({
+            pillarIds: [1, 2],
+            gapPillarsCreated: [1, 2]
+          })
         })
       })
     );
@@ -236,12 +265,155 @@ describe('teamsService.removePracticeFromTeam', () => {
 
   it('throws 404 if practice does not exist', async () => {
     (prisma.teamMember.findUnique as any).mockResolvedValue({ id: 10 });
-    (prisma.practice.findUnique as any).mockResolvedValue(null);
+    (prisma.teamPractice.findUnique as any).mockResolvedValue(null);
 
     await expect(teamsService.removePracticeFromTeam(1, 2, 999)).rejects.toThrow(
       expect.objectContaining({
         code: 'practice_not_found',
         statusCode: 404
+      })
+    );
+  });
+});
+
+describe('teamsService.getPracticeRemovalImpact', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('identifies pillars covered by practice without creating gaps', async () => {
+    const teamId = 1;
+    const practiceId = 5;
+
+    // Mock: practice exists in team portfolio
+    (prisma.teamPractice.findUnique as any).mockResolvedValue({
+      id: 44,
+      teamId,
+      practiceId,
+      practice: {
+        id: practiceId,
+        title: 'Daily Standup',
+        practicePillars: [
+          { pillar: { id: 1, name: 'Communication' } },
+          { pillar: { id: 2, name: 'Transparency' } }
+        ]
+      }
+    });
+
+    // Mock: other team practices also cover these pillars
+    (teamsRepository.getTeamPracticesWithPillars as any).mockResolvedValue([
+      {
+        practice: {
+          id: 3,
+          practicePillars: [
+            { pillar: { id: 1, name: 'Communication' } }
+          ]
+        }
+      },
+      {
+        practice: {
+          id: 4,
+          practicePillars: [
+            { pillar: { id: 2, name: 'Transparency' } }
+          ]
+        }
+      },
+      {
+        practice: {
+          id: practiceId,
+          practicePillars: [
+            { pillar: { id: 1, name: 'Communication' } },
+            { pillar: { id: 2, name: 'Transparency' } }
+          ]
+        }
+      }
+    ]);
+
+    const result = await teamsService.getPracticeRemovalImpact(teamId, practiceId);
+
+    expect(result.pillarIds).toEqual([1, 2]);
+    expect(result.pillarNames).toEqual(['Communication', 'Transparency']);
+    expect(result.gapPillarIds).toEqual([]);
+    expect(result.gapPillarNames).toEqual([]);
+    expect(result.willCreateGaps).toBe(false); // Other practices still cover these pillars
+  });
+
+  it('detects gap creation when practice covers unique pillars', async () => {
+    const teamId = 1;
+    const practiceId = 7;
+
+    // Mock: practice covers pillars 3 and 4
+    (prisma.teamPractice.findUnique as any).mockResolvedValue({
+      id: 55,
+      teamId,
+      practiceId,
+      practice: {
+        id: practiceId,
+        title: 'Code Review',
+        practicePillars: [
+          { pillar: { id: 3, name: 'Quality' } },
+          { pillar: { id: 4, name: 'Knowledge Sharing' } }
+        ]
+      }
+    });
+
+    // Mock: other team practices DON'T cover pillar 4 (unique to this practice)
+    (teamsRepository.getTeamPracticesWithPillars as any).mockResolvedValue([
+      {
+        practice: {
+          id: 2,
+          practicePillars: [
+            { pillar: { id: 3, name: 'Quality' } }, // Pillar 3 covered by others
+            { pillar: { id: 5, name: 'Automation' } }
+          ]
+        }
+      },
+      {
+        practice: {
+          id: practiceId,
+          practicePillars: [
+            { pillar: { id: 3, name: 'Quality' } },
+            { pillar: { id: 4, name: 'Knowledge Sharing' } } // Pillar 4 ONLY covered by this practice
+          ]
+        }
+      }
+    ]);
+
+    const result = await teamsService.getPracticeRemovalImpact(teamId, practiceId);
+
+    expect(result.pillarIds).toEqual([3, 4]);
+    expect(result.pillarNames).toEqual(['Quality', 'Knowledge Sharing']);
+    expect(result.gapPillarIds).toEqual([4]);
+    expect(result.gapPillarNames).toEqual(['Knowledge Sharing']);
+    expect(result.willCreateGaps).toBe(true); // Pillar 4 becomes a gap
+  });
+
+  it('throws 404 if practice not in team portfolio', async () => {
+    (prisma.teamPractice.findUnique as any).mockResolvedValue(null);
+
+    await expect(teamsService.getPracticeRemovalImpact(1, 999)).rejects.toThrow(
+      expect.objectContaining({
+        code: 'practice_not_found',
+        message: 'Practice not found in team portfolio',
+        statusCode: 404
+      })
+    );
+  });
+
+  it('throws 400 for invalid teamId', async () => {
+    await expect(teamsService.getPracticeRemovalImpact(-1, 5)).rejects.toThrow(
+      expect.objectContaining({
+        code: 'invalid_team_id',
+        statusCode: 400
+      })
+    );
+  });
+
+  it('throws 400 for invalid practiceId', async () => {
+    await expect(teamsService.getPracticeRemovalImpact(1, 0)).rejects.toThrow(
+      expect.objectContaining({
+        code: 'invalid_practice_id',
+        statusCode: 400
       })
     );
   });

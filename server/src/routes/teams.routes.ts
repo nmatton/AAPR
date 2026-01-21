@@ -86,6 +86,13 @@ teamsRouter.get('/:teamId/practices', requireAuth, validateTeamMembership, teams
 teamsRouter.post('/:teamId/practices', requireAuth, validateTeamMembership, teamsController.addPracticeToTeam);
 
 /**
+ * GET /api/v1/teams/:teamId/practices/:practiceId/removal-impact
+ * Get removal impact preview for a practice
+ * Protected by requireAuth + team membership validation
+ */
+teamsRouter.get('/:teamId/practices/:practiceId/removal-impact', requireAuth, validateTeamMembership, teamsController.getPracticeRemovalImpact);
+
+/**
  * DELETE /api/v1/teams/:teamId/practices/:practiceId
  * Remove a practice from team portfolio
  * Protected by requireAuth + team membership validation

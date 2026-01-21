@@ -241,6 +241,46 @@ export const addPracticeToTeam = async (
 };
 
 /**
+ * GET /api/v1/teams/:teamId/practices/:practiceId/removal-impact
+ * Get removal impact preview for a practice
+ * 
+ * @param req - Express request with teamId and practiceId params
+ * @param res - Express response
+ * @param next - Express next function
+ */
+export const getPracticeRemovalImpact = async (
+  req: Request<{ teamId: string; practiceId: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const teamId = parseInt(req.params.teamId, 10);
+    const practiceId = parseInt(req.params.practiceId, 10);
+
+    if (!Number.isInteger(teamId) || !Number.isInteger(practiceId)) {
+      throw new AppError(
+        'validation_error',
+        'Request validation failed',
+        [{ path: 'params', message: 'Invalid teamId or practiceId', code: 'invalid_type' }],
+        400
+      );
+    }
+
+    const impact = await teamsService.getPracticeRemovalImpact(teamId, practiceId);
+
+    res.json({
+      ...impact,
+      requestId: req.id
+    });
+  } catch (error: any) {
+    if (error && req.id) {
+      error.requestId = req.id;
+    }
+    next(error);
+  }
+};
+
+/**
  * DELETE /api/v1/teams/:teamId/practices/:practiceId
  * Remove a practice from team portfolio
  * 

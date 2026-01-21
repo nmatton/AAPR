@@ -109,6 +109,8 @@ describe('teamPracticesApi', () => {
       const mockResponse = {
         teamPracticeId: 1,
         coverage: 20,
+        gapPillarIds: [3],
+        gapPillarNames: ['Feedback'],
         requestId: 'req_123'
       };
 
