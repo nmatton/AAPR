@@ -149,6 +149,117 @@ retry(): Promise<void>
 - Search input with 300ms debounce
 - Pillar filter dropdown (19 pillars, grouped by category)
 - Active filter badges with remove (×)
+
+---
+
+## Add Practices to Team (Story 2.3)
+
+**Route:** `/teams/:teamId/practices/add` (protected)
+
+**Page:** [AddPracticesView.tsx](../client/src/features/teams/pages/AddPracticesView.tsx)
+- Entry point: "Add Practices" button in Team Dashboard header
+- Displays practices NOT yet selected by team (unselected only)
+- Reuses `PracticeCard` and `PillarFilterDropdown` components from Story 2.2
+- Search + pillar filter (same UX as practice catalog)
+- "Load More" pagination (appends practices)
+- Empty state: "All practices already selected" + back to dashboard
+
+**State Management:** [addPracticesSlice.ts](../client/src/features/teams/state/addPracticesSlice.ts)
+
+**State:**
+```typescript
+{
+  practices: Practice[],
+  isLoading: boolean,
+  error: string | null,
+  total: number,
+  page: number,
+  pageSize: number,
+  searchQuery: string,
+  selectedPillars: number[]
+}
+```
+
+**Actions:**
+```typescript
+loadAvailablePractices(teamId: number, page?: number): Promise<void>
+addPractice(teamId: number, practiceId: number): Promise<void>
+setSearchQuery(query: string): void
+togglePillar(pillarId: number): void
+clearFilters(): void
+reset(): void
+```
+
+**Side Effects:**
+- `loadAvailablePractices`: Fetches unselected practices, handles pagination (append if page > 1)
+- `addPractice`: Adds practice to team, removes from list, refreshes team stats via `fetchTeams()`
+- Search/filter changes reset page to 1 and clear practice list
+- Proper cleanup: setTimeout references stored and cleared on unmount
+
+**Components:**
+- **AddPracticesView:** Main page with search, filters, practice list, "Load More"
+- **PracticeCard:** Reused from Story 2.1/2.2 with "Add to team" action button
+- **PillarFilterDropdown:** Reused from Story 2.2
+- **Success Toast:** 3-second display when practice added
+- **Error State:** Inline error message with retry button
+
+**API Client:** [teamPracticesApi.ts](../client/src/features/teams/api/teamPracticesApi.ts)
+
+**Functions:**
+```typescript
+fetchAvailablePractices(params: {
+  teamId: number,
+  page?: number,
+  pageSize?: number,
+  search?: string,
+  pillars?: number[]
+}): Promise<AvailablePracticesResponse>
+
+addPracticeToTeam(teamId: number, practiceId: number): Promise<AddPracticeResponse>
+
+fetchTeamPractices(teamId: number): Promise<TeamPracticesResponse>
+
+removePracticeFromTeam(teamId: number, practiceId: number): Promise<RemovePracticeResponse>
+```
+
+**Response Types:**
+```typescript
+AvailablePracticesResponse: { items: Practice[], page, pageSize, total }
+AddPracticeResponse: { teamPractice: {...}, coverage: number }
+RemovePracticeResponse: { teamPracticeId: number, coverage: number }
+```
+
+**UX Flow:**
+1. User clicks "Add Practices" button in Team Dashboard
+2. Navigate to `/teams/:teamId/practices/add`
+3. View loads available practices (paginated, searchable, filterable)
+4. User finds practice and clicks "Add to team"
+5. API call: `POST /api/v1/teams/:teamId/practices` with `{ practiceId }`
+6. On success:
+   - Practice removed from view
+   - Success toast: "[Practice Title] added to team portfolio"
+   - Team stats refreshed (coverage updated)
+7. On failure:
+   - Error message shown
+   - Practice remains in list (no optimistic update)
+
+**Error Handling:**
+- Session expired (401): "Session expired. Please log in again."
+- Duplicate practice (409): "Practice already added to team."
+- Invalid practice (400): "Invalid practice. Please try again."
+- Network error: "Connection failed. Check your internet and retry."
+- Generic: "Failed to add practice"
+
+**Performance:**
+- Debounced search (prevents excessive API calls)
+- Pagination with "Load More" (append pattern)
+- Loading state per practice (prevents double-clicks)
+- Cleanup: setTimeout cleared on unmount (no memory leaks)
+
+**Testing:**
+- `AddPracticesView.test.tsx`: Rendering, add flow, error states (6 tests)
+- `addPracticesSlice.test.ts`: Store actions, filters (5 tests)
+- `teamPracticesApi.test.ts`: API integration (4 tests)
 - Empty state message includes query
 - “Results updated” toast on filter/search changes
 - Search term highlighting in practice titles

@@ -145,8 +145,13 @@ describe('teams routes - practices management', () => {
 
       expect(response.status).toBe(201);
       expect(response.body.teamPractice).toBeDefined();
+      expect(response.body.teamPractice.teamId).toBe(1);
+      expect(response.body.teamPractice.practiceId).toBe(5);
       expect(response.body.coverage).toBe(25);
       expect(response.body.requestId).toBeDefined();
+      
+      // Verify service was called with correct params for event logging
+      expect(teamsService.addPracticeToTeam).toHaveBeenCalledWith(1, 1, 5);
     });
 
     it('should return 400 for missing practiceId', async () => {

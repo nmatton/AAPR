@@ -216,6 +216,17 @@ export const getAvailablePractices = async (
   const { page = 1, pageSize = 20, search, pillars } = params;
   const skip = (page - 1) * pageSize;
 
+  // Validate team exists
+  const team = await prisma.team.findUnique({ where: { id: teamId } });
+  if (!team) {
+    throw new AppError(
+      'team_not_found',
+      'Team not found',
+      { teamId },
+      404
+    );
+  }
+
   // Validate pillar IDs if provided
   if (pillars && pillars.length > 0) {
     const invalidIds = await practiceRepository.validatePillarIds(pillars);

@@ -249,6 +249,122 @@ Last Updated: January 21, 2026
 
 **Known Limitations:**
 - Pagination UI (next/previous buttons) not yet implemented
+
+---
+
+### Story 2-3: Add Selected Practices to Team Portfolio
+
+**Status:** ✅ COMPLETE  
+**Date:** January 21, 2026  
+**Developer:** Nicolas (via Dev Agent - GPT-5.2-Codex)
+
+**What Was Built:**
+
+**Backend:**
+- **Endpoints:**
+  - `GET /api/v1/teams/:teamId/practices/available` - Returns practices NOT yet selected by team
+  - `POST /api/v1/teams/:teamId/practices` - Adds practice to team portfolio
+  - `DELETE /api/v1/teams/:teamId/practices/:practiceId` - Removes practice from team
+  - `GET /api/v1/teams/:teamId/practices` - Returns currently selected practices
+- **Query Parameters (GET available):**
+  - `page`, `pageSize` (pagination)
+  - `search` (case-insensitive title/goal/description)
+  - `pillars` (comma-separated IDs, OR logic)
+- **Validation:**
+  - Team existence check before querying available practices (404 if team not found)
+  - Practice existence check (400 if practice doesn't exist)
+  - Duplicate prevention (409 Conflict if practice already selected)
+  - Pillar ID validation (400 if invalid pillar IDs)
+- **Service Layer:**
+  - `getAvailablePractices(teamId, filters)`: Uses Prisma `NOT` clause to exclude team practices
+  - `addPracticeToTeam(teamId, userId, practiceId)`: Transactional add + event logging + coverage recalc
+  - `removePracticeFromTeam(teamId, userId, practiceId)`: Transactional remove + event logging + coverage recalc
+- **Repository Updates:**
+  - `findAvailableForTeam(teamId, filters)`: Query with `NOT { teamPractices: { some: { teamId } } }`
+  - `countAvailableForTeam(teamId, filters)`: Count for pagination
+- **Event Logging:**
+  - `practice.added` event with `{ teamId, practiceId, practiceTitle }`
+  - `practice.removed` event with `{ teamId, practiceId, practiceTitle }`
+  - Both wrapped in transaction with main operation
+- **Coverage Recalculation:**
+  - Automatic via `calculateTeamCoverage(teamId)` after add/remove
+  - Returns updated coverage % in response
+- **Testing:**
+  - `teams.practices.routes.test.ts`: 8 integration tests
+  - GET available: pagination, search, pillars filter
+  - POST add: success (201), duplicate (409), invalid ID (400)
+  - DELETE remove: success (200), not found (404), forbidden (403)
+  - **All 120 backend tests passing** ✅
+
+**Frontend:**
+- **Route:** `/teams/:teamId/practices/add` (protected)
+- **Page Component:** `AddPracticesView.tsx`
+  - Fetches available practices on mount
+  - Reuses `PracticeCard` and `PillarFilterDropdown` from Story 2.2
+  - Search input with debounce
+  - Pillar filter dropdown
+  - "Load More" button for pagination (appends to list)
+  - Empty state: "All practices already selected" + back to dashboard link
+- **State Management:** `addPracticesSlice.ts` (Zustand)
+  - `practices: Practice[]`, `isLoading`, `error`, `total`, `page`, `pageSize`
+  - `searchQuery: string`, `selectedPillars: number[]`
+  - `loadAvailablePractices(teamId, page)`: Fetches and handles pagination
+  - `addPractice(teamId, practiceId)`: Adds practice, removes from list, refreshes team stats
+  - `setSearchQuery()`, `togglePillar()`, `clearFilters()`
+  - Proper timeout cleanup to prevent memory leaks
+- **API Client:** `teamPracticesApi.ts`
+  - `fetchAvailablePractices({ teamId, page, pageSize, search?, pillars? })`
+  - `addPracticeToTeam(teamId, practiceId)`: Returns `{ teamPractice, coverage }`
+  - `fetchTeamPractices(teamId)`: Returns team's current practices
+  - `removePracticeFromTeam(teamId, practiceId)`: Returns `{ teamPracticeId, coverage }`
+- **UX Features:**
+  - Success toast (3 seconds) when practice added
+  - Practice disappears from list immediately on success
+  - Error message shown if add fails (practice stays in list)
+  - Loading state per practice (disable button during add)
+  - Back button to team dashboard
+  - Retry button on error
+- **Team Dashboard Updates:**
+  - Added "Add Practices" button in header
+  - Navigates to `/teams/:teamId/practices/add`
+- **Testing:**
+  - `AddPracticesView.test.tsx`: Component rendering, add flow, error handling (6 tests)
+  - `addPracticesSlice.test.ts`: Store actions, filters, error states (5 tests)
+  - `teamPracticesApi.test.ts`: API calls (4 tests)
+  - **All 83 frontend tests passing** ✅
+
+**Documentation Updated:**
+- `docs/05-backend-api.md`: Added Team Practices section with all 4 endpoints
+- `docs/06-frontend.md`: Added AddPracticesView, addPracticesSlice, teamPracticesApi
+- `docs/09-changelog.md`: This entry
+
+**Files Created/Modified:**
+- Backend:
+  - `server/src/routes/teams.routes.ts`: Added 4 practice endpoints
+  - `server/src/controllers/teams.controller.ts`: Added getAvailablePractices, addPracticeToTeam, getTeamPractices, removePracticeFromTeam
+  - `server/src/services/teams.service.ts`: Added 4 service methods with validation and transactional event logging
+  - `server/src/repositories/practice.repository.ts`: Added findAvailableForTeam, countAvailableForTeam
+  - `server/src/routes/teams.practices.routes.test.ts`: 8 integration tests
+- Frontend:
+  - `client/src/features/teams/pages/AddPracticesView.tsx`: Full Add Practices view
+  - `client/src/features/teams/state/addPracticesSlice.ts`: Zustand slice
+  - `client/src/features/teams/api/teamPracticesApi.ts`: API client
+  - `client/src/features/teams/components/TeamDashboard.tsx`: Added "Add Practices" button
+  - `client/src/App.tsx`: Added `/teams/:teamId/practices/add` route
+  - Tests: `AddPracticesView.test.tsx`, `addPracticesSlice.test.ts`, `teamPracticesApi.test.ts`
+
+**Acceptance Criteria Validation:**
+- ✅ AC1: Navigate to Add Practices view from Team Dashboard
+- ✅ AC2: Practice cards show title, goal, pillars, category
+- ✅ AC3: Add practice removes it from unselected list + success message
+- ✅ AC4: Event logged transactionally + coverage recalculated
+- ✅ AC5: Error handling prevents optimistic updates on failure
+
+**Known Enhancements (Applied in Review):**
+- Fixed: setTimeout cleanup to prevent memory leaks
+- Fixed: Team existence validation before querying available practices
+- Fixed: Loading state per practice to prevent double-clicks
+- Fixed: Event structure validation in backend tests
 - Category filter not yet integrated in UI
 - Event logging endpoint (`POST /api/v1/events`) pending backend implementation
 

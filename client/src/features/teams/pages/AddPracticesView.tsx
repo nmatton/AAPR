@@ -28,11 +28,21 @@ export const AddPracticesView = () => {
   } = useAddPracticesStore();
 
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [successTimeoutId, setSuccessTimeoutId] = useState<number | null>(null);
   const [currentDetail, setCurrentDetail] = useState<Practice | null>(null);
   const [isAddingPracticeId, setIsAddingPracticeId] = useState<number | null>(null);
   const numericTeamId = Number(teamId);
 
   const selectedTeam = teams.find((team) => team.id === numericTeamId);
+
+  // Cleanup success timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (successTimeoutId !== null) {
+        clearTimeout(successTimeoutId);
+      }
+    };
+  }, [successTimeoutId]);
 
   const availablePillars = useMemo(() => {
     const pillarMap = new Map<number, { id: number; name: string; category: string; description?: string | null }>();
@@ -65,8 +75,9 @@ export const AddPracticesView = () => {
       // Refresh teams to update coverage stats
       await fetchTeams();
       
-      // Clear success message after 3 seconds
-      setTimeout(() => setSuccessMessage(null), 3000);
+      // Clear success message after 3 seconds (store timeout ID for cleanup)
+      const timeoutId = window.setTimeout(() => setSuccessMessage(null), 3000);
+      setSuccessTimeoutId(timeoutId);
     } catch (error) {
       // Error is handled in the store
     } finally {
@@ -248,6 +259,7 @@ export const AddPracticesView = () => {
                   onAction={handleAddPractice}
                   actionLabel="Add to team"
                   actionAriaLabel="Add to team"
+                  actionDisabled={isAddingPracticeId === practice.id}
                   highlightQuery={searchQuery}
                 />
               ))}
