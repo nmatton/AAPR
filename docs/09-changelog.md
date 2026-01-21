@@ -418,6 +418,50 @@ Last Updated: January 21, 2026
 
 ---
 
+### Story 2-5: Create New Practice from Scratch or Template
+
+**Status:** ✅ COMPLETE  
+**Date:** January 21, 2026  
+**Developer:** Nicolas (via Dev Agent - GPT-5.2-Codex)
+
+**What Was Built:**
+
+**Backend:**
+- **Endpoint:** `POST /api/v1/teams/:teamId/practices/custom`
+- **Validation:** title (2-100), goal (1-500), pillarIds (min 1), categoryId exists, optional templatePracticeId exists
+- **Service:** `createCustomPracticeForTeam(teamId, userId, payload)`
+  - Validates pillars and category
+  - Validates template practice if provided
+  - Transactionally creates practice + pillars + team link + event
+  - Recalculates coverage via `calculateTeamCoverage(teamId)`
+- **Event Logging:** `practice.created` with `{ teamId, practiceId, isCustom: true, createdFrom? }`
+- **Error Handling:** structured errors with requestId; duplicate title+category returns 409
+
+**Frontend:**
+- **Entry Point:** "Create New Practice" button in `ManagePracticesView`
+- **Modal:** `CreatePracticeModal` with two-mode flow (scratch/template)
+- **Template Flow:** loads all practices (team + catalog), pre-fills fields, appends "(Copy)" to title
+- **Validation UX:** inline errors for title, goal, category, pillars
+- **Success:** toast, modal close, refresh team practices + coverage
+- **State:** `managePracticesSlice` adds `createPractice` + `isCreating`
+- **API Client:** `createCustomPractice(teamId, payload)`
+
+**Testing:**
+- Backend:
+  - `teams.practices.routes.test.ts`: endpoint success, invalid pillar, duplicate, template not found
+  - `teams.service.test.ts`: transaction behavior, event payload with createdFrom
+- Frontend:
+  - `CreatePracticeModal.test.tsx`: options, template prefill, validation
+  - `ManagePracticesView.test.tsx`: success refresh behavior
+  - `teamPracticesApi.test.ts`: API call
+
+**Documentation Updated:**
+- `docs/05-backend-api.md`: Added custom practice endpoint
+- `docs/06-frontend.md`: Added CreatePracticeModal flow
+- `docs/09-changelog.md`: Added Story 2-5 entry
+
+---
+
 ### Story 2-0: Import Practice Data from JSON
 
 **Status:** ✅ COMPLETE  

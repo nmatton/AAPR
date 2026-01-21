@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fetchAvailablePractices, addPracticeToTeam, fetchTeamPractices, removePracticeFromTeam } from './teamPracticesApi';
+import { fetchAvailablePractices, addPracticeToTeam, fetchTeamPractices, removePracticeFromTeam, createCustomPractice } from './teamPracticesApi';
 import * as apiClient from '../../../lib/apiClient';
 
 // Mock apiClient
@@ -122,6 +122,37 @@ describe('teamPracticesApi', () => {
         '/api/v1/teams/1/practices/5',
         expect.objectContaining({
           method: 'DELETE'
+        })
+      );
+      expect(result).toEqual(mockResponse);
+    });
+  });
+
+  describe('createCustomPractice', () => {
+    it('creates a custom practice successfully', async () => {
+      const mockResponse = {
+        practiceId: 77,
+        coverage: 45,
+        requestId: 'req_abc'
+      };
+
+      vi.mocked(apiClient.apiClient).mockResolvedValue(mockResponse);
+
+      const payload = {
+        title: 'Custom Practice',
+        goal: 'Goal',
+        pillarIds: [1, 2],
+        categoryId: 'scrum',
+        templatePracticeId: 10
+      };
+
+      const result = await createCustomPractice(1, payload);
+
+      expect(apiClient.apiClient).toHaveBeenCalledWith(
+        '/api/v1/teams/1/practices/custom',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify(payload)
         })
       );
       expect(result).toEqual(mockResponse);

@@ -1,14 +1,16 @@
 import { create } from 'zustand';
-import { fetchTeamPractices, removePracticeFromTeam } from '../api/teamPracticesApi';
+import { fetchTeamPractices, removePracticeFromTeam, createCustomPractice, type CreateCustomPracticePayload } from '../api/teamPracticesApi';
 import type { Practice } from '../types/practice.types';
 
 export interface ManagePracticesState {
   teamPractices: Practice[];
   isLoading: boolean;
+  isCreating: boolean;
   error: string | null;
   
   // Actions
   loadTeamPractices: (teamId: number) => Promise<void>;
+  createPractice: (teamId: number, payload: CreateCustomPracticePayload) => Promise<{ practiceId: number; coverage: number }>;
   removePractice: (teamId: number, practiceId: number) => Promise<{ coverage: number; gapPillarNames: string[] }>;
   reset: () => void;
 }
@@ -16,6 +18,7 @@ export interface ManagePracticesState {
 const initialState = {
   teamPractices: [],
   isLoading: false,
+  isCreating: false,
   error: null
 };
 
@@ -48,6 +51,42 @@ export const useManagePracticesStore = create<ManagePracticesState>((set, get) =
         error: errorMessage, 
         isLoading: false 
       });
+    }
+  },
+
+  createPractice: async (teamId: number, payload: CreateCustomPracticePayload) => {
+    set({ isCreating: true, error: null });
+
+    try {
+      const result = await createCustomPractice(teamId, payload);
+
+      // Reload team practices to include the newly created practice
+      await get().loadTeamPractices(teamId);
+
+      set({ isCreating: false });
+
+      return { practiceId: result.practiceId, coverage: result.coverage };
+    } catch (error: any) {
+      let errorMessage = 'Unable to create practice. Please try again.';
+
+      if (error.statusCode === 401 || error.code === 'session_expired') {
+        errorMessage = 'Session expired. Please log in again.';
+      } else if (error.code === 'duplicate_practice_title') {
+        errorMessage = 'A practice with this title already exists in the selected category.';
+      } else if (error.code === 'invalid_pillar_ids') {
+        errorMessage = 'One or more selected pillars are invalid.';
+      } else if (error.code === 'invalid_category_id') {
+        errorMessage = 'Selected category is invalid.';
+      } else if (error.code === 'template_not_found') {
+        errorMessage = 'Selected template practice was not found.';
+      } else if (error.code === 'network_error') {
+        errorMessage = 'Connection failed. Check your internet and retry.';
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      set({ error: errorMessage, isCreating: false });
+      throw error;
     }
   },
   

@@ -8,6 +8,12 @@ import { useManagePracticesStore } from '../state/managePracticesSlice';
 import type { Practice } from '../types/practice.types';
 import * as teamPracticesApi from '../api/teamPracticesApi';
 
+vi.mock('../components/CreatePracticeModal', () => ({
+  CreatePracticeModal: ({ onCreated }: { onCreated: (practiceName: string) => void }) => (
+    <button onClick={() => onCreated('New Practice')}>Mock Create Practice</button>
+  )
+}));
+
 vi.mock('../state/teamsSlice');
 vi.mock('../state/addPracticesSlice');
 vi.mock('../state/managePracticesSlice');
@@ -74,8 +80,10 @@ describe('ManagePracticesView', () => {
     (useManagePracticesStore as any).mockReturnValue({
       teamPractices: [mockPractice],
       isLoading: false,
+      isCreating: false,
       error: null,
       loadTeamPractices: vi.fn(),
+      createPractice: vi.fn().mockResolvedValue({ practiceId: 99, coverage: 60 }),
       removePractice: vi.fn().mockResolvedValue({ coverage: 60, gapPillarNames: ['Communication'] })
     });
   });
@@ -143,8 +151,10 @@ describe('ManagePracticesView', () => {
     (useManagePracticesStore as any).mockReturnValue({
       teamPractices: [mockPractice],
       isLoading: false,
+      isCreating: false,
       error: 'Unable to remove practice. Please try again.',
       loadTeamPractices: vi.fn(),
+      createPractice: vi.fn(),
       removePractice: vi.fn()
     });
 
@@ -160,5 +170,42 @@ describe('ManagePracticesView', () => {
 
     expect(screen.getByText('Unable to remove practice. Please try again.')).toBeInTheDocument();
     expect(screen.getByText('Sprint Planning')).toBeInTheDocument();
+  });
+
+  it('refreshes team practices and coverage after creation success', async () => {
+    const fetchTeams = vi.fn();
+    const loadTeamPractices = vi.fn();
+
+    (useTeamsStore as any).mockReturnValue({
+      teams: mockTeams,
+      fetchTeams
+    });
+
+    (useManagePracticesStore as any).mockReturnValue({
+      teamPractices: [mockPractice],
+      isLoading: false,
+      isCreating: false,
+      error: null,
+      loadTeamPractices,
+      createPractice: vi.fn().mockResolvedValue({ practiceId: 99, coverage: 60 }),
+      removePractice: vi.fn().mockResolvedValue({ coverage: 60, gapPillarNames: ['Communication'] })
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/teams/1/practices/manage']}>
+        <Routes>
+          <Route path="/teams/:teamId/practices/manage" element={<ManagePracticesView />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /create new practice/i }));
+    fireEvent.click(screen.getByRole('button', { name: /mock create practice/i }));
+
+    await waitFor(() => {
+      expect(fetchTeams).toHaveBeenCalled();
+      expect(loadTeamPractices).toHaveBeenCalledWith(1);
+      expect(screen.getByText('New practice created: New Practice')).toBeInTheDocument();
+    });
   });
 });

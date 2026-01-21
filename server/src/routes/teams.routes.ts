@@ -86,6 +86,13 @@ teamsRouter.get('/:teamId/practices', requireAuth, validateTeamMembership, teams
 teamsRouter.post('/:teamId/practices', requireAuth, validateTeamMembership, teamsController.addPracticeToTeam);
 
 /**
+ * POST /api/v1/teams/:teamId/practices/custom
+ * Create a team-specific custom practice (scratch or template)
+ * Protected by requireAuth + team membership validation
+ */
+teamsRouter.post('/:teamId/practices/custom', requireAuth, validateTeamMembership, teamsController.createCustomPractice);
+
+/**
  * GET /api/v1/teams/:teamId/practices/:practiceId/removal-impact
  * Get removal impact preview for a practice
  * Protected by requireAuth + team membership validation

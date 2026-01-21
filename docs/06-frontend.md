@@ -271,6 +271,7 @@ RemovePracticeResponse: { teamPracticeId: number, coverage: number }
 {
   teamPractices: Practice[],
   isLoading: boolean,
+  isCreating: boolean,
   error: string | null
 }
 ```
@@ -278,6 +279,7 @@ RemovePracticeResponse: { teamPracticeId: number, coverage: number }
 **New Actions:**
 ```typescript
 loadTeamPractices(teamId: number): Promise<void>
+createPractice(teamId: number, payload: CreateCustomPracticePayload): Promise<{ practiceId: number; coverage: number }>
 removePractice(teamId: number, practiceId: number): Promise<number> // Returns new coverage
 reset(): void
 ```
@@ -317,6 +319,17 @@ fetchPracticeRemovalImpact(
   teamId: number, 
   practiceId: number
 ): Promise<PracticeRemovalImpact>
+
+createCustomPractice(
+  teamId: number,
+  payload: {
+    title: string,
+    goal: string,
+    pillarIds: number[],
+    categoryId: string,
+    templatePracticeId?: number
+  }
+): Promise<{ practiceId: number; coverage: number }>
 ```
 
 **Response Type:**
@@ -361,6 +374,43 @@ PracticeRemovalImpact: {
 - `willCreateGaps: true` means at least one pillar loses all coverage
 - Modal shows explicit warning with gap pillar list
 - After removal, gap pillars are highlighted with suggestion: "Consider adding a practice that covers [Pillar Name]"
+
+---
+
+## Create Custom Practices (Story 2.5)
+
+**Entry Point:** "Create New Practice" button in [ManagePracticesView.tsx](../client/src/features/teams/pages/ManagePracticesView.tsx)
+
+**Component:** [CreatePracticeModal.tsx](../client/src/features/teams/components/CreatePracticeModal.tsx)
+
+**Flow:**
+1. User opens modal and chooses:
+  - **Create from Scratch** (empty form)
+  - **Use Existing as Template** (select practice, duplicate with "(Copy)" title)
+2. Form fields: title, goal/objective, category, pillars (multi-select)
+3. Client-side validation:
+  - Title required, 2-100 chars
+  - Goal required, 1-500 chars
+  - Category required
+  - At least one pillar selected
+4. On success:
+  - Toast: "New practice created: [Practice Name]"
+  - Modal closes
+  - Team practices refreshed
+  - Team coverage refreshed via `fetchTeams()`
+
+**State Management:** [managePracticesSlice.ts](../client/src/features/teams/state/managePracticesSlice.ts)
+- `createPractice(teamId, payload)` calls `createCustomPractice` API
+- `isCreating` controls submit button state
+- Errors surfaced inline in modal
+
+**API Integration:**
+- Uses `fetchTeamPractices()` and `fetchAvailablePractices()` to build template list
+- POST `/api/v1/teams/:teamId/practices/custom` for creation
+
+**Testing:**
+- `CreatePracticeModal.test.tsx`: option selection, template prefill, validation
+- `ManagePracticesView.test.tsx`: creation success refreshes practices + coverage
 
 ---
 - Generic: "Failed to add practice"
@@ -1309,4 +1359,4 @@ interface PracticesResponse {
 
 ---
 
-**Last Updated:** January 20, 2026
+**Last Updated:** January 21, 2026

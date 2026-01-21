@@ -4,6 +4,7 @@ import type { TeamWithStats, TeamPracticeWithPillars } from '../repositories/tea
 import { prisma } from '../lib/prisma';
 import { AppError } from './auth.service';
 import type { PracticeDto } from './practices.service';
+import { Prisma } from '@prisma/client';
 
 /**
  * Team information returned to client
@@ -320,6 +321,19 @@ export interface RemovePracticeResult {
   coverage: number;
   gapPillarIds: number[];
   gapPillarNames: string[];
+}
+
+export interface CreateCustomPracticePayload {
+  title: string;
+  goal: string;
+  pillarIds: number[];
+  categoryId: string;
+  templatePracticeId?: number;
+}
+
+export interface CreateCustomPracticeResult {
+  practiceId: number;
+  coverage: number;
 }
 
 /**
@@ -641,5 +655,119 @@ export const removePracticeFromTeam = async (
     gapPillarIds,
     gapPillarNames
   };
+};
+
+/**
+ * Create a custom practice for a team (scratch or template)
+ * Logs event transactionally and recalculates coverage
+ * 
+ * @param teamId - Team identifier
+ * @param userId - User creating the practice
+ * @param payload - Practice data
+ * @returns Created practice ID and updated coverage
+ */
+export const createCustomPracticeForTeam = async (
+  teamId: number,
+  userId: number,
+  payload: CreateCustomPracticePayload
+): Promise<CreateCustomPracticeResult> => {
+  const { title, goal, pillarIds, categoryId, templatePracticeId } = payload;
+
+  // Validate pillar IDs exist
+  const invalidPillars = await practiceRepository.validatePillarIds(pillarIds);
+  if (invalidPillars.length > 0) {
+    throw new AppError(
+      'invalid_pillar_ids',
+      'Some pillar IDs do not exist',
+      { invalid: invalidPillars },
+      400
+    );
+  }
+
+  // Validate category exists
+  const categoryExists = await practiceRepository.validateCategoryId(categoryId);
+  if (!categoryExists) {
+    throw new AppError(
+      'invalid_category_id',
+      'Category not found',
+      { categoryId },
+      400
+    );
+  }
+
+  // Validate template practice if provided
+  if (templatePracticeId) {
+    const template = await practiceRepository.findPracticeById(templatePracticeId);
+    if (!template) {
+      throw new AppError(
+        'template_not_found',
+        'Template practice not found',
+        { templatePracticeId },
+        404
+      );
+    }
+  }
+
+  try {
+    const createdPractice = await prisma.$transaction(async (tx) => {
+      const practice = await practiceRepository.createPractice(
+        {
+          title,
+          goal,
+          isGlobal: false,
+          category: {
+            connect: { id: categoryId }
+          }
+        },
+        tx
+      );
+
+      await practiceRepository.createPracticePillars(practice.id, pillarIds, tx);
+      await practiceRepository.linkPracticeToTeam(teamId, practice.id, tx);
+
+      await tx.event.create({
+        data: {
+          eventType: 'practice.created',
+          actorId: userId,
+          teamId,
+          entityType: 'practice',
+          entityId: practice.id,
+          action: 'created',
+          payload: {
+            teamId,
+            practiceId: practice.id,
+            isCustom: true,
+            ...(templatePracticeId ? { createdFrom: templatePracticeId } : {})
+          },
+          createdAt: new Date()
+        }
+      });
+
+      return practice;
+    });
+
+    const coverage = await calculateTeamCoverage(teamId);
+
+    return {
+      practiceId: createdPractice.id,
+      coverage
+    };
+  } catch (error: unknown) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      // Verify it's the title+category unique constraint
+      const target = error.meta?.target as string[] | undefined;
+      if (target && (target.includes('title') || target.includes('categoryId'))) {
+        throw new AppError(
+          'duplicate_practice_title',
+          'Practice title already exists in this category',
+          { title, categoryId },
+          409
+        );
+      }
+      // Re-throw if it's a different unique constraint
+      throw error;
+    }
+    throw error;
+  }
 };
 

@@ -7,6 +7,7 @@ import { PracticeCard } from '../../practices/components/PracticeCard';
 import { PillarFilterDropdown } from '../../practices/components/PillarFilterDropdown';
 import { PracticeCatalogDetail } from '../../practices/components/PracticeCatalogDetail';
 import { RemovePracticeModal } from '../components/RemovePracticeModal';
+import { CreatePracticeModal } from '../components/CreatePracticeModal';
 import type { Practice } from '../types/practice.types';
 
 type TabType = 'available' | 'selected';
@@ -46,6 +47,7 @@ export const ManagePracticesView = () => {
   const [isAddingPracticeId, setIsAddingPracticeId] = useState<number | null>(null);
   const [practiceToRemove, setPracticeToRemove] = useState<Practice | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const numericTeamId = Number(teamId);
   const selectedTeam = teams.find((team) => team.id === numericTeamId);
@@ -142,6 +144,13 @@ export const ManagePracticesView = () => {
     setPracticeToRemove(null);
   };
 
+  const handlePracticeCreated = async (practiceName: string) => {
+    showSuccessMessage(`New practice created: ${practiceName}`);
+    setIsCreateModalOpen(false);
+    await fetchTeams();
+    await loadTeamPractices(numericTeamId);
+  };
+
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
@@ -189,12 +198,22 @@ export const ManagePracticesView = () => {
           Back to Team Dashboard
         </button>
 
-        <h2 className="text-3xl font-bold text-gray-700 mb-2">
-          Manage Practices - {selectedTeam?.name || 'Team'}
-        </h2>
-        <p className="text-gray-600 mb-6">
-          Add practices from the catalog or remove practices from your team portfolio
-        </p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+          <div>
+            <h2 className="text-3xl font-bold text-gray-700 mb-2">
+              Manage Practices - {selectedTeam?.name || 'Team'}
+            </h2>
+            <p className="text-gray-600">
+              Add practices from the catalog or remove practices from your team portfolio
+            </p>
+          </div>
+          <button
+            onClick={() => setIsCreateModalOpen(true)}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            Create New Practice
+          </button>
+        </div>
 
         {/* Success message */}
         {successMessage && (
@@ -432,6 +451,14 @@ export const ManagePracticesView = () => {
             onConfirm={handleRemoveConfirm}
             onCancel={handleRemoveCancel}
             isRemoving={isRemoving}
+          />
+        )}
+
+        {isCreateModalOpen && (
+          <CreatePracticeModal
+            teamId={numericTeamId}
+            onClose={() => setIsCreateModalOpen(false)}
+            onCreated={handlePracticeCreated}
           />
         )}
       </div>

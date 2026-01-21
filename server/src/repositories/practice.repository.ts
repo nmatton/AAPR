@@ -95,6 +95,17 @@ export async function findById(id: number): Promise<PracticeWithRelations | null
 }
 
 /**
+ * Find practice by ID (for template validation)
+ * @param id - Practice ID
+ * @returns Practice or null if not found
+ */
+export async function findPracticeById(id: number): Promise<Practice | null> {
+  return prisma.practice.findUnique({
+    where: { id }
+  });
+}
+
+/**
  * Find practices by category
  * @param categoryId - Category ID
  * @returns Array of practices in the specified category
@@ -253,6 +264,73 @@ export async function validatePillarIds(pillarIds: number[]): Promise<number[]> 
 
   const existingIds = new Set(existingPillars.map((p) => p.id));
   return pillarIds.filter((id) => !existingIds.has(id));
+}
+
+/**
+ * Validate that a category ID exists
+ * @param categoryId - Category ID to validate
+ * @returns True if category exists
+ */
+export async function validateCategoryId(categoryId: string): Promise<boolean> {
+  const category = await prisma.category.findUnique({
+    where: { id: categoryId },
+    select: { id: true }
+  });
+  return Boolean(category);
+}
+
+/**
+ * Create a new practice (team-specific or global)
+ * @param data - Practice data
+ * @param tx - Optional Prisma transaction client
+ * @returns Created practice
+ */
+export async function createPractice(
+  data: Prisma.PracticeCreateInput,
+  tx?: Prisma.TransactionClient
+): Promise<Practice> {
+  const client = tx ?? prisma;
+  return client.practice.create({ data });
+}
+
+/**
+ * Create practice pillar links in bulk
+ * @param practiceId - Practice identifier
+ * @param pillarIds - Pillar IDs to link
+ * @param tx - Optional Prisma transaction client
+ */
+export async function createPracticePillars(
+  practiceId: number,
+  pillarIds: number[],
+  tx?: Prisma.TransactionClient
+): Promise<Prisma.BatchPayload> {
+  const client = tx ?? prisma;
+  return client.practicePillar.createMany({
+    data: pillarIds.map((pillarId) => ({
+      practiceId,
+      pillarId
+    }))
+  });
+}
+
+/**
+ * Link a practice to a team
+ * @param teamId - Team identifier
+ * @param practiceId - Practice identifier
+ * @param tx - Optional Prisma transaction client
+ */
+export async function linkPracticeToTeam(
+  teamId: number,
+  practiceId: number,
+  tx?: Prisma.TransactionClient
+): Promise<Prisma.TeamPracticeGetPayload<{}>> {
+  const client = tx ?? prisma;
+  return client.teamPractice.create({
+    data: {
+      teamId,
+      practiceId
+    }
+  });
 }
 
 /**

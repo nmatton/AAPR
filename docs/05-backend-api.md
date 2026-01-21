@@ -482,6 +482,67 @@ Add a practice to the team's portfolio
 
 ---
 
+#### POST /api/v1/teams/:teamId/practices/custom
+Create a custom practice for the team (scratch or template)
+
+**Authentication:** Required  
+**Authorization:** User must be a member of the team
+
+**Request (scratch):**
+```json
+{
+  "title": "Team Retro Plus",
+  "goal": "Improve retrospective outcomes",
+  "pillarIds": [1, 2],
+  "categoryId": "scrum"
+}
+```
+
+**Request (template):**
+```json
+{
+  "title": "Daily Standup (Copy)",
+  "goal": "Sync the team daily",
+  "pillarIds": [5, 7],
+  "categoryId": "scrum",
+  "templatePracticeId": 12
+}
+```
+
+**Validation:**
+- `title`: 2-100 characters (required)
+- `goal`: 1-500 characters (required)
+- `pillarIds`: at least one pillar ID (required)
+- `categoryId`: must exist
+- `templatePracticeId`: optional, must exist if provided
+
+**Response (201):**
+```json
+{
+  "practiceId": 123,
+  "coverage": 68,
+  "requestId": "req_xyz789"
+}
+```
+
+**Side Effects:**
+- Creates team-specific practice (`is_global = false`)
+- Inserts rows into `practice_pillars` and `team_practices`
+- Logs event `practice.created` with `{ teamId, practiceId, isCustom: true, createdFrom? }`
+- Recalculates team coverage via `calculateTeamCoverage(teamId)`
+
+**Errors:**
+- 400: `{ "code": "validation_error", "message": "Request validation failed", "requestId": "..." }`
+- 400: `{ "code": "invalid_pillar_ids", "message": "Some pillar IDs do not exist", "requestId": "..." }`
+- 400: `{ "code": "invalid_category_id", "message": "Category not found", "requestId": "..." }`
+- 404: `{ "code": "template_not_found", "message": "Template practice not found", "requestId": "..." }`
+- 409: `{ "code": "duplicate_practice_title", "message": "Practice title already exists in this category", "requestId": "..." }`
+
+**Events Logged:**
+- `practice.created` (team_id, practice_id, actor_id)
+
+---
+
 #### DELETE /api/v1/teams/:teamId/practices/:practiceId
 Remove a practice from the team's portfolio
 

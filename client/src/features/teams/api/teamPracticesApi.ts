@@ -48,6 +48,20 @@ export interface PracticeRemovalImpact {
   requestId?: string;
 }
 
+export interface CreateCustomPracticePayload {
+  title: string;
+  goal: string;
+  pillarIds: number[];
+  categoryId: string;
+  templatePracticeId?: number;
+}
+
+export interface CreateCustomPracticeResponse {
+  practiceId: number;
+  coverage: number;
+  requestId?: string;
+}
+
 /**
  * Fetch practices not yet selected by team
  * @param params - Query parameters including teamId, filters
@@ -137,5 +151,24 @@ export const fetchPracticeRemovalImpact = async (
 ): Promise<PracticeRemovalImpact> => {
   return apiClient<PracticeRemovalImpact>(
     `/api/v1/teams/${teamId}/practices/${practiceId}/removal-impact`
+  );
+};
+
+/**
+ * Create a custom practice for a team
+ * @param teamId - Team identifier
+ * @param payload - Practice data
+ * @returns Created practice ID and updated coverage
+ */
+export const createCustomPractice = async (
+  teamId: number,
+  payload: CreateCustomPracticePayload
+): Promise<CreateCustomPracticeResponse> => {
+  return apiClient<CreateCustomPracticeResponse>(
+    `/api/v1/teams/${teamId}/practices/custom`,
+    {
+      method: 'POST',
+      body: JSON.stringify(payload)
+    }
   );
 };

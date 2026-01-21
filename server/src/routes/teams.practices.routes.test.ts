@@ -181,6 +181,113 @@ describe('teams routes - practices management', () => {
     });
   });
 
+  describe('POST /api/v1/teams/:teamId/practices/custom', () => {
+    it('should create a custom practice and return coverage', async () => {
+      const mockResult = {
+        practiceId: 42,
+        coverage: 67
+      };
+
+      (teamsService.createCustomPracticeForTeam as jest.MockedFunction<typeof teamsService.createCustomPracticeForTeam>)
+        .mockResolvedValue(mockResult);
+
+      const response = await request(app)
+        .post('/api/v1/teams/1/practices/custom')
+        .set('Authorization', 'Bearer test-token')
+        .send({
+          title: 'Team Retro Plus',
+          goal: 'Improve retrospective outcomes',
+          pillarIds: [1, 2],
+          categoryId: 'scrum'
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body.practiceId).toBe(42);
+      expect(response.body.coverage).toBe(67);
+      expect(response.body.requestId).toBeDefined();
+      expect(teamsService.createCustomPracticeForTeam).toHaveBeenCalledWith(
+        1,
+        1,
+        expect.objectContaining({
+          title: 'Team Retro Plus',
+          goal: 'Improve retrospective outcomes',
+          pillarIds: [1, 2],
+          categoryId: 'scrum'
+        })
+      );
+    });
+
+    it('should return 400 for invalid pillarId', async () => {
+      (teamsService.createCustomPracticeForTeam as jest.MockedFunction<typeof teamsService.createCustomPracticeForTeam>)
+        .mockRejectedValue(new AppError(
+          'invalid_pillar_ids',
+          'Some pillar IDs do not exist',
+          { invalid: [999] },
+          400
+        ));
+
+      const response = await request(app)
+        .post('/api/v1/teams/1/practices/custom')
+        .set('Authorization', 'Bearer test-token')
+        .send({
+          title: 'Custom Practice',
+          goal: 'Goal',
+          pillarIds: [999],
+          categoryId: 'scrum'
+        });
+
+      expect(response.status).toBe(400);
+      expect(response.body.code).toBe('invalid_pillar_ids');
+    });
+
+    it('should return 409 for duplicate title and category', async () => {
+      (teamsService.createCustomPracticeForTeam as jest.MockedFunction<typeof teamsService.createCustomPracticeForTeam>)
+        .mockRejectedValue(new AppError(
+          'duplicate_practice_title',
+          'Practice title already exists in this category',
+          { title: 'Custom Practice', categoryId: 'scrum' },
+          409
+        ));
+
+      const response = await request(app)
+        .post('/api/v1/teams/1/practices/custom')
+        .set('Authorization', 'Bearer test-token')
+        .send({
+          title: 'Custom Practice',
+          goal: 'Goal',
+          pillarIds: [1],
+          categoryId: 'scrum'
+        });
+
+      expect(response.status).toBe(409);
+      expect(response.body.code).toBe('duplicate_practice_title');
+    });
+
+    it('should return 404 for missing template practice', async () => {
+      (teamsService.createCustomPracticeForTeam as jest.MockedFunction<typeof teamsService.createCustomPracticeForTeam>)
+        .mockRejectedValue(new AppError(
+          'template_not_found',
+          'Template practice not found',
+          { templatePracticeId: 999 },
+          404
+        ));
+
+      const response = await request(app)
+        .post('/api/v1/teams/1/practices/custom')
+        .set('Authorization', 'Bearer test-token')
+        .send({
+          title: 'Custom Practice',
+          goal: 'Goal',
+          pillarIds: [1],
+          categoryId: 'scrum',
+          templatePracticeId: 999
+        });
+
+      expect(response.status).toBe(404);
+      expect(response.body.code).toBe('template_not_found');
+    });
+  });
+
   describe('DELETE /api/v1/teams/:teamId/practices/:practiceId', () => {
     it('should remove practice from team', async () => {
       const mockResult = {

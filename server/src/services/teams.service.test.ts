@@ -4,6 +4,7 @@ process.env.JWT_SECRET = 'test_secret_for_unit_tests_12345678901234567890';
 import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import * as teamsService from './teams.service';
 import * as teamsRepository from '../repositories/teams.repository';
+import * as practiceRepository from '../repositories/practice.repository';
 import { prisma } from '../lib/prisma';
 
 // Mock prisma
@@ -28,6 +29,7 @@ jest.mock('../lib/prisma', () => ({
 }));
 
 jest.mock('../repositories/teams.repository');
+jest.mock('../repositories/practice.repository');
 
 describe('teamsService.createTeam', () => {
   beforeEach(() => {
@@ -414,6 +416,149 @@ describe('teamsService.getPracticeRemovalImpact', () => {
       expect.objectContaining({
         code: 'invalid_practice_id',
         statusCode: 400
+      })
+    );
+  });
+});
+
+describe('teamsService.createCustomPracticeForTeam', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('creates a custom practice, links to team, and logs event', async () => {
+    const teamId = 2;
+    const userId = 7;
+    const payload = {
+      title: 'Team Retro Plus',
+      goal: 'Improve retrospective outcomes',
+      pillarIds: [1, 2],
+      categoryId: 'scrum'
+    };
+
+    (practiceRepository.validatePillarIds as jest.MockedFunction<typeof practiceRepository.validatePillarIds>)
+      .mockResolvedValue([]);
+    (practiceRepository.validateCategoryId as jest.MockedFunction<typeof practiceRepository.validateCategoryId>)
+      .mockResolvedValue(true);
+
+    const mockEventCreate = jest.fn().mockImplementation(async () => ({}));
+    const mockTx = {
+      event: { create: mockEventCreate }
+    } as any;
+
+    (prisma.$transaction as any).mockImplementation(async (callback: any) => callback(mockTx));
+
+    (practiceRepository.createPractice as jest.MockedFunction<typeof practiceRepository.createPractice>)
+      .mockResolvedValue({ id: 45 } as any);
+    (practiceRepository.createPracticePillars as jest.MockedFunction<typeof practiceRepository.createPracticePillars>)
+      .mockResolvedValue({ count: 2 } as any);
+    (practiceRepository.linkPracticeToTeam as jest.MockedFunction<typeof practiceRepository.linkPracticeToTeam>)
+      .mockResolvedValue({ id: 100 } as any);
+
+    jest.spyOn(teamsService, 'calculateTeamCoverage').mockResolvedValue(78);
+
+    const result = await teamsService.createCustomPracticeForTeam(teamId, userId, payload);
+
+    expect(result.practiceId).toBe(45);
+    expect(result.coverage).toBe(78);
+    expect(practiceRepository.createPractice).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: payload.title,
+        goal: payload.goal,
+        isGlobal: false,
+        category: {
+          connect: { id: payload.categoryId }
+        }
+      }),
+      mockTx
+    );
+    expect(practiceRepository.createPracticePillars).toHaveBeenCalledWith(45, payload.pillarIds, mockTx);
+    expect(practiceRepository.linkPracticeToTeam).toHaveBeenCalledWith(teamId, 45, mockTx);
+    expect(mockTx.event.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          eventType: 'practice.created',
+          teamId,
+          actorId: userId,
+          entityId: 45,
+          payload: expect.objectContaining({
+            teamId,
+            practiceId: 45,
+            isCustom: true
+          })
+        })
+      })
+    );
+  });
+
+  it('includes createdFrom when templatePracticeId is provided', async () => {
+    const teamId = 3;
+    const userId = 5;
+    const payload = {
+      title: 'Template Copy',
+      goal: 'Updated goal',
+      pillarIds: [2],
+      categoryId: 'kanban',
+      templatePracticeId: 99
+    };
+
+    (practiceRepository.validatePillarIds as jest.MockedFunction<typeof practiceRepository.validatePillarIds>)
+      .mockResolvedValue([]);
+    (practiceRepository.validateCategoryId as jest.MockedFunction<typeof practiceRepository.validateCategoryId>)
+      .mockResolvedValue(true);
+    (practiceRepository.findPracticeById as jest.MockedFunction<typeof practiceRepository.findPracticeById>)
+      .mockResolvedValue({ id: 99 } as any);
+
+    const mockEventCreate = jest.fn().mockImplementation(async () => ({}));
+    const mockTx = {
+      event: { create: mockEventCreate }
+    } as any;
+
+    (prisma.$transaction as any).mockImplementation(async (callback: any) => callback(mockTx));
+
+    (practiceRepository.createPractice as jest.MockedFunction<typeof practiceRepository.createPractice>)
+      .mockResolvedValue({ id: 50 } as any);
+    (practiceRepository.createPracticePillars as jest.MockedFunction<typeof practiceRepository.createPracticePillars>)
+      .mockResolvedValue({ count: 1 } as any);
+    (practiceRepository.linkPracticeToTeam as jest.MockedFunction<typeof practiceRepository.linkPracticeToTeam>)
+      .mockResolvedValue({ id: 111 } as any);
+
+    jest.spyOn(teamsService, 'calculateTeamCoverage').mockResolvedValue(41);
+
+    const result = await teamsService.createCustomPracticeForTeam(teamId, userId, payload);
+
+    expect(result.practiceId).toBe(50);
+    expect(mockTx.event.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          payload: expect.objectContaining({
+            createdFrom: 99
+          })
+        })
+      })
+    );
+  });
+
+  it('throws 404 if template practice does not exist', async () => {
+    const payload = {
+      title: 'Template Copy',
+      goal: 'Updated goal',
+      pillarIds: [2],
+      categoryId: 'kanban',
+      templatePracticeId: 999
+    };
+
+    (practiceRepository.validatePillarIds as jest.MockedFunction<typeof practiceRepository.validatePillarIds>)
+      .mockResolvedValue([]);
+    (practiceRepository.validateCategoryId as jest.MockedFunction<typeof practiceRepository.validateCategoryId>)
+      .mockResolvedValue(true);
+    (practiceRepository.findPracticeById as jest.MockedFunction<typeof practiceRepository.findPracticeById>)
+      .mockResolvedValue(null);
+
+    await expect(teamsService.createCustomPracticeForTeam(1, 1, payload)).rejects.toThrow(
+      expect.objectContaining({
+        code: 'template_not_found',
+        statusCode: 404
       })
     );
   });

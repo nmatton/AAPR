@@ -116,6 +116,23 @@ const addPracticeSchema = z.object({
 });
 
 /**
+ * Validation schema for creating a custom practice
+ */
+const createCustomPracticeSchema = z.object({
+  title: z.string()
+    .min(2, 'Title is required')
+    .max(100, 'Title must be between 2 and 100 characters'),
+  goal: z.string()
+    .min(1, 'Goal is required')
+    .max(500, 'Goal must be between 1 and 500 characters'),
+  pillarIds: z.array(z.number().int().positive())
+    .min(1, 'Select at least one pillar'),
+  categoryId: z.string()
+    .min(1, 'Category is required'),
+  templatePracticeId: z.number().int().positive().optional()
+});
+
+/**
  * GET /api/v1/teams/:teamId/practices/available
  * Get practices not yet selected by team
  * 
@@ -228,6 +245,54 @@ export const addPracticeToTeam = async (
     
     const result = await teamsService.addPracticeToTeam(teamId, userId, practiceId);
     
+    res.status(201).json({
+      ...result,
+      requestId: req.id
+    });
+  } catch (error: any) {
+    if (error && req.id) {
+      error.requestId = req.id;
+    }
+    next(error);
+  }
+};
+
+/**
+ * POST /api/v1/teams/:teamId/practices/custom
+ * Create a custom practice for a team (scratch or template)
+ * 
+ * @param req - Express request with teamId param and practice data
+ * @param res - Express response
+ * @param next - Express next function
+ */
+export const createCustomPractice = async (
+  req: Request<{ teamId: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const teamId = parseInt(req.params.teamId, 10);
+    const userId = req.user!.userId;
+
+    const validationResult = createCustomPracticeSchema.safeParse(req.body);
+
+    if (!validationResult.success) {
+      const details = validationResult.error.issues.map((issue) => ({
+        path: issue.path.join('.'),
+        message: issue.message,
+        code: issue.code
+      }));
+
+      throw new AppError(
+        'validation_error',
+        'Request validation failed',
+        details,
+        400
+      );
+    }
+
+    const result = await teamsService.createCustomPracticeForTeam(teamId, userId, validationResult.data);
+
     res.status(201).json({
       ...result,
       requestId: req.id
