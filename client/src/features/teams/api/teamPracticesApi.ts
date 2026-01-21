@@ -1,5 +1,5 @@
-import { apiClient } from '../../../lib/apiClient';
-import type { Practice } from '../../practices/types/practice';
+import { apiClient } from '../../../lib/apiClient'
+import type { Practice } from '../../practices/types'
 
 export interface AvailablePracticesParams {
   teamId: number;

@@ -65,6 +65,7 @@ const mockStore: PracticesState = {
   page: 1,
   pageSize: 20,
   catalogViewed: false,
+  lastTeamId: null,
   setSelectedPillars: vi.fn()
 }
 

@@ -47,6 +47,7 @@ beforeEach(() => {
     pageSize: 20,
     currentDetail: null,
     catalogViewed: false,
+    lastTeamId: null,
     searchQuery: '',
     selectedPillars: [],
     loadPractices: usePracticesStore.getState().loadPractices,
@@ -54,6 +55,7 @@ beforeEach(() => {
     setCurrentDetail: usePracticesStore.getState().setCurrentDetail,
     setSearchQuery: usePracticesStore.getState().setSearchQuery,
     setSelectedPillars: usePracticesStore.getState().setSelectedPillars,
+    setPillarFilters: usePracticesStore.getState().setPillarFilters,
     togglePillar: usePracticesStore.getState().togglePillar,
     clearFilters: usePracticesStore.getState().clearFilters,
     retry: usePracticesStore.getState().retry

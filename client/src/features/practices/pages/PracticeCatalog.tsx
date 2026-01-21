@@ -8,6 +8,8 @@ import { PracticeErrorState } from '../components/PracticeErrorState'
 import { PracticeCatalogDetail } from '../components/PracticeCatalogDetail'
 import { PillarFilterDropdown } from '../components/PillarFilterDropdown'
 
+const PAGE_SIZE = 100
+
 const CATEGORY_COLORS: Record<string, string> = {
   VALEURS_HUMAINES: 'bg-red-100 text-red-700',
   FEEDBACK_APPRENTISSAGE: 'bg-blue-100 text-blue-700',
@@ -78,7 +80,7 @@ export const PracticeCatalog = () => {
     const parsedTeamId = teamIdParam ? Number(teamIdParam) : null
     const teamId = Number.isFinite(parsedTeamId) ? parsedTeamId : null
     lastScrollPosition.current = window.scrollY
-    void loadPractices(1, 20, teamId)
+    void loadPractices(1, PAGE_SIZE, teamId)
   }, [loadPractices, searchParams, searchQuery, selectedPillars])
 
   useEffect(() => {
@@ -119,6 +121,7 @@ export const PracticeCatalog = () => {
   }, [clearFilters])
 
   const hasActiveFilters = searchQuery.length > 0 || selectedPillars.length > 0
+  const showControls = !isLoading && !error
   const emptyStateMessage = searchQuery.trim().length > 0
     ? `No practices found for "${searchQuery.trim()}". Try a different search.`
     : 'No practices found for the selected filters. Try a different search.'
@@ -177,6 +180,64 @@ export const PracticeCatalog = () => {
           </div>
         )}
 
+        {showControls && (
+          <div className="max-w-6xl mx-auto px-4 py-6">
+            <div className="mb-6 space-y-4">
+              <p className="text-gray-600 text-sm">Browse all practices with goals and pillar coverage.</p>
+
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Search practices..."
+                  value={localSearchQuery}
+                  onChange={(e) => setLocalSearchQuery(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+                {localSearchQuery && (
+                  <button
+                    onClick={() => setLocalSearchQuery('')}
+                    className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+
+              <div className="flex flex-wrap items-center gap-3">
+                <PillarFilterDropdown
+                  pillars={availablePillars}
+                  selectedPillars={selectedPillars}
+                  onToggle={togglePillar}
+                  onClear={handleClearFilters}
+                  isLoading={isPillarsLoading}
+                />
+              </div>
+
+              {hasActiveFilters && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  {selectedPillarLabels.map((pillar) => (
+                    <button
+                      key={pillar.id}
+                      type="button"
+                      onClick={() => togglePillar(pillar.id)}
+                      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${getPillarBadgeClass(pillar.category)}`}
+                    >
+                      {pillar.name}
+                      <span aria-hidden>×</span>
+                    </button>
+                  ))}
+                  <button
+                    onClick={handleClearFilters}
+                    className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                  >
+                    Clear All Filters
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {isLoading && (
           <div className="max-w-6xl mx-auto px-4 py-8 space-y-4">
             <div className="flex items-center justify-between">
@@ -209,15 +270,6 @@ export const PracticeCatalog = () => {
 
         {!isLoading && !error && practices.length === 0 && hasActiveFilters && (
           <div className="max-w-3xl mx-auto px-4 py-8 space-y-4">
-            <div className="mb-4">
-              <input
-                type="text"
-                placeholder="Search practices..."
-                value={localSearchQuery}
-                onChange={(e) => setLocalSearchQuery(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
             <div className="text-center py-12">
               <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -236,63 +288,7 @@ export const PracticeCatalog = () => {
 
         {!isLoading && !error && practices.length > 0 && (
           <div className="relative">
-            <div className="max-w-6xl mx-auto px-4 py-8">
-              <div className="mb-6 space-y-4">
-                <p className="text-gray-600 text-sm">Browse all practices with goals and pillar coverage.</p>
-                
-                {/* Search Input */}
-                <div className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search practices..."
-                    value={localSearchQuery}
-                    onChange={(e) => setLocalSearchQuery(e.target.value)}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                  {localSearchQuery && (
-                    <button
-                      onClick={() => setLocalSearchQuery('')}
-                      className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
-                    >
-                      ×
-                    </button>
-                  )}
-                </div>
-
-                  <div className="flex flex-wrap items-center gap-3">
-                    <PillarFilterDropdown
-                      pillars={availablePillars}
-                      selectedPillars={selectedPillars}
-                      onToggle={togglePillar}
-                      onClear={handleClearFilters}
-                      isLoading={isPillarsLoading}
-                    />
-                  </div>
-
-                {/* Active Filters Display */}
-                {hasActiveFilters && (
-                  <div className="flex items-center gap-2 flex-wrap">
-                    {selectedPillarLabels.map((pillar) => (
-                      <button
-                        key={pillar.id}
-                        type="button"
-                        onClick={() => togglePillar(pillar.id)}
-                        className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${getPillarBadgeClass(pillar.category)}`}
-                      >
-                        {pillar.name}
-                        <span aria-hidden>×</span>
-                      </button>
-                    ))}
-                    <button
-                      onClick={handleClearFilters}
-                      className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                      Clear All Filters
-                    </button>
-                  </div>
-                )}
-              </div>
-
+            <div className="max-w-6xl mx-auto px-4 py-2">
               <div
                 className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 transition-opacity ${isDebouncing ? 'opacity-60' : 'opacity-100'}`}
               >
