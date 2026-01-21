@@ -691,6 +691,45 @@ await createTeam("Alpha Squad", [1, 5, 12]);
 
 ---
 
+#### CategoryCoverageBreakdown
+**File:** `src/features/teams/components/CategoryCoverageBreakdown.tsx`
+
+**Features:**
+- Displays category-level coverage breakdown (5 categories)
+- Categories: VALEURS HUMAINES, FEEDBACK & APPRENTISSAGE, EXCELLENCE TECHNIQUE, ORGANISATION & AUTONOMIE, FLUX & RAPIDITÉ
+- Color-coded progress bars:
+  - Green (75%+): Strong coverage
+  - Yellow (50-74%): Moderate coverage
+  - Red (<50%): Gap, needs attention
+- Click category to expand and see:
+  - Covered pillars (✅)
+  - Gap pillars (❌)
+  - Warning message if category < 50%
+  - [View Available Practices] button to filter practice catalog by category
+- Filters practice catalog by category via URL parameter: `/teams/:teamId/practices/add?category=:categoryId`
+- Automatically refreshes after practice add/remove
+
+**UI highlights:**
+```tsx
+<CategoryCoverageBreakdown
+  categoryBreakdown={coverage.categoryBreakdown}
+  onViewPractices={handleViewPracticesByCategory}
+/>
+```
+
+**Props:**
+- `categoryBreakdown`: Array of category coverage data
+- `onViewPractices`: Callback function that navigates to filtered practice catalog
+
+**Behavior:**
+- Shows all 5 categories with percentages and pillar counts
+- Expands one category at a time (accordion pattern)
+- Warning badge (⚠️) for categories below 50%
+- Recommendation message for gap categories
+- Quick navigation to add practices from gap categories
+
+---
+
 #### PillarDetailModal
 **File:** `src/features/teams/components/PillarDetailModal.tsx`
 

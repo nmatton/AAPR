@@ -47,7 +47,18 @@ describe('teams routes - pillar coverage', () => {
         coveredCount: 14,
         totalCount: 19,
         coveredPillars: [{ id: 1, name: 'Communication', categoryId: 'values', categoryName: 'Human Values' }],
-        gapPillars: [{ id: 2, name: 'Transparency', categoryId: 'values', categoryName: 'Human Values' }]
+        gapPillars: [{ id: 2, name: 'Transparency', categoryId: 'values', categoryName: 'Human Values' }],
+        categoryBreakdown: [
+          {
+            categoryId: 'values',
+            categoryName: 'Human Values',
+            coveredCount: 1,
+            totalCount: 2,
+            coveragePct: 50,
+            coveredPillars: [{ id: 1, name: 'Communication', categoryId: 'values', categoryName: 'Human Values' }],
+            gapPillars: [{ id: 2, name: 'Transparency', categoryId: 'values', categoryName: 'Human Values' }]
+          }
+        ]
       })
 
     const response = await request(app)
@@ -60,6 +71,9 @@ describe('teams routes - pillar coverage', () => {
     expect(response.body.totalCount).toBe(19)
     expect(response.body.coveredPillars).toHaveLength(1)
     expect(response.body.gapPillars).toHaveLength(1)
+    expect(response.body.categoryBreakdown).toBeDefined()
+    expect(response.body.categoryBreakdown).toHaveLength(1)
+    expect(response.body.categoryBreakdown[0].categoryName).toBe('Human Values')
     expect(response.body.requestId).toBeDefined()
   })
 

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTeamsStore } from '../state/teamsSlice';
 import { useAddPracticesStore } from '../state/addPracticesSlice';
 import { PracticeCard } from '../../practices/components/PracticeCard';
@@ -10,6 +10,9 @@ import type { Practice } from '../types/practice.types';
 export const AddPracticesView = () => {
   const { teamId } = useParams<{ teamId: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const categoryFilter = searchParams.get('category');
+  
   const { teams, fetchTeams } = useTeamsStore();
   const { 
     practices, 
@@ -54,6 +57,11 @@ export const AddPracticesView = () => {
     return Array.from(pillarMap.values()).sort((a, b) => a.name.localeCompare(b.name));
   }, [practices]);
 
+  const filteredPractices = useMemo(() => {
+    if (!categoryFilter) return practices;
+    return practices.filter((practice) => practice.categoryId.toLowerCase() === categoryFilter.toLowerCase());
+  }, [practices, categoryFilter]);
+
   useEffect(() => {
     if (teams.length === 0) {
       fetchTeams();
@@ -78,6 +86,10 @@ export const AddPracticesView = () => {
       // Clear success message after 3 seconds (store timeout ID for cleanup)
       const timeoutId = window.setTimeout(() => setSuccessMessage(null), 3000);
       setSuccessTimeoutId(timeoutId);
+
+      if (categoryFilter) {
+        navigate(`/teams/${teamId}`);
+      }
     } catch (error) {
       // Error is handled in the store
     } finally {
@@ -126,6 +138,26 @@ export const AddPracticesView = () => {
         <p className="text-gray-600 mb-6">
           Select practices from the catalog to add to your team portfolio
         </p>
+
+        {/* Category filter notification */}
+        {categoryFilter && (
+          <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-between">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 text-blue-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              <p className="text-blue-800">
+                Showing practices from category: <strong>{categoryFilter.toUpperCase()}</strong>
+              </p>
+            </div>
+            <button
+              onClick={() => navigate(`/teams/${teamId}/practices/add`)}
+              className="text-sm text-blue-600 hover:text-blue-800 underline"
+            >
+              Clear category filter
+            </button>
+          </div>
+        )}
 
         {/* Success message */}
         {successMessage && (
@@ -214,7 +246,7 @@ export const AddPracticesView = () => {
         )}
 
         {/* Empty state */}
-        {!isLoading && !error && practices.length === 0 && (
+        {!isLoading && !error && filteredPractices.length === 0 && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <svg
               className="w-16 h-16 text-gray-400 mb-4"
@@ -230,10 +262,12 @@ export const AddPracticesView = () => {
               />
             </svg>
             <p className="text-gray-600 text-lg font-medium mb-2">
-              All practices already selected
+              {categoryFilter ? 'No practices found in this category' : 'All practices already selected'}
             </p>
             <p className="text-gray-500 mb-4">
-              Your team has already added all available practices
+              {categoryFilter 
+                ? 'Your team has already added all available practices from this category' 
+                : 'Your team has already added all available practices'}
             </p>
             <button
               onClick={() => navigate(`/teams/${teamId}`)}
@@ -245,13 +279,13 @@ export const AddPracticesView = () => {
         )}
 
         {/* Practices list */}
-        {!isLoading && !error && practices.length > 0 && (
+        {!isLoading && !error && filteredPractices.length > 0 && (
           <>
             <div className="mb-4 text-sm text-gray-600">
-              Showing {practices.length} of {total} practices
+              Showing {filteredPractices.length} of {total} practices{categoryFilter ? ` in ${categoryFilter.toUpperCase()}` : ''}
             </div>
             <div className="space-y-4 mb-6">
-              {practices.map((practice) => (
+              {filteredPractices.map((practice) => (
                 <PracticeCard
                   key={practice.id}
                   practice={practice}

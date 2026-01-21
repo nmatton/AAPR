@@ -1063,7 +1063,7 @@ This endpoint is called before showing the removal confirmation dialog to inform
 ---
 
 ### GET /api/v1/teams/:teamId/coverage/pillars
-Get pillar-level coverage for a team
+Get pillar-level coverage for a team, including category breakdown
 
 **Authentication:** Required  
 **Authorization:** User must be a member of the team  
@@ -1095,6 +1095,42 @@ Get pillar-level coverage for a team
       "description": "Visible work and outcomes"
     }
   ],
+  "categoryBreakdown": [
+    {
+      "categoryId": "values",
+      "categoryName": "VALEURS HUMAINES",
+      "coveredCount": 3,
+      "totalCount": 4,
+      "coveragePct": 75,
+      "coveredPillars": [
+        {
+          "id": 1,
+          "name": "Communication",
+          "categoryId": "values",
+          "categoryName": "VALEURS HUMAINES",
+          "description": "Clear communication within teams"
+        }
+      ],
+      "gapPillars": [
+        {
+          "id": 4,
+          "name": "Respect",
+          "categoryId": "values",
+          "categoryName": "VALEURS HUMAINES",
+          "description": "Respectful collaboration"
+        }
+      ]
+    },
+    {
+      "categoryId": "feedback",
+      "categoryName": "FEEDBACK & APPRENTISSAGE",
+      "coveredCount": 2,
+      "totalCount": 4,
+      "coveragePct": 50,
+      "coveredPillars": [],
+      "gapPillars": []
+    }
+  ],
   "requestId": "req_cov_123"
 }
 ```
@@ -1105,9 +1141,18 @@ Get pillar-level coverage for a team
 - `totalCount`: Total pillars in framework (19)
 - `coveredPillars`: Pillars covered by the team's selected practices
 - `gapPillars`: Pillars not yet covered by the team
+- `categoryBreakdown`: Array of category-level coverage breakdowns
+  - `categoryId`: Category identifier
+  - `categoryName`: Category display name (5 categories: VALEURS HUMAINES, FEEDBACK & APPRENTISSAGE, EXCELLENCE TECHNIQUE, ORGANISATION & AUTONOMIE, FLUX & RAPIDITÉ)
+  - `coveredCount`: Number of covered pillars in this category
+  - `totalCount`: Total pillars in this category
+  - `coveragePct`: Coverage percentage for this category (0-100)
+  - `coveredPillars`: Pillars covered in this category
+  - `gapPillars`: Pillars not covered in this category
 
 **Side Effects:**
-- Event logged: `coverage.calculated` (informational)
+- Event logged: `coverage.by_category.calculated` (informational)
+- Event payload includes category breakdown summary
 
 **Errors:**
 - 400: `{ "code": "invalid_team_id", "message": "Valid team ID is required", "requestId": "..." }`

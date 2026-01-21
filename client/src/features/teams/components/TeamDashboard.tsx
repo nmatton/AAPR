@@ -6,6 +6,7 @@ import { InviteMembersPanel } from './InviteMembersPanel';
 import { TeamMembersPanel } from './TeamMembersPanel';
 import { TeamPracticesPanel } from './TeamPracticesPanel';
 import { TeamCoverageCard } from './TeamCoverageCard';
+import { CategoryCoverageBreakdown } from './CategoryCoverageBreakdown';
 
 export const TeamDashboard = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -28,6 +29,11 @@ export const TeamDashboard = () => {
     if (!selectedTeam) return;
     await Promise.all([fetchTeams(), fetchCoverage(selectedTeam.id)]);
   }, [fetchCoverage, fetchTeams, selectedTeam]);
+
+  const handleViewPracticesByCategory = useCallback((categoryId: string) => {
+    if (!selectedTeam) return;
+    navigate(`/teams/${selectedTeam.id}/practices/add?category=${categoryId}`);
+  }, [navigate, selectedTeam]);
 
   useEffect(() => {
     if (selectedTeam) {
@@ -121,6 +127,12 @@ export const TeamDashboard = () => {
               error={coverageError}
               onRefresh={refreshCoverage}
             />
+            {coverage && coverage.categoryBreakdown && coverage.categoryBreakdown.length > 0 && (
+              <CategoryCoverageBreakdown 
+                categoryBreakdown={coverage.categoryBreakdown}
+                onViewPractices={handleViewPracticesByCategory}
+              />
+            )}
             <InviteMembersPanel teamId={selectedTeam.id} teamName={selectedTeam.name} />
             <TeamMembersPanel teamId={selectedTeam.id} />
             <TeamPracticesPanel teamId={selectedTeam.id} onPracticeRemoved={refreshCoverage} />

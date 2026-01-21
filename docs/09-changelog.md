@@ -506,6 +506,75 @@ Last Updated: January 21, 2026
 
 ---
 
+### Story 2-7: View Team Coverage by Category
+
+**Status:** ✅ COMPLETE  
+**Date:** January 21, 2026  
+**Developer:** Nicolas (via Dev Agent - Claude Sonnet 4.5)
+
+**What Was Built:**
+
+**Backend:**
+- **Endpoint:** Extended `GET /api/v1/teams/:teamId/coverage/pillars` with `categoryBreakdown` field
+- **Service:** Enhanced `coverage.service.getTeamPillarCoverage(teamId)`
+  - Added `calculateCategoryBreakdown()` helper function
+  - Groups pillars by category (5 categories: VALEURS HUMAINES, FEEDBACK & APPRENTISSAGE, EXCELLENCE TECHNIQUE, ORGANISATION & AUTONOMIE, FLUX & RAPIDITÉ)
+  - Calculates coverage percentage per category
+  - Returns covered/gap pillars for each category
+  - Logs `coverage.by_category.calculated` event (informational)
+- **Types:** Added `CategoryCoverage` interface with category-level breakdown structure
+
+**Frontend:**
+- **Component:** `CategoryCoverageBreakdown`
+  - Displays all 5 categories with progress bars
+  - Color-coded: Green (75%+), Yellow (50-74%), Red (<50%)
+  - Expandable accordion to show pillar details per category
+  - Warning badges and recommendations for gap categories (<50%)
+  - [View Available Practices] button filters practice catalog by category
+- **Page:** Enhanced `AddPracticesView`
+  - Reads `?category=` URL parameter
+  - Filters practices by category when parameter present
+  - Shows category filter notification with clear button
+  - Updated empty state messaging for category filtering
+- **State:** Extended `TeamPillarCoverage` type to include `categoryBreakdown: CategoryCoverage[]`
+- **Integration:** Team Dashboard displays `CategoryCoverageBreakdown` below `TeamCoverageCard`
+  - Shares refresh mechanism with pillar coverage
+  - Automatically updates after practice add/remove
+
+**Testing:**
+- Backend:
+  - `coverage.service.test.ts`: 
+    - Category breakdown calculation accuracy
+    - Color coding threshold validation (75%, 50%, 25%)
+    - Event logging with category breakdown summary
+    - Multiple category handling
+  - `teams.coverage.routes.test.ts`: Updated to validate `categoryBreakdown` field in response
+- Frontend:
+  - `CategoryCoverageBreakdown.test.tsx`:
+    - Renders all categories with percentages
+    - Applies correct color coding (green/yellow/red)
+    - Expands/collapses category details
+    - Shows covered/gap pillars separately
+    - Displays warning for categories <50%
+    - Calls `onViewPractices` callback
+    - Accordion behavior (one category expanded at a time)
+  - All 148 backend tests pass ✅
+  - All 10 frontend component tests pass ✅
+
+**Documentation Updated:**
+- `docs/05-backend-api.md`: Updated coverage/pillars endpoint with `categoryBreakdown` field and example response
+- `docs/06-frontend.md`: Documented `CategoryCoverageBreakdown` component with props, behavior, and UI patterns
+- `docs/09-changelog.md`: Added Story 2-7 entry
+
+**Technical Decisions:**
+- Extended existing coverage endpoint rather than creating new endpoint (maintains backward compatibility)
+- Category grouping uses `pillar.categoryId` field from database
+- Color coding thresholds align with agile maturity assessment standards
+- Practice catalog filtering uses URL query parameter for shareable links
+- Event logging includes category breakdown summary for research audit trail
+
+---
+
 ### Story 2-0: Import Practice Data from JSON
 
 **Status:** ✅ COMPLETE  
