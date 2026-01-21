@@ -2,7 +2,7 @@
 
 **Backend API Reference for AAPR Platform**
 
-Last Updated: January 19, 2026  
+Last Updated: January 21, 2026  
 Base URL: `http://localhost:3000`  
 Stack: Node.js 18+, Express 4.18+, TypeScript 5.2+
 
@@ -341,6 +341,109 @@ AAPR Team
 - `invite.created` (team_id, email, invited_by)
 - `invite.auto_resolved` (team_id, email, user_id) - if existing user
 - `invite.email_failed` (team_id, email, error_message) - if email fails
+
+---
+
+### Team Practices
+
+#### GET /api/v1/teams/:teamId/practices/available
+Get practices not yet selected by the team
+
+**Authentication:** Required  
+**Authorization:** User must be a member of the team
+
+**Query Parameters:**
+- `page` (optional): Page number, default `1`
+- `pageSize` (optional): Items per page, default `20`, max `100`
+- `search` (optional): Search in title, goal, or description (case-insensitive)
+- `pillars` (optional): Comma-separated pillar IDs to filter by (e.g., `1,3,5`)
+
+**Response (200):**
+```json
+{
+  "items": [
+    {
+      "id": 42,
+      "title": "Daily Stand-up",
+      "goal": "Improve team communication through brief daily synchronization meetings",
+      "description": "A short daily meeting where team members share progress...",
+      "pillarId": 5,
+      "pillar": {
+        "id": 5,
+        "name": "Communication",
+        "color": "#10B981"
+      }
+    }
+  ],
+  "page": 1,
+  "pageSize": 20,
+  "total": 45,
+  "requestId": "req_abc123"
+}
+```
+
+**Filtering Logic:**
+- Returns only practices NOT in the team's `team_practices` table
+- Search matches substring in `title`, `goal`, or `description`
+- Pillar filter returns practices linked to ANY of the specified pillars
+
+**Errors:**
+- 401: `{ "code": "UNAUTHORIZED", "message": "Authentication required" }`
+- 403: `{ "code": "FORBIDDEN", "message": "Not a team member" }`
+- 404: `{ "code": "NOT_FOUND", "message": "Team not found" }`
+
+---
+
+#### POST /api/v1/teams/:teamId/practices
+Add a practice to the team's portfolio
+
+**Authentication:** Required  
+**Authorization:** User must be a member of the team
+
+**Request:**
+```json
+{
+  "practiceId": 42
+}
+```
+
+**Validation:**
+- `practiceId`: Must be a valid practice ID
+- Practice must not already be in team's portfolio
+
+**Response (201):**
+```json
+{
+  "teamPractice": {
+    "id": 123,
+    "teamId": 5,
+    "practiceId": 42,
+    "addedAt": "2026-01-19T10:30:00.000Z",
+    "addedBy": 8
+  },
+  "coverage": {
+    "pillars_covered": 13,
+    "coverage": 68
+  },
+  "requestId": "req_xyz789"
+}
+```
+
+**Side Effects:**
+- Inserts row into `team_practices`
+- Logs event `practice.added` (team_id, practice_id, actor_id)
+- **Both operations execute in a transaction**
+- After transaction: Recalculates team coverage via `calculateTeamCoverage(teamId)`
+
+**Errors:**
+- 400: `{ "code": "VALIDATION_ERROR", "message": "Invalid practiceId" }`
+- 401: `{ "code": "UNAUTHORIZED", "message": "Authentication required" }`
+- 403: `{ "code": "FORBIDDEN", "message": "Not a team member" }`
+- 404: `{ "code": "NOT_FOUND", "message": "Practice not found" }`
+- 409: `{ "code": "CONFLICT", "message": "Practice already in team portfolio" }`
+
+**Events Logged:**
+- `practice.added` (team_id, practice_id, actor_id)
 
 ---
 

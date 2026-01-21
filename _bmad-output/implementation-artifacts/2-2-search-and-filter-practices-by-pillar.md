@@ -1,6 +1,6 @@
 # Story 2.2: Search and Filter Practices by Pillar
 
-Status: review
+Status: in-progress
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -83,14 +83,14 @@ So that **I can quickly find practices that cover the principles I care about**.
   - [x] Clear icon [X] visible when text entered
   - [x] Clicking [X] clears search immediately
 
-- [ ] **Frontend: Pillar filter dropdown** (AC: #4-6)
-  - [ ] Component: New `PillarFilterDropdown.tsx`
-  - [ ] Dropdown trigger: [Filter by Pillar] button or chevron icon
-  - [ ] List: All 19 pillars (grouped by category)
-  - [ ] Multi-select: Checkboxes for each pillar
-  - [ ] Visual indicator: Badge showing "N selected" when filters active
-  - [ ] Category grouping: VALEURS_HUMAINES, FEEDBACK_APPRENTISSAGE, etc. with visual separators
-  - [ ] Color coding: Each pillar badge colored by category
+- [x] **Frontend: Pillar filter dropdown** (AC: #4-6)
+  - [x] Component: New `PillarFilterDropdown.tsx`
+  - [x] Dropdown trigger: [Filter by Pillar] button or chevron icon
+  - [x] List: All 19 pillars (grouped by category)
+  - [x] Multi-select: Checkboxes for each pillar
+  - [x] Visual indicator: Badge showing "N selected" when filters active
+  - [x] Category grouping: VALEURS_HUMAINES, FEEDBACK_APPRENTISSAGE, etc. with visual separators
+  - [x] Color coding: Each pillar badge colored by category
 
 - [x] **Frontend: Results update and clearing** (AC: #2, #7)
   - [x] Implement debounced API call on search/filter change
@@ -105,11 +105,11 @@ So that **I can quickly find practices that cover the principles I care about**.
   - [x] Display: When search results are empty
   - [x] Action: [Clear Search] button or suggest popular pillars
 
-- [ ] **Frontend: Results updated toast** (AC: #8)
-  - [ ] Toast library: Use existing toast system from Epic 1 (or add if missing)
-  - [ ] Message: "Results updated (X practices found)"
-  - [ ] Duration: 2-3 seconds auto-dismiss
-  - [ ] Trigger: After debounce completes and results change
+- [x] **Frontend: Results updated toast** (AC: #8)
+  - [x] Toast library: Use existing toast system from Epic 1 (or add if missing)
+  - [x] Message: "Results updated (X practices found)"
+  - [x] Duration: 2-3 seconds auto-dismiss
+  - [x] Trigger: After debounce completes and results change
 
 - [x] **Frontend: Zustand state updates** (AC: #1-9)
   - [x] File: Update `client/src/features/practices/state/practices.slice.ts`
@@ -125,17 +125,17 @@ So that **I can quickly find practices that cover the principles I care about**.
   - [x] Error handling: Handle 400 Bad Request (invalid pillars)
 
 - [ ] **Frontend: UI refinements** (AC: #1-9)
-  - [ ] Show active filter badges: "Communication ×" with click to remove
-  - [ ] Highlight matching text in practice names during search
+  - [x] Show active filter badges: "Communication ×" with click to remove
+  - [x] Highlight matching text in practice names during search
   - [ ] Disable pagination when results < pageSize
-  - [ ] Preserve scroll position when filtering
-  - [ ] Loading state during debounce: Subtle shimmer or reduced opacity
+  - [x] Preserve scroll position when filtering
+  - [x] Loading state during debounce: Subtle shimmer or reduced opacity
 
 - [ ] **Backend: Query performance optimization** (AC: #1-9)
-  - [ ] Add indexes: ON (practice.title), (practice.goal) if not exists
-  - [ ] Add indexes: ON practice_pillars (practice_id, pillar_id) for filter queries
+  - [x] Add indexes: ON (practice.title), (practice.goal) if not exists
+  - [x] Add indexes: ON practice_pillars (practice_id, pillar_id) for filter queries
   - [ ] Test: Query time for worst-case (search all + filter all pillars) < 200ms
-  - [ ] Repository: Use Prisma's `findMany()` with `where` clause composition
+  - [x] Repository: Use Prisma's `findMany()` with `where` clause composition
 
 - [x] **Testing: API endpoint tests** (AC: #1-9)
   - [x] File: `server/src/routes/__tests__/practices.routes.test.ts` (update existing)
@@ -149,32 +149,32 @@ So that **I can quickly find practices that cover the principles I care about**.
   - [x] Test: Pagination works with filters applied
   - [x] Performance: Query completes in < 200ms
 
-- [ ] **Testing: Frontend component tests** (AC: #1-9)
-  - [ ] File: `client/src/features/practices/pages/PracticeCatalog.test.tsx` (update)
-  - [ ] Test: Search input filters practices
-  - [ ] Test: Clearing search restores full list
-  - [ ] Test: Pillar dropdown shows all 19 pillars
-  - [ ] Test: Selecting pillar filters practices
-  - [ ] Test: Multiple pillar selection (OR logic)
-  - [ ] Test: Clear Filters button resets search + filters
-  - [ ] Test: Empty state displayed when no results
-  - [ ] Test: Toast notification appears on results change
-  - [ ] Test: Event logged with correct parameters
+- [x] **Testing: Frontend component tests** (AC: #1-9)
+  - [x] File: `client/src/features/practices/pages/PracticeCatalog.test.tsx` (update)
+  - [x] Test: Search input filters practices
+  - [x] Test: Clearing search restores full list
+  - [x] Test: Pillar dropdown shows all 19 pillars
+  - [x] Test: Selecting pillar filters practices
+  - [x] Test: Multiple pillar selection (OR logic)
+  - [x] Test: Clear Filters button resets search + filters
+  - [x] Test: Empty state displayed when no results
+  - [x] Test: Toast notification appears on results change
+  - [x] Test: Event logged with correct parameters
 
-- [ ] **Testing: Frontend Zustand slice tests** (AC: #1-9)
-  - [ ] File: `client/src/features/practices/state/practices.slice.test.ts` (update)
-  - [ ] Test: setSearchQuery updates state
-  - [ ] Test: setPillarFilters updates state
-  - [ ] Test: clearFilters resets both search + filters
-  - [ ] Test: selectFilteredPractices returns correct subset
-  - [ ] Test: selectHasActiveFilters returns true/false correctly
+- [x] **Testing: Frontend Zustand slice tests** (AC: #1-9)
+  - [x] File: `client/src/features/practices/state/practices.slice.test.ts` (update)
+  - [x] Test: setSearchQuery updates state
+  - [x] Test: setPillarFilters updates state
+  - [x] Test: clearFilters resets both search + filters
+  - [x] Test: selectFilteredPractices returns correct subset
+  - [x] Test: selectHasActiveFilters returns true/false correctly
 
-- [ ] **Testing: API client tests** (AC: #1-9)
-  - [ ] File: `client/src/features/practices/api/practices.api.test.ts` (update)
-  - [ ] Test: fetchPractices with search parameter
-  - [ ] Test: fetchPractices with pillar filter
-  - [ ] Test: fetchPractices with combined search + filter
-  - [ ] Test: Query string correctly formatted
+- [x] **Testing: API client tests** (AC: #1-9)
+  - [x] File: `client/src/features/practices/api/practices.api.test.ts` (update)
+  - [x] Test: fetchPractices with search parameter
+  - [x] Test: fetchPractices with pillar filter
+  - [x] Test: fetchPractices with combined search + filter
+  - [x] Test: Query string correctly formatted
 
 - [ ] **Integration: Search/filter state persistence (optional for MVP)** (AC: #1-9)
   - [ ] Consider: Save search/filter state to URL query params (e.g., `?search=standup&pillars=5,8`)
@@ -184,9 +184,10 @@ So that **I can quickly find practices that cover the principles I care about**.
 
 - [x] **Documentation updates** (Mandatory)
   - [x] `docs/05-backend-api.md`: Update GET /api/v1/practices with search/filter params
-  - [ ] `docs/06-frontend.md`: Add search/filter component descriptions
+  - [x] `docs/06-frontend.md`: Add search/filter component descriptions
+  - [x] `docs/04-database.md`: Add search/filter index documentation
   - [x] `docs/09-changelog.md`: Add Story 2.2 entry under Epic 2
-  - [ ] Update "Last Updated" dates in all modified files
+  - [x] Update "Last Updated" dates in all modified files
 
 ## Dev Notes
 
@@ -744,9 +745,6 @@ Claude Haiku 4.5 (via GitHub Copilot - SM Agent)
 
 **Known Limitations (Future Enhancements):**
 - Pillar filter dropdown UI not implemented (basic filter state added, full dropdown deferred)
-- Toast notifications not implemented (no toast library in current stack)
-- Event logging not implemented (will add when event system is available)
-- Search highlight not implemented (basic search working, highlight deferred)
 - URL persistence not implemented (filter state preserved in Zustand only)
 
 **Testing:**
@@ -758,6 +756,39 @@ Claude Haiku 4.5 (via GitHub Copilot - SM Agent)
 **Change Log:**
 - January 20, 2026: Implemented search and filter functionality with TDD approach
 
+**January 20, 2026 - Nicolas (Code Review Fixes)**
+
+✅ **Review Fixes Applied**
+
+**Fix Summary:**
+- Frontend: Highlighted search matches in practice titles
+- Frontend: Added results-updated toast (2.5s) on search/filter changes
+- Frontend: Added catalog.searched event logging
+- Frontend: Added pillar filter dropdown with category grouping
+- Frontend: Added active filter badges and pillar discovery loader
+- Frontend: Updated empty-state message to include query
+- Backend: Removed `any` usage in repository filter builder
+- Backend: Added practice search/filter indexes
+
+**Change Log:**
+- January 20, 2026: Code review fixes for AC #1/#3/#8/#9 and typing cleanup
+- January 20, 2026: Added pillar filter dropdown UI and search/filter tests
+- January 20, 2026: Added practice search/filter indexes
+
+**January 21, 2026 - Nicolas (Code Review Fixes)**
+
+✅ **Review Fixes Applied**
+
+**Fix Summary:**
+- Frontend: Fixed filter badge rendering and results-updated toast behavior
+- Frontend: Corrected teamId source for catalog event logging
+- Frontend: Added catalog.searched event logging and pillar discovery loader
+- Backend: Removed remaining `any[]` filter usage in practice repository
+- Note: Repository also contains unrelated in-progress Story 2.3 changes not documented in this story file
+
+**Change Log:**
+- January 21, 2026: Code review fixes for search/filter logging, dropdown data loading, and repository typing
+
 ### File List
 
 **Backend Files:**
@@ -766,15 +797,27 @@ Claude Haiku 4.5 (via GitHub Copilot - SM Agent)
 - `server/src/controllers/practices.controller.ts` - Updated getPractices to parse search/pillars params
 - `server/src/services/__tests__/practices.service.test.ts` - Added 7 tests for search/filter
 - `server/src/routes/__tests__/practices.routes.test.ts` - Added 7 tests for API endpoint
+- `server/prisma/schema.prisma` - Added search/filter indexes
+- `server/prisma/migrations/20260120123000_add_practice_search_indexes/migration.sql` - Index migration
 
 **Frontend Files:**
 - `client/src/features/practices/api/practices.api.ts` - Updated fetchPractices signature
 - `client/src/features/practices/state/practices.slice.ts` - Added search/filter state + actions
 - `client/src/features/practices/pages/PracticeCatalog.tsx` - Added search input, clear filters, debounce
+- `client/src/features/practices/components/PracticeCard.tsx` - Highlight search matches in titles
+- `client/src/features/practices/components/PillarFilterDropdown.tsx` - Pillar filter dropdown
+- `client/src/features/practices/pages/PracticeCatalog.test.tsx` - Search/filter UI tests
+- `client/src/features/practices/state/practices.slice.test.ts` - Search/filter state tests
+- `client/src/features/practices/api/practices.api.test.ts` - Search/filter API tests
 
 **Documentation Files:**
 - `docs/05-backend-api.md` - Updated GET /api/v1/practices with search/filter params
 - `docs/09-changelog.md` - Added Story 2.2 entry
+- `docs/06-frontend.md` - Documented search/filter UI and components
+- `docs/04-database.md` - Documented practice search/filter indexes
+
+**Tracking Files:**
+- `_bmad-output/implementation-artifacts/sprint-status.yaml` - Story status sync
 
 ---
 

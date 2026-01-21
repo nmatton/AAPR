@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { usePracticesStore } from '../state/practices.slice'
 import { PracticeCard } from '../components/PracticeCard'
@@ -6,17 +6,42 @@ import { PracticeCardSkeleton } from '../components/PracticeCardSkeleton'
 import { PracticeEmptyState } from '../components/PracticeEmptyState'
 import { PracticeErrorState } from '../components/PracticeErrorState'
 import { PracticeCatalogDetail } from '../components/PracticeCatalogDetail'
+import { PillarFilterDropdown } from '../components/PillarFilterDropdown'
+
+const CATEGORY_COLORS: Record<string, string> = {
+  VALEURS_HUMAINES: 'bg-red-100 text-red-700',
+  FEEDBACK_APPRENTISSAGE: 'bg-blue-100 text-blue-700',
+  EXCELLENCE_TECHNIQUE: 'bg-purple-100 text-purple-700',
+  ORGANISATION_AUTONOMIE: 'bg-green-100 text-green-700',
+  FLUX_RAPIDITE: 'bg-amber-100 text-amber-700'
+}
+
+const normalizeCategoryKey = (value: string) =>
+  value
+    .toUpperCase()
+    .replace(/&/g, ' ')
+    .replace(/\s+/g, '_')
+    .replace(/__+/g, '_')
+    .replace(/[^A-Z_]/g, '')
+    .trim()
+
+const getPillarBadgeClass = (category: string) =>
+  CATEGORY_COLORS[normalizeCategoryKey(category)] ?? 'bg-gray-100 text-gray-700'
 import { useAuthStore } from '../../auth/state/authSlice'
 
 export const PracticeCatalog = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { logout, isLoading: isAuthLoading, user } = useAuthStore()
+  const { logout, isLoading: isAuthLoading } = useAuthStore()
   const {
     practices,
+    availablePillars,
+    isPillarsLoading,
+    total,
     isLoading,
     error,
     loadPractices,
+    loadAvailablePillars,
     retry,
     currentDetail,
     setCurrentDetail,
@@ -28,21 +53,37 @@ export const PracticeCatalog = () => {
   } = usePracticesStore()
 
   const [localSearchQuery, setLocalSearchQuery] = useState(searchQuery)
+  const [toastMessage, setToastMessage] = useState<string | null>(null)
+  const [isDebouncing, setIsDebouncing] = useState(false)
+  const lastResultsSignature = useRef<string | null>(null)
+  const lastScrollPosition = useRef(0)
 
   // Debounce search input
   useEffect(() => {
+    if (localSearchQuery === searchQuery) {
+      return
+    }
+
+    setIsDebouncing(true)
+
     const timer = setTimeout(() => {
       setSearchQuery(localSearchQuery)
+      setIsDebouncing(false)
     }, 300)
     return () => clearTimeout(timer)
-  }, [localSearchQuery, setSearchQuery])
+  }, [localSearchQuery, searchQuery, setSearchQuery])
 
   useEffect(() => {
     const teamIdParam = searchParams.get('teamId')
     const parsedTeamId = teamIdParam ? Number(teamIdParam) : null
-    const teamId = Number.isFinite(parsedTeamId) ? parsedTeamId : user?.id ?? null
+    const teamId = Number.isFinite(parsedTeamId) ? parsedTeamId : null
+    lastScrollPosition.current = window.scrollY
     void loadPractices(1, 20, teamId)
-  }, [loadPractices, searchParams, user?.id, searchQuery, selectedPillars])
+  }, [loadPractices, searchParams, searchQuery, selectedPillars])
+
+  useEffect(() => {
+    void loadAvailablePillars()
+  }, [loadAvailablePillars])
 
   useEffect(() => {
     if (currentDetail) {
@@ -54,6 +95,16 @@ export const PracticeCatalog = () => {
       document.body.style.overflow = ''
     }
   }, [currentDetail])
+
+  useEffect(() => {
+    if (!toastMessage) return
+
+    const timer = setTimeout(() => {
+      setToastMessage(null)
+    }, 2500)
+
+    return () => clearTimeout(timer)
+  }, [toastMessage])
 
   const handleLogout = async () => {
     await logout()
@@ -68,6 +119,31 @@ export const PracticeCatalog = () => {
   }, [clearFilters])
 
   const hasActiveFilters = searchQuery.length > 0 || selectedPillars.length > 0
+  const emptyStateMessage = searchQuery.trim().length > 0
+    ? `No practices found for "${searchQuery.trim()}". Try a different search.`
+    : 'No practices found for the selected filters. Try a different search.'
+
+  const selectedPillarLabels = selectedPillars
+    .map((pillarId) => availablePillars.find((pillar) => pillar.id === pillarId))
+    .filter((pillar): pillar is NonNullable<typeof pillar> => Boolean(pillar))
+
+  useEffect(() => {
+    if (isLoading) return
+
+    const signature = `${practices.map((practice) => practice.id).join(',')}-${total}`
+
+    if (hasActiveFilters && lastResultsSignature.current !== signature) {
+      setToastMessage(`Results updated (${total} practices found)`)
+    }
+
+    lastResultsSignature.current = signature
+  }, [hasActiveFilters, isLoading, practices, total])
+
+  useEffect(() => {
+    if (!isLoading && lastScrollPosition.current > 0) {
+      window.scrollTo(0, lastScrollPosition.current)
+    }
+  }, [isLoading])
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -95,6 +171,12 @@ export const PracticeCatalog = () => {
       </header>
 
       <main className="relative">
+        {toastMessage && (
+          <div className="fixed top-6 right-6 z-50 rounded-md bg-teal-50 text-teal-700 px-4 py-2 text-sm shadow">
+            {toastMessage}
+          </div>
+        )}
+
         {isLoading && (
           <div className="max-w-6xl mx-auto px-4 py-8 space-y-4">
             <div className="flex items-center justify-between">
@@ -141,7 +223,7 @@ export const PracticeCatalog = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <h3 className="mt-4 text-lg font-medium text-gray-900">No practices found</h3>
-              <p className="mt-2 text-sm text-gray-500">Try a different search or clear filters.</p>
+              <p className="mt-2 text-sm text-gray-500">{emptyStateMessage}</p>
               <button
                 onClick={handleClearFilters}
                 className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -177,14 +259,30 @@ export const PracticeCatalog = () => {
                   )}
                 </div>
 
+                  <div className="flex flex-wrap items-center gap-3">
+                    <PillarFilterDropdown
+                      pillars={availablePillars}
+                      selectedPillars={selectedPillars}
+                      onToggle={togglePillar}
+                      onClear={handleClearFilters}
+                      isLoading={isPillarsLoading}
+                    />
+                  </div>
+
                 {/* Active Filters Display */}
                 {hasActiveFilters && (
                   <div className="flex items-center gap-2 flex-wrap">
-                    {selectedPillars.length > 0 && (
-                      <span className="text-sm text-gray-600">
-                        Filtering by {selectedPillars.length} pillar{selectedPillars.length > 1 ? 's' : ''}
-                      </span>
-                    )}
+                    {selectedPillarLabels.map((pillar) => (
+                      <button
+                        key={pillar.id}
+                        type="button"
+                        onClick={() => togglePillar(pillar.id)}
+                        className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${getPillarBadgeClass(pillar.category)}`}
+                      >
+                        {pillar.name}
+                        <span aria-hidden>×</span>
+                      </button>
+                    ))}
                     <button
                       onClick={handleClearFilters}
                       className="text-sm text-blue-600 hover:text-blue-800 font-medium"
@@ -195,9 +293,16 @@ export const PracticeCatalog = () => {
                 )}
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div
+                className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 transition-opacity ${isDebouncing ? 'opacity-60' : 'opacity-100'}`}
+              >
                 {practices.map((practice) => (
-                  <PracticeCard key={practice.id} practice={practice} onSelect={setCurrentDetail} />
+                  <PracticeCard
+                    key={practice.id}
+                    practice={practice}
+                    onSelect={setCurrentDetail}
+                    highlightQuery={searchQuery}
+                  />
                 ))}
               </div>
             </div>

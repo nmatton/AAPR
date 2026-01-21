@@ -190,6 +190,15 @@ Last Updated: January 20, 2026
   - Pagination resets to page 1 when filters change
   - Loading skeletons shown during debounce
   - Filter state preserved in Zustand (survives component remounts)
+
+  **Review Fixes (January 20, 2026):**
+  - Added Pillar filter dropdown UI with category grouping and multi-select
+  - Added active filter badges with remove buttons
+  - Added search term highlighting in practice titles
+  - Added “Results updated” toast on filter/search change
+  - Added `catalog.searched` event logging
+  - Added pillar discovery loader from unfiltered catalog
+  - Expanded frontend tests for search, filters, and toast
 - **Updated Components:**
   - `PracticeCatalog.tsx`: Added search input UI, filter state, clear filters button
   - All components responsive and accessible
@@ -215,6 +224,8 @@ Last Updated: January 20, 2026
   - `client/src/features/practices/state/practices.slice.ts`: +5 actions, +2 state fields
   - `client/src/features/practices/api/practices.api.ts`: Updated fetchPractices signature
   - `client/src/features/practices/pages/PracticeCatalog.tsx`: +search input, +filter UI, +empty states
+  - `client/src/features/practices/components/PillarFilterDropdown.tsx`: Pillar filter dropdown
+  - `client/src/features/practices/components/PracticeCard.tsx`: Search match highlighting
 - Documentation:
   - `docs/05-backend-api.md`
   - `docs/09-changelog.md`

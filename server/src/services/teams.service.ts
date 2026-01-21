@@ -1,7 +1,9 @@
 import * as teamsRepository from '../repositories/teams.repository';
+import * as practiceRepository from '../repositories/practice.repository';
 import type { TeamWithStats, TeamPracticeWithPillars } from '../repositories/teams.repository';
 import { prisma } from '../lib/prisma';
 import { AppError } from './auth.service';
+import type { PracticeDto } from './practices.service';
 
 /**
  * Team information returned to client
@@ -176,6 +178,184 @@ export const createTeam = async (
     coverage,
     role: 'owner',
     createdAt: team.createdAt.toISOString()
+  };
+};
+
+/**
+ * Practices response for available practices query
+ */
+export interface AvailablePracticesResponse {
+  items: PracticeDto[];
+  page: number;
+  pageSize: number;
+  total: number;
+}
+
+/**
+ * Query parameters for available practices
+ */
+export interface AvailablePracticesParams {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  pillars?: number[];
+}
+
+/**
+ * Get practices not yet selected by team (for Add Practices view)
+ * Supports search and pillar filters (reusing practice catalog patterns)
+ * 
+ * @param teamId - Team identifier
+ * @param params - Query parameters (pagination, search, pillars)
+ * @returns Paginated list of available practices
+ */
+export const getAvailablePractices = async (
+  teamId: number,
+  params: AvailablePracticesParams
+): Promise<AvailablePracticesResponse> => {
+  const { page = 1, pageSize = 20, search, pillars } = params;
+  const skip = (page - 1) * pageSize;
+
+  // Validate pillar IDs if provided
+  if (pillars && pillars.length > 0) {
+    const invalidIds = await practiceRepository.validatePillarIds(pillars);
+    if (invalidIds.length > 0) {
+      throw new AppError(
+        'invalid_filter',
+        'Invalid pillar IDs provided',
+        { invalidIds },
+        400
+      );
+    }
+  }
+
+  const [practices, total] = await Promise.all([
+    practiceRepository.findAvailableForTeam(teamId, { search, pillars, skip, take: pageSize }),
+    practiceRepository.countAvailableForTeam(teamId, { search, pillars })
+  ]);
+
+  return {
+    items: practices.map((practice) => ({
+      id: practice.id,
+      title: practice.title,
+      goal: practice.goal,
+      categoryId: practice.categoryId,
+      categoryName: practice.category.name,
+      pillars: practice.practicePillars.map((pp) => ({
+        id: pp.pillar.id,
+        name: pp.pillar.name,
+        category: pp.pillar.category?.name ?? pp.pillar.categoryId,
+        description: pp.pillar.description ?? undefined
+      }))
+    })),
+    page,
+    pageSize,
+    total
+  };
+};
+
+/**
+ * Result of adding a practice to team
+ */
+export interface AddPracticeResult {
+  teamPractice: {
+    id: number;
+    teamId: number;
+    practiceId: number;
+    addedAt: string;
+  };
+  coverage: number;
+}
+
+/**
+ * Add a practice to team portfolio
+ * Logs event transactionally and recalculates coverage
+ * 
+ * @param teamId - Team identifier
+ * @param userId - User adding the practice (for event logging)
+ * @param practiceId - Practice to add
+ * @returns Team practice and updated coverage
+ * @throws AppError if practice doesn't exist (400) or already selected (409)
+ */
+export const addPracticeToTeam = async (
+  teamId: number,
+  userId: number,
+  practiceId: number
+): Promise<AddPracticeResult> => {
+  // Step 1: Validate practice exists
+  const practice = await prisma.practice.findUnique({
+    where: { id: practiceId }
+  });
+  
+  if (!practice) {
+    throw new AppError(
+      'invalid_practice_id',
+      'Practice does not exist',
+      { practiceId },
+      400
+    );
+  }
+
+  // Step 2: Check if already selected
+  const existing = await prisma.teamPractice.findUnique({
+    where: {
+      teamId_practiceId: {
+        teamId,
+        practiceId
+      }
+    }
+  });
+
+  if (existing) {
+    throw new AppError(
+      'duplicate_practice',
+      'Practice already added to team',
+      { practiceId },
+      409
+    );
+  }
+
+  // Step 3: Transaction - Add practice + log event
+  const teamPractice = await prisma.$transaction(async (tx) => {
+    // 3a. Add practice to team
+    const tp = await tx.teamPractice.create({
+      data: {
+        teamId,
+        practiceId
+      }
+    });
+
+    // 3b. Log event
+    await tx.event.create({
+      data: {
+        eventType: 'practice.added',
+        actorId: userId,
+        teamId,
+        entityType: 'practice',
+        entityId: practiceId,
+        action: 'added',
+        payload: {
+          practiceId,
+          practiceTitle: practice.title
+        },
+        createdAt: new Date()
+      }
+    });
+
+    return tp;
+  });
+
+  // Step 4: Recalculate coverage
+  const coverage = await calculateTeamCoverage(teamId);
+
+  return {
+    teamPractice: {
+      id: teamPractice.id,
+      teamId: teamPractice.teamId,
+      practiceId: teamPractice.practiceId,
+      addedAt: teamPractice.addedAt.toISOString()
+    },
+    coverage
   };
 };
 

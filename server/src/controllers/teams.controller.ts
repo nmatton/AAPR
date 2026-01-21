@@ -107,3 +107,105 @@ export const createTeam = async (
     next(error);
   }
 };
+
+/**
+ * Validation schema for adding practice to team
+ */
+const addPracticeSchema = z.object({
+  practiceId: z.number().int().positive('Practice ID must be a positive integer')
+});
+
+/**
+ * GET /api/v1/teams/:teamId/practices/available
+ * Get practices not yet selected by team
+ * 
+ * @param req - Express request with teamId param and optional query filters
+ * @param res - Express response
+ * @param next - Express next function
+ */
+export const getAvailablePractices = async (
+  req: Request<{ teamId: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const teamId = parseInt(req.params.teamId, 10);
+    
+    // Parse query parameters
+    const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+    const pageSize = req.query.pageSize ? parseInt(req.query.pageSize as string, 10) : 20;
+    const search = req.query.search as string | undefined;
+    const pillarsParam = req.query.pillars as string | undefined;
+    const pillars = pillarsParam 
+      ? pillarsParam.split(',').map(id => parseInt(id.trim(), 10))
+      : undefined;
+    
+    const result = await teamsService.getAvailablePractices(teamId, {
+      page,
+      pageSize,
+      search,
+      pillars
+    });
+    
+    res.json({
+      ...result,
+      requestId: req.id
+    });
+  } catch (error: any) {
+    if (error && req.id) {
+      error.requestId = req.id;
+    }
+    next(error);
+  }
+};
+
+/**
+ * POST /api/v1/teams/:teamId/practices
+ * Add a practice to team portfolio
+ * 
+ * @param req - Express request with teamId param and practiceId in body
+ * @param res - Express response
+ * @param next - Express next function
+ */
+export const addPracticeToTeam = async (
+  req: Request<{ teamId: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const teamId = parseInt(req.params.teamId, 10);
+    const userId = req.user!.userId;
+    
+    // Validate request body
+    const validationResult = addPracticeSchema.safeParse(req.body);
+    
+    if (!validationResult.success) {
+      const details = validationResult.error.issues.map((issue) => ({
+        path: issue.path.join('.'),
+        message: issue.message,
+        code: issue.code
+      }));
+      
+      throw new AppError(
+        'validation_error',
+        'Request validation failed',
+        details,
+        400
+      );
+    }
+    
+    const { practiceId } = validationResult.data;
+    
+    const result = await teamsService.addPracticeToTeam(teamId, userId, practiceId);
+    
+    res.status(201).json({
+      ...result,
+      requestId: req.id
+    });
+  } catch (error: any) {
+    if (error && req.id) {
+      error.requestId = req.id;
+    }
+    next(error);
+  }
+};

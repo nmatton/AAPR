@@ -35,14 +35,14 @@ export const fetchPractices = async (
 ): Promise<PracticesResponse> => {
   let response: Response
   try {
-    const params = new URLSearchParams();
-    params.append('page', page.toString());
-    params.append('pageSize', pageSize.toString());
+    const params = new URLSearchParams()
+    params.append('page', page.toString())
+    params.append('pageSize', pageSize.toString())
     if (search && search.trim()) {
-      params.append('search', search.trim());
+      params.append('search', search.trim())
     }
     if (pillars && pillars.length > 0) {
-      params.append('pillars', pillars.join(','));
+      params.append('pillars', pillars.join(','))
     }
 
     response = await fetch(`${API_BASE_URL}/api/v1/practices?${params.toString()}`, {
@@ -94,5 +94,32 @@ export const logCatalogViewed = async (teamId: number | null, practiceCount: num
     })
   } catch (error) {
     console.warn('catalog.viewed event logging failed', error)
+  }
+}
+
+export const logCatalogSearched = async (params: {
+  teamId: number | null
+  query: string
+  pillarsSelected: number[]
+  timestamp: string
+}): Promise<void> => {
+  try {
+    await fetch(`${API_BASE_URL}/api/v1/events`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Request-Id': generateRequestId()
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        action: 'catalog.searched',
+        teamId: params.teamId,
+        query: params.query,
+        pillarsSelected: params.pillarsSelected,
+        timestamp: params.timestamp
+      })
+    })
+  } catch (error) {
+    console.warn('catalog.searched event logging failed', error)
   }
 }

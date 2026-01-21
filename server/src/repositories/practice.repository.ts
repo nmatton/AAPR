@@ -4,7 +4,7 @@
  */
 
 import { prisma } from '../lib/prisma';
-import type { Practice, Pillar, Category } from '@prisma/client';
+import type { Practice, Pillar, Category, Prisma } from '@prisma/client';
 
 // Types for practice with relationships
 export type PracticeWithRelations = Practice & {
@@ -268,7 +268,7 @@ export async function searchAndFilter(options: {
 }): Promise<PracticeWithRelations[]> {
   const { search, pillars, skip, take } = options;
 
-  const whereConditions: any[] = [{ isGlobal: true }];
+  const whereConditions: Prisma.PracticeWhereInput[] = [{ isGlobal: true }];
 
   // Add search condition (OR logic for title/goal/description)
   if (search && search.trim()) {
@@ -329,7 +329,147 @@ export async function countFiltered(options: {
 }): Promise<number> {
   const { search, pillars } = options;
 
-  const whereConditions: any[] = [{ isGlobal: true }];
+  const whereConditions: Prisma.PracticeWhereInput[] = [{ isGlobal: true }];
+
+  // Add search condition
+  if (search && search.trim()) {
+    whereConditions.push({
+      OR: [
+        { title: { contains: search.trim(), mode: 'insensitive' } },
+        { goal: { contains: search.trim(), mode: 'insensitive' } },
+        { description: { contains: search.trim(), mode: 'insensitive' } },
+      ],
+    });
+  }
+
+  // Add pillar filter
+  if (pillars && pillars.length > 0) {
+    whereConditions.push({
+      practicePillars: {
+        some: {
+          pillarId: {
+            in: pillars,
+          },
+        },
+      },
+    });
+  }
+
+  return prisma.practice.count({
+    where: {
+      AND: whereConditions,
+    },
+  });
+}
+
+/**
+ * Find practices NOT yet selected by a team (for Add Practices view)
+ * Supports search and pillar filtering
+ * @param teamId - Team identifier
+ * @param options - Search and filter options with pagination
+ * @returns Array of available practices
+ */
+export async function findAvailableForTeam(
+  teamId: number,
+  options: {
+    search?: string;
+    pillars?: number[];
+    skip: number;
+    take: number;
+  }
+): Promise<PracticeWithRelations[]> {
+  const { search, pillars, skip, take } = options;
+
+  const whereConditions: Prisma.PracticeWhereInput[] = [
+    { isGlobal: true },
+    // Exclude practices already selected by team
+    {
+      NOT: {
+        teamPractices: {
+          some: {
+            teamId,
+          },
+        },
+      },
+    },
+  ];
+
+  // Add search condition
+  if (search && search.trim()) {
+    whereConditions.push({
+      OR: [
+        { title: { contains: search.trim(), mode: 'insensitive' } },
+        { goal: { contains: search.trim(), mode: 'insensitive' } },
+        { description: { contains: search.trim(), mode: 'insensitive' } },
+      ],
+    });
+  }
+
+  // Add pillar filter
+  if (pillars && pillars.length > 0) {
+    whereConditions.push({
+      practicePillars: {
+        some: {
+          pillarId: {
+            in: pillars,
+          },
+        },
+      },
+    });
+  }
+
+  return prisma.practice.findMany({
+    where: {
+      AND: whereConditions,
+    },
+    include: {
+      category: true,
+      practicePillars: {
+        include: {
+          pillar: {
+            include: {
+              category: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      title: 'asc',
+    },
+    skip,
+    take,
+  });
+}
+
+/**
+ * Count practices NOT yet selected by a team
+ * @param teamId - Team identifier
+ * @param options - Search and filter options
+ * @returns Count of available practices
+ */
+export async function countAvailableForTeam(
+  teamId: number,
+  options: {
+    search?: string;
+    pillars?: number[];
+  }
+): Promise<number> {
+  const { search, pillars } = options;
+
+  const whereConditions: Prisma.PracticeWhereInput[] = [
+    { isGlobal: true },
+    // Exclude practices already selected by team
+    {
+      NOT: {
+        teamPractices: {
+          some: {
+            teamId,
+          },
+        },
+      },
+    },
+  ];
 
   // Add search condition
   if (search && search.trim()) {
