@@ -149,7 +149,6 @@ describe('PracticeCatalog', () => {
   })
 
   it('debounces search input and updates query', async () => {
-    vi.useFakeTimers()
     mockStore.isLoading = false
     mockStore.practices = [
       {
@@ -168,10 +167,7 @@ describe('PracticeCatalog', () => {
     )
 
     fireEvent.change(screen.getByPlaceholderText('Search practices...'), { target: { value: 'standup' } })
-    vi.advanceTimersByTime(300)
-
-    await waitFor(() => expect(mockSetSearchQuery).toHaveBeenCalledWith('standup'))
-    vi.useRealTimers()
+    await waitFor(() => expect(mockSetSearchQuery).toHaveBeenCalledWith('standup'), { timeout: 1000 })
   })
 
   it('clears search input when clicking the clear button', () => {

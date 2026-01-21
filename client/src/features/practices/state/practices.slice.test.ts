@@ -36,6 +36,7 @@ const mockedApi = api as unknown as {
 }
 
 beforeEach(() => {
+  vi.clearAllMocks()
   usePracticesStore.setState({
     practices: [],
     availablePillars: [],
@@ -98,16 +99,17 @@ describe('practices.slice', () => {
   })
 
   it('retries with last page params and logs with teamId', async () => {
-    mockedApi.fetchPractices.mockResolvedValue(mockPractices)
+    const pagedPractices = { ...mockPractices, page: 2, pageSize: 5 }
+    mockedApi.fetchPractices.mockResolvedValue(pagedPractices)
     mockedApi.logCatalogViewed.mockResolvedValue(undefined)
 
     await usePracticesStore.getState().loadPractices(2, 5, 99)
-    mockedApi.fetchPractices.mockResolvedValue(mockPractices)
+    mockedApi.fetchPractices.mockResolvedValue(pagedPractices)
 
     await usePracticesStore.getState().retry()
 
-    expect(mockedApi.fetchPractices).toHaveBeenNthCalledWith(1, 2, 5)
-    expect(mockedApi.fetchPractices).toHaveBeenNthCalledWith(2, 2, 5)
+    expect(mockedApi.fetchPractices).toHaveBeenNthCalledWith(1, 2, 5, undefined, undefined)
+    expect(mockedApi.fetchPractices).toHaveBeenNthCalledWith(2, 2, 5, undefined, undefined)
     expect(mockedApi.logCatalogViewed).toHaveBeenCalledWith(99, mockPractices.items.length)
   })
 

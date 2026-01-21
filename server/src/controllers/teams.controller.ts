@@ -160,6 +160,36 @@ export const getAvailablePractices = async (
 };
 
 /**
+ * GET /api/v1/teams/:teamId/practices
+ * Get practices currently selected by team
+ * 
+ * @param req - Express request with teamId param
+ * @param res - Express response
+ * @param next - Express next function
+ */
+export const getTeamPractices = async (
+  req: Request<{ teamId: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const teamId = parseInt(req.params.teamId, 10);
+
+    const practices = await teamsService.getTeamPractices(teamId);
+
+    res.json({
+      items: practices,
+      requestId: req.id
+    });
+  } catch (error: any) {
+    if (error && req.id) {
+      error.requestId = req.id;
+    }
+    next(error);
+  }
+};
+
+/**
  * POST /api/v1/teams/:teamId/practices
  * Add a practice to team portfolio
  * 
@@ -199,6 +229,47 @@ export const addPracticeToTeam = async (
     const result = await teamsService.addPracticeToTeam(teamId, userId, practiceId);
     
     res.status(201).json({
+      ...result,
+      requestId: req.id
+    });
+  } catch (error: any) {
+    if (error && req.id) {
+      error.requestId = req.id;
+    }
+    next(error);
+  }
+};
+
+/**
+ * DELETE /api/v1/teams/:teamId/practices/:practiceId
+ * Remove a practice from team portfolio
+ * 
+ * @param req - Express request with teamId and practiceId params
+ * @param res - Express response
+ * @param next - Express next function
+ */
+export const removePracticeFromTeam = async (
+  req: Request<{ teamId: string; practiceId: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const teamId = parseInt(req.params.teamId, 10);
+    const practiceId = parseInt(req.params.practiceId, 10);
+    const userId = req.user!.userId;
+
+    if (!Number.isInteger(teamId) || !Number.isInteger(practiceId)) {
+      throw new AppError(
+        'validation_error',
+        'Request validation failed',
+        [{ path: 'params', message: 'Invalid teamId or practiceId', code: 'invalid_type' }],
+        400
+      );
+    }
+
+    const result = await teamsService.removePracticeFromTeam(teamId, userId, practiceId);
+
+    res.json({
       ...result,
       requestId: req.id
     });

@@ -255,6 +255,40 @@ export const getAvailablePractices = async (
 };
 
 /**
+ * Get practices currently selected by a team
+ * Used for team practice list and removal flow
+ * 
+ * @param teamId - Team identifier
+ * @returns Array of practices in team portfolio
+ */
+export const getTeamPractices = async (teamId: number): Promise<PracticeDto[]> => {
+  if (!Number.isInteger(teamId) || teamId <= 0) {
+    throw new AppError(
+      'invalid_team_id',
+      'Valid team ID is required',
+      { teamId },
+      400
+    );
+  }
+
+  const teamPractices = await teamsRepository.getTeamPracticesWithPillars(teamId);
+
+  return teamPractices.map((tp) => ({
+    id: tp.practice.id,
+    title: tp.practice.title,
+    goal: tp.practice.goal,
+    categoryId: tp.practice.categoryId,
+    categoryName: tp.practice.category.name,
+    pillars: tp.practice.practicePillars.map((pp) => ({
+      id: pp.pillar.id,
+      name: pp.pillar.name,
+      category: pp.pillar.category?.name ?? pp.pillar.categoryId,
+      description: pp.pillar.description ?? undefined
+    }))
+  }));
+};
+
+/**
  * Result of adding a practice to team
  */
 export interface AddPracticeResult {
@@ -264,6 +298,14 @@ export interface AddPracticeResult {
     practiceId: number;
     addedAt: string;
   };
+  coverage: number;
+}
+
+/**
+ * Result of removing a practice from team
+ */
+export interface RemovePracticeResult {
+  teamPracticeId: number;
   coverage: number;
 }
 
@@ -355,6 +397,113 @@ export const addPracticeToTeam = async (
       practiceId: teamPractice.practiceId,
       addedAt: teamPractice.addedAt.toISOString()
     },
+    coverage
+  };
+};
+
+/**
+ * Remove a practice from team portfolio
+ * Logs event transactionally and recalculates coverage
+ * 
+ * @param teamId - Team identifier
+ * @param userId - User removing the practice (for event logging)
+ * @param practiceId - Practice to remove
+ * @returns Removed team practice ID and updated coverage
+ * @throws AppError if not a team member (403) or practice not found (404)
+ */
+export const removePracticeFromTeam = async (
+  teamId: number,
+  userId: number,
+  practiceId: number
+): Promise<RemovePracticeResult> => {
+  if (!Number.isInteger(teamId) || teamId <= 0) {
+    throw new AppError(
+      'invalid_team_id',
+      'Valid team ID is required',
+      { teamId },
+      400
+    );
+  }
+
+  // Validate team membership
+  const membership = await prisma.teamMember.findUnique({
+    where: {
+      teamId_userId: {
+        teamId,
+        userId
+      }
+    }
+  });
+
+  if (!membership) {
+    throw new AppError(
+      'forbidden',
+      'You do not have access to this team',
+      { teamId, userId },
+      403
+    );
+  }
+
+  // Validate practice exists
+  const practice = await prisma.practice.findUnique({
+    where: { id: practiceId }
+  });
+
+  if (!practice) {
+    throw new AppError(
+      'practice_not_found',
+      'Practice not found',
+      { practiceId },
+      404
+    );
+  }
+
+  // Validate practice is currently selected by team
+  const existing = await prisma.teamPractice.findUnique({
+    where: {
+      teamId_practiceId: {
+        teamId,
+        practiceId
+      }
+    }
+  });
+
+  if (!existing) {
+    throw new AppError(
+      'practice_not_found',
+      'Practice not found',
+      { teamId, practiceId },
+      404
+    );
+  }
+
+  const removed = await prisma.$transaction(async (tx) => {
+    const deleted = await teamsRepository.removePracticeFromTeam(teamId, practiceId, tx);
+
+    await tx.event.create({
+      data: {
+        eventType: 'practice.removed',
+        actorId: userId,
+        teamId,
+        entityType: 'practice',
+        entityId: practiceId,
+        action: 'removed',
+        payload: {
+          teamId,
+          practiceId,
+          practiceTitle: practice.title
+        },
+        createdAt: new Date()
+      }
+    });
+
+    return deleted;
+  });
+
+  const coverage = await calculateTeamCoverage(teamId);
+
+  return {
+    teamPracticeId: removed.id,
     coverage
   };
 };

@@ -23,7 +23,12 @@ export type TeamPracticeWithPillars = Prisma.TeamPracticeGetPayload<{
   include: {
     practice: {
       include: {
-        practicePillars: { include: { pillar: true } };
+        category: true;
+        practicePillars: {
+          include: {
+            pillar: { include: { category: true } };
+          };
+        };
       };
     };
   };
@@ -84,12 +89,40 @@ export const getTeamPracticesWithPillars = async (teamId: number): Promise<TeamP
     include: {
       practice: {
         include: {
+          category: true,
           practicePillars: {
             include: {
-              pillar: true
+              pillar: {
+                include: {
+                  category: true
+                }
+              }
             }
           }
         }
+      }
+    }
+  });
+};
+
+/**
+ * Remove a practice from a team (team-scoped delete)
+ * @param teamId - Team identifier
+ * @param practiceId - Practice identifier
+ * @param tx - Optional Prisma transaction client
+ * @returns Deleted team practice
+ */
+export const removePracticeFromTeam = async (
+  teamId: number,
+  practiceId: number,
+  tx?: Prisma.TransactionClient
+): Promise<Prisma.TeamPracticeGetPayload<{}>> => {
+  const client = tx ?? prisma;
+  return client.teamPractice.delete({
+    where: {
+      teamId_practiceId: {
+        teamId,
+        practiceId
       }
     }
   });

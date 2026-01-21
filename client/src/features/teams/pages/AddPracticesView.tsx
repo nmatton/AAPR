@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTeamsStore } from '../state/teamsSlice';
 import { useAddPracticesStore } from '../state/addPracticesSlice';
 import { PracticeCard } from '../../practices/components/PracticeCard';
 import { PillarFilterDropdown } from '../../practices/components/PillarFilterDropdown';
+import { PracticeCatalogDetail } from '../../practices/components/PracticeCatalogDetail';
 import type { Practice } from '../types/practice.types';
 
 export const AddPracticesView = () => {
@@ -27,9 +28,21 @@ export const AddPracticesView = () => {
   } = useAddPracticesStore();
 
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [currentDetail, setCurrentDetail] = useState<Practice | null>(null);
+  const [isAddingPracticeId, setIsAddingPracticeId] = useState<number | null>(null);
   const numericTeamId = Number(teamId);
 
   const selectedTeam = teams.find((team) => team.id === numericTeamId);
+
+  const availablePillars = useMemo(() => {
+    const pillarMap = new Map<number, { id: number; name: string; category: string; description?: string | null }>();
+    practices.forEach((practice) => {
+      practice.pillars.forEach((pillar) => {
+        pillarMap.set(pillar.id, pillar);
+      });
+    });
+    return Array.from(pillarMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [practices]);
 
   useEffect(() => {
     if (teams.length === 0) {
@@ -45,6 +58,7 @@ export const AddPracticesView = () => {
 
   const handleAddPractice = async (practice: Practice) => {
     try {
+      setIsAddingPracticeId(practice.id);
       await addPractice(numericTeamId, practice.id);
       setSuccessMessage(`"${practice.title}" added to team portfolio`);
       
@@ -55,6 +69,8 @@ export const AddPracticesView = () => {
       setTimeout(() => setSuccessMessage(null), 3000);
     } catch (error) {
       // Error is handled in the store
+    } finally {
+      setIsAddingPracticeId(null);
     }
   };
 
@@ -133,8 +149,11 @@ export const AddPracticesView = () => {
               />
             </div>
             <PillarFilterDropdown
+              pillars={availablePillars}
               selectedPillars={selectedPillars}
-              onTogglePillar={togglePillar}
+              onToggle={togglePillar}
+              onClear={clearFilters}
+              isLoading={isLoading && availablePillars.length === 0}
             />
           </div>
 
@@ -225,7 +244,10 @@ export const AddPracticesView = () => {
                 <PracticeCard
                   key={practice.id}
                   practice={practice}
-                  onSelect={handleAddPractice}
+                  onSelect={setCurrentDetail}
+                  onAction={handleAddPractice}
+                  actionLabel="Add to team"
+                  actionAriaLabel="Add to team"
                   highlightQuery={searchQuery}
                 />
               ))}
@@ -244,6 +266,16 @@ export const AddPracticesView = () => {
               </div>
             )}
           </>
+        )}
+        {currentDetail && (
+          <PracticeCatalogDetail
+            practice={currentDetail}
+            onClose={() => setCurrentDetail(null)}
+            actionLabel="Add to team"
+            onAction={() => handleAddPractice(currentDetail)}
+            actionDisabled={isAddingPracticeId === currentDetail.id}
+            actionLoading={isAddingPracticeId === currentDetail.id}
+          />
         )}
       </div>
     </div>

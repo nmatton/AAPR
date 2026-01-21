@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useTeamsStore } from '../state/teamsSlice';
 import { InviteMembersPanel } from './InviteMembersPanel';
 import { TeamMembersPanel } from './TeamMembersPanel';
+import { TeamPracticesPanel } from './TeamPracticesPanel';
 
 export const TeamDashboard = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -101,6 +102,7 @@ export const TeamDashboard = () => {
             </div>
             <InviteMembersPanel teamId={selectedTeam.id} teamName={selectedTeam.name} />
             <TeamMembersPanel teamId={selectedTeam.id} />
+            <TeamPracticesPanel teamId={selectedTeam.id} onPracticeRemoved={fetchTeams} />
           </div>
         )}
       </div>

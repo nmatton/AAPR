@@ -2,7 +2,7 @@
 
 **Implementation History for AAPR Platform**
 
-Last Updated: January 20, 2026
+Last Updated: January 21, 2026
 
 ---
 
@@ -257,6 +257,48 @@ Last Updated: January 20, 2026
 - Implement category filter dropdown
 - Add search by practice title
 - Create practice selection modal for team assignment
+
+---
+
+### Story 2-4: Remove Practices from Team Portfolio
+
+**Status:** ✅ COMPLETE  
+**Date:** January 21, 2026  
+**Developer:** Nicolas
+
+**What Was Built:**
+
+**Backend:**
+- **Endpoints:**
+  - `GET /api/v1/teams/:teamId/practices` (list selected practices)
+  - `DELETE /api/v1/teams/:teamId/practices/:practiceId` (remove from team)
+- **Service:** `teams.service.removePracticeFromTeam(teamId, userId, practiceId)`
+  - Validates team membership and practice presence
+  - Transactionally deletes `team_practices` row and logs `practice.removed` event
+  - Recalculates coverage via `calculateTeamCoverage(teamId)`
+- **Repository:** `teams.repository.removePracticeFromTeam(teamId, practiceId, tx)`
+- **Event Logging:** `practice.removed` with `{ teamId, practiceId }` payload
+
+**Frontend:**
+- **Component:** `TeamPracticesPanel`
+  - Lists team practices on the Team Dashboard
+  - [Remove] action per practice
+  - Confirmation dialog shows pillars losing coverage
+  - Success toast: "Practice removed from team portfolio"
+  - Gap pillars highlighted with suggestion copy
+  - Refreshes team stats to update coverage in real-time
+
+**Testing:**
+- Backend:
+  - `teams.practices.routes.test.ts`: DELETE success, 403 membership, 404 not found
+  - `teams.service.test.ts`: transactional removal + event logging + coverage recalculation
+- Frontend:
+  - `TeamPracticesPanel.test.tsx`: dialog pillars, successful removal, failure handling
+
+**Documentation Updated:**
+- `docs/05-backend-api.md`: Added GET/DELETE team practices endpoints
+- `docs/06-frontend.md`: Documented TeamPracticesPanel and removal flow
+- `docs/09-changelog.md`: Added Story 2-4 entry
 
 ---
 

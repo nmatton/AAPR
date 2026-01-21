@@ -26,6 +26,17 @@ export interface AddPracticeResponse {
   coverage: number;
 }
 
+export interface TeamPracticesResponse {
+  items: Practice[];
+  requestId?: string;
+}
+
+export interface RemovePracticeResponse {
+  teamPracticeId: number;
+  coverage: number;
+  requestId?: string;
+}
+
 /**
  * Fetch practices not yet selected by team
  * @param params - Query parameters including teamId, filters
@@ -69,6 +80,35 @@ export const addPracticeToTeam = async (
     {
       method: 'POST',
       body: JSON.stringify({ practiceId }),
+    }
+  );
+};
+
+/**
+ * Fetch practices currently selected by team
+ * @param teamId - Team identifier
+ * @returns Team practices list
+ */
+export const fetchTeamPractices = async (teamId: number): Promise<TeamPracticesResponse> => {
+  return apiClient<TeamPracticesResponse>(
+    `/api/v1/teams/${teamId}/practices`
+  );
+};
+
+/**
+ * Remove a practice from team portfolio
+ * @param teamId - Team identifier
+ * @param practiceId - Practice identifier
+ * @returns Updated coverage and removed teamPracticeId
+ */
+export const removePracticeFromTeam = async (
+  teamId: number,
+  practiceId: number
+): Promise<RemovePracticeResponse> => {
+  return apiClient<RemovePracticeResponse>(
+    `/api/v1/teams/${teamId}/practices/${practiceId}`,
+    {
+      method: 'DELETE'
     }
   );
 };

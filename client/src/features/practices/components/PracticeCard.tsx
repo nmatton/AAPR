@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import type { Practice } from '../types'
 
 const CATEGORY_COLORS: Record<string, string> = {
@@ -52,13 +53,32 @@ interface PracticeCardProps {
   practice: Practice
   onSelect: (practice: Practice) => void
   highlightQuery?: string
+  onAction?: (practice: Practice) => void
+  actionLabel?: string
+  actionAriaLabel?: string
+  actionIcon?: ReactNode
 }
 
-export const PracticeCard = ({ practice, onSelect, highlightQuery }: PracticeCardProps) => {
+export const PracticeCard = ({
+  practice,
+  onSelect,
+  highlightQuery,
+  onAction,
+  actionLabel,
+  actionAriaLabel,
+  actionIcon
+}: PracticeCardProps) => {
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={() => onSelect(practice)}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault()
+          onSelect(practice)
+        }
+      }}
       className="w-full text-left p-4 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
     >
       <div className="flex items-start justify-between gap-3">
@@ -83,7 +103,23 @@ export const PracticeCard = ({ practice, onSelect, highlightQuery }: PracticeCar
             ))}
           </div>
         </div>
+        {onAction && (
+          <button
+            type="button"
+            onClick={(event) => {
+              event.stopPropagation()
+              onAction(practice)
+            }}
+            aria-label={actionAriaLabel ?? actionLabel ?? 'Action'}
+            className="mt-1 inline-flex items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-2 text-blue-700 hover:bg-blue-100"
+          >
+            {actionIcon ?? <span className="text-lg leading-none">+</span>}
+          </button>
+        )}
       </div>
-    </button>
+      {actionLabel && (
+        <span className="sr-only">{actionLabel}</span>
+      )}
+    </div>
   )
 }

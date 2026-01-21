@@ -5,6 +5,7 @@ import request from 'supertest';
 import { app } from '../app';
 import * as teamsService from '../services/teams.service';
 import * as authService from '../services/auth.service';
+import { AppError } from '../services/auth.service';
 import { prisma } from '../lib/prisma';
 
 jest.mock('../services/teams.service');
@@ -172,6 +173,49 @@ describe('teams routes - practices management', () => {
         .send({ practiceId: 5 });
 
       expect(response.status).toBe(401);
+    });
+  });
+
+  describe('DELETE /api/v1/teams/:teamId/practices/:practiceId', () => {
+    it('should remove practice from team', async () => {
+      const mockResult = {
+        teamPracticeId: 12,
+        coverage: 58
+      };
+
+      (teamsService.removePracticeFromTeam as jest.MockedFunction<typeof teamsService.removePracticeFromTeam>)
+        .mockResolvedValue(mockResult);
+
+      const response = await request(app)
+        .delete('/api/v1/teams/1/practices/5')
+        .set('Authorization', 'Bearer test-token');
+
+      expect(response.status).toBe(200);
+      expect(response.body.teamPracticeId).toBe(12);
+      expect(response.body.coverage).toBe(58);
+      expect(response.body.requestId).toBeDefined();
+    });
+
+    it('should return 404 for missing practice', async () => {
+      (teamsService.removePracticeFromTeam as jest.MockedFunction<typeof teamsService.removePracticeFromTeam>)
+        .mockRejectedValue(new AppError('practice_not_found', 'Practice not found', { practiceId: 999 }, 404));
+
+      const response = await request(app)
+        .delete('/api/v1/teams/1/practices/999')
+        .set('Authorization', 'Bearer test-token');
+
+      expect(response.status).toBe(404);
+      expect(response.body.code).toBe('practice_not_found');
+    });
+
+    it('should return 403 for non-member', async () => {
+      (prisma.teamMember.findUnique as jest.MockedFunction<typeof prisma.teamMember.findUnique>).mockResolvedValueOnce(null);
+
+      const response = await request(app)
+        .delete('/api/v1/teams/1/practices/5')
+        .set('Authorization', 'Bearer test-token');
+
+      expect(response.status).toBe(403);
     });
   });
 });

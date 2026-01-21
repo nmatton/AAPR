@@ -2,7 +2,7 @@
 
 **Frontend Architecture & UI for AAPR Platform**
 
-Last Updated: January 20, 2026  
+Last Updated: January 21, 2026  
 Stack: React 18.2, TypeScript 5.2+, Vite 5.0+, TailwindCSS 3.0+
 
 ---
@@ -393,6 +393,40 @@ await createTeam("Alpha Squad", [1, 5, 12]);
       )}
     </div>
   ))}
+</div>
+```
+
+---
+
+#### TeamPracticesPanel
+**File:** `src/features/teams/components/TeamPracticesPanel.tsx`
+
+**Features:**
+- Fetches selected practices → GET `/api/v1/teams/:teamId/practices`
+- Shows [Remove] action per practice
+- Confirmation dialog shows coverage gaps (pillars that would become uncovered)
+- Removal → DELETE `/api/v1/teams/:teamId/practices/:practiceId`
+- Success message: "Practice removed from team portfolio"
+- Highlights gap pillars and shows suggestion: "Consider adding a practice that covers [Pillar Name]"
+- Parent refreshes team stats to update coverage in real-time
+
+**UI (modal excerpt):**
+```tsx
+<div className="fixed inset-0 z-20 flex items-center justify-center bg-black/40 p-4">
+  <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+    <h4>Remove "{practice.title}" from your team?</h4>
+    <p>Pillars losing coverage</p>
+    {gapPillars.length === 0 ? (
+      <p>No coverage gaps created.</p>
+    ) : (
+      <div className="flex flex-wrap gap-2">
+        {gapPillars.map(pillar => (
+          <span key={pillar.id}>{pillar.name}</span>
+        ))}
+      </div>
+    )}
+    <Button>Confirm Remove</Button>
+  </div>
 </div>
 ```
 

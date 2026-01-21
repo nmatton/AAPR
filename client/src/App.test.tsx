@@ -50,7 +50,14 @@ describe('App auth flow integration', () => {
 
     await userEvent.type(screen.getByLabelText(/email address/i), mockUser.email)
     await userEvent.type(screen.getByLabelText(/password/i), 'password123')
-    await userEvent.click(screen.getByRole('button', { name: /sign in/i }))
+    const signInButton = screen.getByRole('button', { name: /sign in/i })
+    await waitFor(() => expect(signInButton).toBeEnabled())
+    await userEvent.click(signInButton)
+
+    await waitFor(() => {
+      expect(useAuthStore.getState().isAuthenticated).toBe(true)
+      expect(useAuthStore.getState().isLoading).toBe(false)
+    })
 
     expect(await screen.findByRole('button', { name: /create team/i })).toBeInTheDocument()
     expect(screen.getByText('My Teams')).toBeInTheDocument()

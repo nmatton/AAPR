@@ -4,9 +4,20 @@ import type { Practice } from '../types'
 interface PracticeCatalogDetailProps {
   practice: Practice
   onClose: () => void
+  actionLabel?: string
+  onAction?: () => void
+  actionDisabled?: boolean
+  actionLoading?: boolean
 }
 
-export const PracticeCatalogDetail = ({ practice, onClose }: PracticeCatalogDetailProps) => {
+export const PracticeCatalogDetail = ({
+  practice,
+  onClose,
+  actionLabel,
+  onAction,
+  actionDisabled = false,
+  actionLoading = false
+}: PracticeCatalogDetailProps) => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -69,6 +80,18 @@ export const PracticeCatalogDetail = ({ practice, onClose }: PracticeCatalogDeta
                   </div>
                 ) : null
               ))}
+            </div>
+          )}
+          {actionLabel && onAction && (
+            <div className="pt-2">
+              <button
+                type="button"
+                onClick={onAction}
+                disabled={actionDisabled || actionLoading}
+                className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+              >
+                {actionLoading ? 'Adding...' : actionLabel}
+              </button>
             </div>
           )}
         </div>

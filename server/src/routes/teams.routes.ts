@@ -72,8 +72,22 @@ teamsRouter.delete('/:teamId/members/:userId', requireAuth, validateTeamMembersh
 teamsRouter.get('/:teamId/practices/available', requireAuth, validateTeamMembership, teamsController.getAvailablePractices);
 
 /**
+ * GET /api/v1/teams/:teamId/practices
+ * Get practices currently selected by team
+ * Protected by requireAuth + team membership validation
+ */
+teamsRouter.get('/:teamId/practices', requireAuth, validateTeamMembership, teamsController.getTeamPractices);
+
+/**
  * POST /api/v1/teams/:teamId/practices
  * Add a practice to team portfolio
  * Protected by requireAuth + team membership validation
  */
 teamsRouter.post('/:teamId/practices', requireAuth, validateTeamMembership, teamsController.addPracticeToTeam);
+
+/**
+ * DELETE /api/v1/teams/:teamId/practices/:practiceId
+ * Remove a practice from team portfolio
+ * Protected by requireAuth + team membership validation
+ */
+teamsRouter.delete('/:teamId/practices/:practiceId', requireAuth, validateTeamMembership, teamsController.removePracticeFromTeam);

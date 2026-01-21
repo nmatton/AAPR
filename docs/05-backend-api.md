@@ -346,6 +346,41 @@ AAPR Team
 
 ### Team Practices
 
+#### GET /api/v1/teams/:teamId/practices
+Get practices currently selected by the team
+
+**Authentication:** Required  
+**Authorization:** User must be a member of the team
+
+**Response (200):**
+```json
+{
+  "items": [
+    {
+      "id": 42,
+      "title": "Daily Stand-up",
+      "goal": "Improve team communication through brief daily synchronization meetings",
+      "categoryId": "scrum",
+      "categoryName": "Scrum",
+      "pillars": [
+        {
+          "id": 5,
+          "name": "Communication",
+          "category": "Flow"
+        }
+      ]
+    }
+  ],
+  "requestId": "req_abc123"
+}
+```
+
+**Errors:**
+- 401: `{ "code": "UNAUTHORIZED", "message": "Authentication required" }`
+- 403: `{ "code": "FORBIDDEN", "message": "Not a team member" }`
+
+---
+
 #### GET /api/v1/teams/:teamId/practices/available
 Get practices not yet selected by the team
 
@@ -444,6 +479,37 @@ Add a practice to the team's portfolio
 
 **Events Logged:**
 - `practice.added` (team_id, practice_id, actor_id)
+
+---
+
+#### DELETE /api/v1/teams/:teamId/practices/:practiceId
+Remove a practice from the team's portfolio
+
+**Authentication:** Required  
+**Authorization:** User must be a member of the team
+
+**Response (200):**
+```json
+{
+  "teamPracticeId": 123,
+  "coverage": 58,
+  "requestId": "req_xyz789"
+}
+```
+
+**Side Effects:**
+- Deletes row from `team_practices`
+- Logs event `practice.removed` (team_id, practice_id, actor_id)
+- **Both operations execute in a transaction**
+- After transaction: Recalculates team coverage via `calculateTeamCoverage(teamId)`
+
+**Errors:**
+- 401: `{ "code": "UNAUTHORIZED", "message": "Authentication required" }`
+- 403: `{ "code": "FORBIDDEN", "message": "Not a team member" }`
+- 404: `{ "code": "practice_not_found", "message": "Practice not found" }`
+
+**Events Logged:**
+- `practice.removed` (team_id, practice_id, actor_id)
 
 ---
 
