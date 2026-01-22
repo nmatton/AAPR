@@ -1,18 +1,19 @@
 import { useCallback, useEffect, useMemo } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTeamsStore } from '../state/teamsSlice';
 import { useCoverageStore } from '../state/coverageSlice';
-import { InviteMembersPanel } from './InviteMembersPanel';
-import { TeamMembersPanel } from './TeamMembersPanel';
 import { TeamPracticesPanel } from './TeamPracticesPanel';
-import { TeamCoverageCard } from './TeamCoverageCard';
-import { CategoryCoverageBreakdown } from './CategoryCoverageBreakdown';
+import { CoverageSidebar } from './CoverageSidebar';
+import { MembersSidebar } from './MembersSidebar';
+import { PracticeDetailSidebar } from './PracticeDetailSidebar';
 
 export const TeamDashboard = () => {
   const { teamId } = useParams<{ teamId: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { teams, isLoading, fetchTeams, error } = useTeamsStore();
-  const { coverage, isLoading: isCoverageLoading, error: coverageError, fetchCoverage } = useCoverageStore();
+  const { fetchCoverage } = useCoverageStore();
+  const openPracticeId = searchParams.get('practiceId') ? Number(searchParams.get('practiceId')) : null;
 
   useEffect(() => {
     if (teams.length === 0) {
@@ -30,11 +31,6 @@ export const TeamDashboard = () => {
     await Promise.all([fetchTeams(), fetchCoverage(selectedTeam.id)]);
   }, [fetchCoverage, fetchTeams, selectedTeam]);
 
-  const handleViewPracticesByCategory = useCallback((categoryId: string) => {
-    if (!selectedTeam) return;
-    navigate(`/teams/${selectedTeam.id}/practices/add?category=${categoryId}`);
-  }, [navigate, selectedTeam]);
-
   useEffect(() => {
     if (selectedTeam) {
       fetchCoverage(selectedTeam.id);
@@ -43,27 +39,32 @@ export const TeamDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <button
-          onClick={() => navigate('/teams')}
-          className="mb-4 text-blue-600 hover:text-blue-800 flex items-center"
-        >
-          <svg
-            className="w-5 h-5 mr-2"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+      <div className="mx-auto max-w-7xl px-4 py-6">
+        <div className="mb-4 flex items-center justify-between">
+          <button
+            onClick={() => navigate('/teams')}
+            className="text-blue-600 hover:text-blue-800 flex items-center"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M15 19l-7-7 7-7"
-            />
-          </svg>
-          Back to Teams
-        </button>
-        
+            <svg
+              className="mr-2 h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Teams
+          </button>
+          {selectedTeam && (
+            <button
+              onClick={() => navigate(`/teams/${selectedTeam.id}/practices/add`)}
+              className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+            >
+              Add Practices
+            </button>
+          )}
+        </div>
+
         {isLoading && (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <p className="text-gray-500">Loading team dashboard...</p>
@@ -83,62 +84,37 @@ export const TeamDashboard = () => {
         )}
 
         {!isLoading && !error && selectedTeam && (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-3xl font-bold text-gray-700">{selectedTeam.name}</h2>
-              <button
-                onClick={() => navigate(`/teams/${selectedTeam.id}/practices/add`)}
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"
-              >
-                <svg
-                  className="w-5 h-5 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                  />
-                </svg>
-                Add Practices
-              </button>
+          <div>
+            <div className="mb-4">
+              <h2 className="text-2xl font-bold text-gray-800">{selectedTeam.name}</h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 bg-white border rounded-lg">
-                <p className="text-sm text-gray-500">Members</p>
-                <p className="text-2xl font-semibold text-gray-800">{selectedTeam.memberCount}</p>
+            <div className="grid grid-cols-[3fr_1fr_1fr] gap-4">
+              {/* Center column (60%) - practice list */}
+              <div>
+                <TeamPracticesPanel
+                  teamId={selectedTeam.id}
+                  onPracticeRemoved={refreshCoverage}
+                  onPracticeClick={(id) => setSearchParams({ practiceId: id.toString() })}
+                  onEditClick={() => navigate(`/teams/${selectedTeam.id}/practices/manage`)}
+                />
               </div>
-              <div className="p-4 bg-white border rounded-lg">
-                <p className="text-sm text-gray-500">Practices</p>
-                <p className="text-2xl font-semibold text-gray-800">{selectedTeam.practiceCount}</p>
+              {/* Right sidebar 1 (20%) - coverage */}
+              <div>
+                <CoverageSidebar teamId={selectedTeam.id} />
               </div>
-              <div className="p-4 bg-white border rounded-lg">
-                <p className="text-sm text-gray-500">Coverage</p>
-                <p className="text-2xl font-semibold text-gray-800">{selectedTeam.coverage}%</p>
+              {/* Right sidebar 2 (20%) - members */}
+              <div>
+                <MembersSidebar teamId={selectedTeam.id} />
               </div>
             </div>
-            <TeamCoverageCard
-              teamId={selectedTeam.id}
-              coverage={coverage}
-              isLoading={isCoverageLoading}
-              error={coverageError}
-              onRefresh={refreshCoverage}
-            />
-            {coverage && coverage.categoryBreakdown && coverage.categoryBreakdown.length > 0 && (
-              <CategoryCoverageBreakdown 
-                categoryBreakdown={coverage.categoryBreakdown}
-                onViewPractices={handleViewPracticesByCategory}
-              />
-            )}
-            <InviteMembersPanel teamId={selectedTeam.id} teamName={selectedTeam.name} />
-            <TeamMembersPanel teamId={selectedTeam.id} />
-            <TeamPracticesPanel teamId={selectedTeam.id} onPracticeRemoved={refreshCoverage} />
           </div>
         )}
       </div>
+      {/* Practice detail overlay */}
+      <PracticeDetailSidebar
+        practiceId={openPracticeId}
+        onClose={() => setSearchParams({})}
+      />
     </div>
   );
 };

@@ -1,6 +1,6 @@
 # Story 2.7: View Team Coverage by Category
 
-Status: done
+Status: review
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -428,15 +428,7 @@ Claude Sonnet 4.5 (GitHub Copilot)
 - ✅ Documentation: Updated backend API docs with categoryBreakdown field
 - ✅ Documentation: Documented CategoryCoverageBreakdown component in frontend docs
 - ✅ Documentation: Added Story 2.7 entry to changelog
-- ✅ Status updated to "done"
-
-**Review Fixes Applied (January 21, 2026):**
-- ✅ Category breakdown wired into coverage API response and state
-- ✅ Category drill-down lists practices covering each pillar
-- ✅ Category filter uses `categoryId` and returns to dashboard after add
-- ✅ Event payload includes timestamp
-- ✅ [View Available Practices] shown only for gap categories
-- ⚠️ Tests not re-run after review fixes
+- ✅ Status updated to "review"
 
 **Technical Implementation Summary:**
 1. Backend extended existing coverage endpoint with categoryBreakdown field
@@ -461,11 +453,9 @@ Claude Sonnet 4.5 (GitHub Copilot)
 - `server/src/services/coverage.service.ts` - added category calculation logic
 - `server/src/services/coverage.service.test.ts` - added 3 new tests for categories
 - `server/src/routes/teams.coverage.routes.test.ts` - updated test to include categoryBreakdown
-- `client/src/features/teams/api/coverageApi.ts` - map categoryBreakdown in API response
 - `client/src/features/teams/types/coverage.types.ts` - added CategoryCoverage interface
 - `client/src/features/teams/components/TeamDashboard.tsx` - integrated CategoryCoverageBreakdown
 - `client/src/features/teams/pages/AddPracticesView.tsx` - added category filtering
-- `client/src/features/teams/components/CategoryCoverageBreakdown.tsx` - show practices per pillar and gap-only CTA
 - `docs/05-backend-api.md` - documented categoryBreakdown field
 - `docs/06-frontend.md` - documented CategoryCoverageBreakdown component
 - `docs/09-changelog.md` - added Story 2.7 entry
@@ -495,4 +485,3 @@ Claude Sonnet 4.5 (GitHub Copilot)
   - All 158 tests passing (148 backend + 10 frontend component)
   - Documentation updated (API, frontend, changelog)
   - Story status set to "review"
-- 2026-01-21: Review fixes applied - category breakdown wired to API, drill-down shows practices, category filter fixed, event payload timestamp, gap-only CTA.

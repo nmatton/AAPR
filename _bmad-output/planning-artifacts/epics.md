@@ -129,6 +129,7 @@ The platform is a research-grade web application enabling development teams to s
 |------|-----------|-------------|----------------|
 | **Epic 1: Authentication & Team Onboarding** | Fast team setup from signup through team creation and member invites | FR1-7, FR20 | NFR1-4, NFR12-17 |
 | **Epic 2: Practice Catalog & Coverage** | Team visibility into practice portfolio and coverage gaps | FR8-10 | NFR10-11, NFR12-14 |
+| **Epic 2.1: Team Dashboard & Catalog UX Refinement + Database Normalization** | Refined UI/UX for dashboard and catalog; improved practice information visibility; proper practice association modeling | FR8-10 (enhanced) | NFR12-14 (data normalization) |
 | **Epic 3: Big Five Personality Profiling** | Self-awareness of personality traits and behavioral style | FR11-12 | NFR6, NFR12-14 |
 | **Epic 4: Issue Submission & Discussion** | Structured practice friction identification, team dialogue, and conflict resolution | FR13-14, FR19 | NFR5-7, NFR12-14, NFR18 |
 | **Epic 5: Adaptation Decision & Tracking** | Recorded practice changes with coverage-based recommendations and full audit trail | FR15-18 | NFR5-6, NFR12-14 |
@@ -870,6 +871,609 @@ So that **we can adapt practices to our team's context or fix outdated informati
 
 ---
 
+### Epic 2.1: Team Dashboard & Catalog UX Refinement + Database Normalization
+
+**Epic Goal:** Refine team dashboard layout, enhance catalog functionality, improve practice details visibility, and fix database schema for practice associations.
+
+**User Value:** 
+- Teams get a cleaner, more intuitive interface with practices as the central focus
+- Catalog provides full CRUD operations for practices with advanced filtering
+- Practice details show comprehensive information with clickable pillars
+- Database properly models practice relationships instead of storing binary JSON
+
+**FRs Covered:** FR8-10 (enhanced with edit/create/filter capabilities)
+
+**NFRs Supported:** NFR12-14 (data normalization for consistency)
+
+**Scope:** 
+- Team dashboard redesign (practice list central, coverage/members/practices as sidebars)
+- Coverage cards layout optimization (3 categories per line)
+- Members management on separate page
+- Team name inline editing
+- Catalog practice creation and editing
+- Advanced filtering (tag, method/framework)
+- Practice detail sidebar with full information and clickable pillars
+- Database schema refactoring (practice_association table, remove category_id)
+- Data migration from JSON to relational model
+
+**Stories:**
+
+#### Story 2.1.0: Redesign Team Dashboard - Make Practices Central
+
+As a **team member**,
+I want to **see our team's practice list as the main focal point, with coverage and members info in compact sidebars**,
+So that **I can quickly scan what practices we use and access other information on demand**.
+
+**Acceptance Criteria:**
+
+- **Given** I'm on the Team Dashboard
+  **When** the page loads
+  **Then** the layout is: Practice List (center, 60-70% width) | Coverage Sidebar (right, 15-20%) | Members Sidebar (right, 15-20%)
+
+- **Given** I'm viewing the dashboard
+  **When** I see the center column
+  **Then** it displays our team's practices in a clear list with:
+    - Practice name
+    - Goal/objective (1-2 lines)
+    - Pillars covered (colored badges)
+    - [Edit] button
+    - [Remove] button
+
+- **Given** the practice list is showing
+  **When** each practice is listed
+  **Then** the practice name is **clickable** and opens a detail sidebar (right side, overlaying or sliding in)
+  **And** the detail sidebar shows: full description, all pillars, tags, benefits, pitfalls, workproducts, version, last updated, updated by
+
+- **Given** I'm viewing the Coverage sidebar
+  **When** I see the coverage info
+  **Then** it shows:
+    - Total coverage %: "14/19 pillars (74%)"
+    - Visual progress bar
+    - [View Details] link to expand full pillar breakdown
+
+- **Given** I'm viewing the Members sidebar
+  **When** I see member info
+  **Then** it shows:
+    - Member count badge
+    - First few member avatars
+    - [Manage Members] link to open Members page
+
+- **Given** the page is responsive
+  **When** I resize the browser on desktop
+  **Then** the sidebars remain accessible (sticky positioning or remain in view)
+
+- **Given** I'm on the dashboard
+  **When** I navigate away and come back
+  **Then** the layout persists (center focus, sidebars visible)
+
+---
+
+#### Story 2.1.1: Optimize Coverage Visualization (3 Categories per Row)
+
+As a **team member**,
+I want to **see coverage by category in a compact grid layout**,
+So that **I can quickly scan all 5 categories without excessive scrolling**.
+
+**Acceptance Criteria:**
+
+- **Given** I'm viewing the Coverage Details section
+  **When** the coverage breakdown is displayed
+  **Then** the 5 categories are arranged in a grid:
+    - Row 1: 3 categories
+    - Row 2: 2 categories
+    - Each category card: category name, coverage %, visual bar, color-coded (green/yellow/red)
+
+- **Given** I'm viewing category cards
+  **When** I see a category card
+  **Then** it shows: category name, e.g., "EXCELLENCE TECHNIQUE: 80%"
+  **And** a compact progress bar
+  **And** optional: small pillar icons (6 tiny circles: filled = covered, empty = gap)
+
+- **Given** a category is < 50% coverage
+  **When** I view the card
+  **Then** it's highlighted with a warning indicator (e.g., red border, warning icon)
+
+- **Given** I click on a category card
+  **When** the card is clicked
+  **Then** it expands or shows a popover with:
+    - Full pillar breakdown (which pillars covered, which gap)
+    - [View Available Practices] link to filter catalog
+
+- **Given** I'm viewing the coverage grid
+  **When** a practice is added or removed from our team
+  **Then** all category cards update in real-time (no page refresh)
+
+- **Given** the coverage display is shown
+  **When** the page loads on mobile/small desktop
+  **Then** the grid adapts: 2 categories per row or stacks to 1 per row (responsive, but desktop-first is primary)
+
+---
+
+#### Story 2.1.2: Move Members & Invitations to Dedicated "Members" Page
+
+As a **team member**,
+I want to **manage team members on a dedicated page, accessed via a header link**,
+So that **the main dashboard stays focused on practices while I can manage team composition when needed**.
+
+**Acceptance Criteria:**
+
+- **Given** I'm on the Team Dashboard header
+  **When** I see the top navigation
+  **Then** there's a [Members] or [Team Members] link/button in the header
+
+- **Given** I click [Members]
+  **When** the page navigates
+  **Then** I'm taken to a dedicated "Team Members" page with full width for member management
+
+- **Given** I'm on the Members page
+  **When** the page loads
+  **Then** I see:
+    - Full list of current members with: name, email, join date, remove option
+    - Invite panel: text field to enter email, [Invite] button
+    - Pending invites list: email, status (Pending/Failed), [Resend] button
+
+- **Given** I'm on the Members page
+  **When** I enter a new email and click [Invite]
+  **Then** the invite is sent (same logic as Story 1.5)
+  **And** I see a success message: "Invite sent to [email]"
+  **And** the pending invites list updates immediately
+
+- **Given** I'm viewing pending invites
+  **When** I see an invite with "Failed" status
+  **Then** there's a [Retry] button to resend the email
+
+- **Given** I'm removing a member
+  **When** I click [Remove] next to a member name
+  **Then** a confirmation dialog appears: "Remove [Name] from the team? They'll lose access."
+  **And** I can confirm or cancel
+
+- **Given** I'm on the Members page
+  **When** the page loads
+  **Then** an event is logged: `{ action: "members_page.viewed", teamId, timestamp }`
+
+- **Given** the Members page is separate
+  **When** I return to the Team Dashboard
+  **Then** the dashboard no longer shows the members sidebar
+  **And** the practice list takes up more space (more room for practice details/scrolling)
+
+---
+
+#### Story 2.1.3: Team Name Inline Editing with Pencil Icon
+
+As a **team member**,
+I want to **edit my team's name by clicking a pencil icon next to the name**,
+So that **I can update the team name without navigating to settings**.
+
+**Acceptance Criteria:**
+
+- **Given** I'm on the Team Dashboard
+  **When** I see the team name at the top (e.g., "Platform Team")
+  **Then** there's a small pencil icon (✏️) next to the name
+
+- **Given** I click the pencil icon
+  **When** the name becomes editable
+  **Then** the text field is focused and shows the current name
+
+- **Given** the name field is active
+  **When** I type a new name
+  **Then** the text is captured and character count is shown (e.g., "15/50")
+
+- **Given** I've typed a new name
+  **When** I see the action buttons
+  **Then** a green checkmark (✓) button appears to save
+  **And** a red X button appears to cancel
+
+- **Given** I click the ✓ button
+  **When** the save is triggered
+  **Then** the team name is updated
+  **And** I see a brief success message: "Team name updated"
+  **And** the name is no longer in edit mode
+
+- **Given** I click the X button
+  **When** the cancel is triggered
+  **Then** the edit mode closes
+  **And** the team name reverts to the original value
+
+- **Given** I've saved a new team name
+  **When** the update completes
+  **Then** an event is logged: `{ action: "team.name_updated", teamId, oldName, newName, timestamp }`
+  **And** all team members see the new name on next page refresh
+
+- **Given** I'm editing the team name
+  **When** another member updates it simultaneously
+  **Then** the conflict is handled: I see "Team name was updated by another member" and the field is reset
+
+---
+
+#### Story 2.1.4: Catalog - Create New Practice with Full Editor
+
+As a **team member**,
+I want to **create a new practice from scratch in the catalog with all fields editable**,
+So that **we can define custom practices or add ones missing from the global catalog**.
+
+**Acceptance Criteria:**
+
+- **Given** I'm on the Practice Catalog page
+  **When** I click [+ Create New Practice] or [New Practice]
+  **Then** a form/modal opens with all editable fields
+
+- **Given** the creation form is open
+  **When** I view the fields
+  **Then** I see:
+    - Title (text, 2-100 chars)
+    - Goal/Objective (text area, 1-500 chars)
+    - Detailed Description (text area, optional, for extended context)
+    - Pillars (multi-select checkboxes, 19 options)
+    - Category (dropdown: VALEURS HUMAINES, FEEDBACK & APPRENTISSAGE, etc.)
+    - Tags (comma-separated text or multi-select, optional)
+    - Method/Framework (dropdown: Scrum, XP, Kanban, Lean, SAFe, Custom)
+    - Benefits (text area, optional)
+    - Pitfalls (text area, optional)
+    - Work Products (text area, optional)
+
+- **Given** I fill in the form
+  **When** I enter required fields (title, goal, select pillars, category)
+  **Then** I can click [Create Practice]
+
+- **Given** I click [Create Practice]
+  **When** the form is submitted
+  **Then** validation runs:
+    - Title is not empty
+    - Goal is not empty
+    - At least 1 pillar is selected
+    - Category is selected
+
+- **Given** validation passes
+  **When** I click [Create Practice]
+  **Then** the practice is saved
+  **And** I see: "Practice created successfully"
+  **And** the practice is added to our team's portfolio
+  **And** the form closes or redirects to the practice detail
+
+- **Given** I create a new practice
+  **When** it's saved
+  **Then** an event is logged: `{ action: "practice.created", teamId, practiceId, isCustom: true, timestamp }`
+  **And** the coverage % is recalculated on the team dashboard
+
+- **Given** I don't fill required fields
+  **When** I try to save
+  **Then** inline validation errors appear: "Title is required", "Select at least one pillar"
+  **And** I can't save until all required fields are filled
+
+- **Given** I'm creating a practice
+  **When** I fill in optional fields (benefits, pitfalls, workproducts)
+  **Then** they're stored and visible when the practice is viewed
+
+---
+
+#### Story 2.1.5: Catalog - Duplicate Existing Practice as Template
+
+As a **team member**,
+I want to **create a new practice by duplicating an existing one**,
+So that **I can quickly adapt a practice to our team's context**.
+
+**Acceptance Criteria:**
+
+- **Given** I'm on the Practice Catalog
+  **When** I click [+ Create New Practice]
+  **Then** I see two options:
+    1. [From Scratch] - empty form
+    2. [From Template] - duplicate existing practice
+
+- **Given** I click [From Template]
+  **When** the template picker opens
+  **Then** I see a list/dropdown of all practices (team + global catalog)
+
+- **Given** I select a practice to duplicate
+  **When** the template is selected
+  **Then** the creation form opens with all fields pre-filled from the source practice
+  **And** the title shows: "[Original Name] (Copy)" or "[Original Name] - Copy 1"
+
+- **Given** the form is pre-filled
+  **When** I see the fields
+  **Then** I can edit any field (title, goal, pillars, category, tags, benefits, etc.)
+
+- **Given** I've made changes to the duplicated practice
+  **When** I click [Create Practice]
+  **Then** the new practice is saved with my edits
+  **And** an event is logged: `{ action: "practice.created", teamId, practiceId, createdFrom: "source_practice_id", timestamp }`
+
+- **Given** I duplicate a practice
+  **When** I save
+  **Then** the new practice is added to our team's portfolio
+  **And** any changes to pillar coverage are reflected in team coverage %
+
+---
+
+#### Story 2.1.6: Catalog - Advanced Filtering (Tag, Method/Framework, Category)
+
+As a **team member**,
+I want to **filter the practice catalog by tag, method/framework, and category**,
+So that **I can quickly find practices matching our team's interests or constraints**.
+
+**Acceptance Criteria:**
+
+- **Given** I'm on the Practice Catalog page
+  **When** I view the filter panel
+  **Then** I see filter options:
+    - Search (existing)
+    - Pillar (existing)
+    - Category (new) - checkboxes for 5 categories
+    - Method/Framework (new) - checkboxes for: Scrum, XP, Kanban, Lean, SAFe, Custom
+    - Tags (new) - multi-select or comma-separated text input
+
+- **Given** I click on the Category filter
+  **When** I see the options
+  **Then** I can check/uncheck: VALEURS HUMAINES, FEEDBACK & APPRENTISSAGE, EXCELLENCE TECHNIQUE, ORGANISATION & AUTONOMIE, FLUX & RAPIDITÉ
+
+- **Given** I select Category "EXCELLENCE TECHNIQUE"
+  **When** the filter is applied
+  **Then** the practice list shows only practices in that category
+
+- **Given** I click on the Method/Framework filter
+  **When** I see the options
+  **Then** I can check/uncheck: Scrum, XP, Kanban, Lean, SAFe, Custom
+
+- **Given** I select Method "Scrum"
+  **When** the filter is applied
+  **Then** the practice list shows only practices tagged with Scrum method
+
+- **Given** I click on the Tags filter
+  **When** I enter or select tags
+  **Then** I can filter by multiple tags (OR logic: practices with ANY selected tag)
+
+- **Given** I've applied multiple filters (e.g., Category + Method + Tag)
+  **When** the filters are applied
+  **Then** practices matching ALL selected criteria are shown
+  **And** filter indicators show active filters with [X] to remove each
+
+- **Given** I apply a filter with 0 results
+  **When** the filter is applied
+  **Then** I see: "No practices match these filters. Try adjusting your selection."
+  **And** I can [Clear All Filters] to reset
+
+- **Given** I apply filters
+  **When** results update
+  **Then** an event is logged: `{ action: "catalog.filtered", teamId, filters: { category, method, tags }, resultCount, timestamp }`
+
+---
+
+#### Story 2.1.7: Catalog - Practice Detail Sidebar with Complete Information
+
+As a **team member**,
+I want to **see all practice details (description, steps, tags, roles, benefits, pitfalls, workproducts, version info) when I click a practice**,
+So that **I have comprehensive information before adding it to our team**.
+
+**Acceptance Criteria:**
+
+- **Given** I click on a practice in the catalog or team list
+  **When** the detail sidebar opens
+  **Then** it displays on the right side and shows all relevant practice information:
+    - Title (large, clear)
+    - Goal/Objective (prominent)
+    - Detailed Description (if available)
+    - Pillars Covered (colored badges, clickable - see Story 2.1.8)
+    - Category (shown as a tag/badge)
+    - Tags/Framework (e.g., "Scrum", "Agile", "Communication")
+    - Method/Framework (e.g., "Scrum", "XP", "Kanban")
+    - Steps/Procedure (if available, as numbered list)
+    - Roles (if available, list of roles involved)
+    - Benefits (list or paragraph)
+    - Pitfalls (list or paragraph)
+    - Work Products (list or paragraph, outputs of the practice)
+    - Version info: "v1.2.3"
+    - Last Updated: "2026-01-15 by [User Name]"
+    - Created: "2025-12-01"
+    - [Edit] button (if editable)
+    - [Add to Team] button (if not already in team portfolio)
+    - [Remove from Team] button (if already in team)
+
+- **Given** the sidebar shows practice details
+  **When** some fields are empty (e.g., no steps, no work products)
+  **Then** those sections are either hidden or shown as "Not specified"
+  **And** the sidebar doesn't look empty (compact layout)
+
+- **Given** the practice detail is displayed
+  **When** I see the "category" field
+  **Then** it should NOT appear as "category_id" or raw database values
+  **And** only JSON-defined fields from the practice are shown (database metadata like hash, raw JSON are hidden)
+
+- **Given** the sidebar is open
+  **When** the information loads
+  **Then** I see a loading skeleton while data is fetched
+
+- **Given** I'm viewing practice details
+  **When** the page loads
+  **Then** an event is logged: `{ action: "practice.detail_viewed", teamId, practiceId, timestamp }`
+
+---
+
+#### Story 2.1.8: Practice Detail - Clickable Pillars with Popover Context
+
+As a **team member**,
+I want to **click on pillars shown in the practice detail sidebar to see more context**,
+So that **I understand what each pillar means and what other practices cover it**.
+
+**Acceptance Criteria:**
+
+- **Given** I'm viewing practice details
+  **When** I see the "Pillars Covered" section with colored badges
+  **Then** each pillar name is clickable (underlined or hover effect shows it's clickable)
+
+- **Given** I click on a pillar (e.g., "Communication")
+  **When** I click it
+  **Then** a popover/modal appears showing:
+    - Pillar name (large)
+    - Pillar description/definition (what does "Communication" mean in our context?)
+    - Category (which category does it belong to?)
+    - Color coding (the pillar's associated color)
+    - Other practices in our team covering this pillar (list with practice names)
+    - Practice coverage indicators (each practice showing if it covers this pillar)
+
+- **Given** the popover is showing pillar details
+  **When** I see the list of other practices covering this pillar
+  **Then** each practice is clickable
+  **And** clicking a practice closes the current popover and opens the new practice's detail
+
+- **Given** the pillar popover is open
+  **When** I want to close it
+  **Then** I can click [X], click outside the popover, or press Escape
+
+- **Given** I'm viewing pillar context
+  **When** the popover is displayed
+  **Then** an event is logged: `{ action: "pillar.detail_viewed", teamId, practiceId, pillarId, timestamp }`
+
+---
+
+#### Story 2.1.9: Catalog & Header Navigation - Persistent AAPR Header on All Pages
+
+As a **user**,
+I want to **see the AAPR branding, catalog access, and logout button on every page**,
+So that **I can navigate between core sections and log out from anywhere**.
+
+**Acceptance Criteria:**
+
+- **Given** I'm on any page in the application (dashboard, catalog, members, issues, etc.)
+  **When** I look at the top of the page
+  **Then** I see a persistent header with:
+    - AAPR logo/branding (clickable, links to home/dashboard)
+    - [Catalog] link (navigates to Practice Catalog)
+    - [Team Dashboard] link (navigates to current team dashboard, if in a team context)
+    - User dropdown or [Logout] button
+    - Current team name (if applicable)
+
+- **Given** I'm on the Team Dashboard
+  **When** I click [Catalog]
+  **Then** I navigate to the Practice Catalog page
+  **And** the header remains visible
+
+- **Given** I'm on the Practice Catalog
+  **When** I click [Team Dashboard]
+  **Then** I navigate back to the current team's dashboard
+  **And** the header remains visible
+
+- **Given** I'm on any page
+  **When** I click [Logout]
+  **Then** my session is terminated
+  **And** I'm redirected to the login page
+
+- **Given** the header is visible on all pages
+  **When** I navigate between pages
+  **Then** the header doesn't flash or reload (smooth transitions)
+
+- **Given** I'm on a page without a team context (e.g., Teams list, Catalog in browse mode)
+  **When** the header displays
+  **Then** the [Team Dashboard] link is disabled or hidden
+  **And** only [Catalog], [Home], and [Logout] are active
+
+---
+
+#### Story 2.1.10: Database Schema - Create practice_association Table
+
+As a **developer**,
+I want to **create a new practice_association table to properly model relationships between practices**,
+So that **associations are stored relationally instead of as binary JSON**.
+
+**Acceptance Criteria:**
+
+- **Given** the database schema is being updated
+  **When** I review the new table
+  **Then** the practice_association table has columns:
+    - id (primary key, UUID or auto-increment)
+    - source_practice_id (FK to practices.id)
+    - target_practice_id (FK to practices.id)
+    - association_type (VARCHAR, e.g., "related_to", "alternative_for", "builds_on", "complements", "conflicts_with")
+    - created_at (timestamp)
+    - updated_at (timestamp)
+
+- **Given** the table schema is defined
+  **When** I review the constraints
+  **Then** I see:
+    - Foreign key constraints on both practice IDs
+    - Unique constraint on (source_practice_id, target_practice_id, association_type) to prevent duplicates
+    - Composite primary key or unique index
+
+- **Given** the practice_association table is created
+  **When** I check the schema
+  **Then** the old practice.associated_practices column (binary JSON) is marked for deprecation/removal
+  **And** a migration script is created to move data from JSON to the new table
+
+- **Given** the table is ready
+  **When** the migration runs
+  **Then** an event is logged: `{ action: "schema.practice_association_created", timestamp }`
+
+---
+
+#### Story 2.1.11: Database Migration - Migrate Associated Practices from JSON to Relational
+
+As a **developer**,
+I want to **migrate all practice associations from binary JSON to the new practice_association table**,
+So that **the data model is normalized and queries are efficient**.
+
+**Acceptance Criteria:**
+
+- **Given** the practice_association table exists
+  **When** the migration script runs
+  **Then** for each practice with associated_practices JSON data:
+    1. Parse the binary JSON
+    2. Extract each association (source, target, type)
+    3. Insert a row into practice_association
+
+- **Given** the migration is running
+  **When** each association is migrated
+  **Then** association_type is preserved (or mapped if the JSON format differs)
+    - Example: JSON `{ "alternatives": [...] }` maps to association_type = "alternative_for"
+
+- **Given** the migration completes
+  **When** I verify the data
+  **Then** all practice associations are in the practice_association table
+  **And** no data is lost (spot-check: old JSON and new relational rows match)
+
+- **Given** the migration is successful
+  **When** the migration script finishes
+  **Then** an event is logged: `{ action: "migration.practice_associations_completed", migratedCount, timestamp }`
+  **And** a backup of the old data is taken (in case rollback is needed)
+
+---
+
+#### Story 2.1.12: Database Cleanup - Remove category_id from practices Table
+
+As a **developer**,
+I want to **remove the category_id column from the practices table**,
+So that **the schema only stores category information as part of the JSON practice definition, as originally designed**.
+
+**Acceptance Criteria:**
+
+- **Given** the practices table has a category_id column
+  **When** I review the schema
+  **Then** I verify that all category information is already stored in the JSON practice data
+
+- **Given** the verification is complete
+  **When** I create a migration script
+  **Then** the script:
+    1. Backs up the existing data (via backup script or database snapshot)
+    2. Removes the category_id column from practices table
+    3. Logs the removal
+
+- **Given** the migration runs
+  **When** the column is dropped
+  **Then** the practices table schema no longer includes category_id
+  **And** all queries that reference category_id are updated in the codebase
+
+- **Given** the cleanup is complete
+  **When** the migration finishes
+  **Then** an event is logged: `{ action: "schema.category_id_removed", affectedRows: X, timestamp }`
+  **And** the schema is validated to ensure no orphaned references remain
+
+- **Given** the schema is updated
+  **When** I query the practices table
+  **Then** category information is accessed via the JSON definition (e.g., `practice_json->>'category'` in PostgreSQL)
+  **And** no separate category_id column exists
+
+---
+
+---
+
 ### Epic 3: Big Five Personality Profiling
 
 **Epic Goal:** Enable users to complete the IPIP-NEO questionnaire and see their personality profile.
@@ -1335,26 +1939,42 @@ So that **I can analyze specific periods or events for research**.
 
 **Total FRs covered:** 20 functional requirements
 **Total NFRs covered:** 18 non-functional requirements
-**Epics:** 6 major epics
-**Stories:** 31 detailed user stories
+**Epics:** 7 major epics (including Epic 2.1 UX refinement)
+**Stories:** 43 detailed user stories
 
 **Story Breakdown by Epic:**
 - Epic 1 (Authentication & Team Onboarding): 8 stories
 - Epic 2 (Practice Catalog & Coverage): 9 stories
+- Epic 2.1 (Team Dashboard & Catalog UX Refinement + Database Normalization): 12 stories
 - Epic 3 (Big Five Personality Profiling): 4 stories
 - Epic 4 (Issue Submission & Discussion): 5 stories
 - Epic 5 (Adaptation Decision & Tracking): 3 stories
 - Epic 6 (Research Data Integrity & Event Logging): 2 stories
 
-**Delivery Sequence:** Epic 1 → Epic 2 → Epic 3 → Epic 4 → Epic 5 (Epic 6 runs in parallel)
+**Delivery Sequence:** Epic 1 → Epic 2 → Epic 2.1 → Epic 3 → Epic 4 → Epic 5 (Epic 6 runs in parallel)
+
+**Key Improvements in Epic 2.1:**
+- ✅ Team dashboard redesigned with practices as central focus
+- ✅ Coverage visualization optimized (3 categories per row)
+- ✅ Members management moved to dedicated page
+- ✅ Team name inline editing with pencil icon
+- ✅ Practice creation from scratch or template
+- ✅ Advanced filtering (tag, method/framework, category)
+- ✅ Comprehensive practice detail sidebar with all fields
+- ✅ Clickable pillars with context popovers
+- ✅ Persistent header with AAPR branding on all pages
+- ✅ Database normalization: practice_association table created
+- ✅ Migration: associated practices from JSON to relational
+- ✅ Cleanup: category_id column removed from practices table
 
 **Next Steps:**
 1. ✅ Step 1: Requirements extraction and validation (COMPLETE)
 2. ✅ Step 2: Epic design and story creation (COMPLETE)
 3. ✅ Step 3: Detailed acceptance criteria for all stories (COMPLETE)
-4. 🔄 Step 4: Final validation and sign-off (PENDING)
+4. ✅ Step 4: Add Epic 2.1 UX refinement and database normalization (COMPLETE)
+5. 🔄 Step 5: Final validation and sign-off (PENDING)
 
 ---
 
-**Document Status:** ✅ All 31 user stories complete with detailed acceptance criteria
+**Document Status:** ✅ Epic 2.1 added with 12 detailed user stories covering UX refinements and database normalization
 **Ready for:** Final validation and development kickoff

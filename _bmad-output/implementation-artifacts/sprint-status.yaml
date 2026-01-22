@@ -1,4 +1,4 @@
-# generated: 2026-01-16
+# generated: 2026-01-22
 # project: AAPR
 # project_key: AAPR
 # tracking_system: file-system
@@ -33,7 +33,7 @@
 # - SM typically creates next story after previous one is 'done' to incorporate learnings
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 
-generated: 2026-01-16
+generated: 2026-01-22
 project: AAPR
 project_key: AAPR
 tracking_system: file-system
@@ -63,6 +63,23 @@ development_status:
   2-7-view-team-coverage-by-category: done
   2-8-edit-practice-details-any-practice: done
   epic-2-retrospective: optional
+
+  # Epic 2.1: Team Dashboard & Catalog UX Refinement + Database Normalization
+  epic-2-1: in-progress
+  2-1-0-redesign-team-dashboard-make-practices-central: done
+  2-1-1-optimize-coverage-visualization-3-categories-per-row: backlog
+  2-1-2-move-members-and-invitations-to-dedicated-members-page: backlog
+  2-1-3-team-name-inline-editing-with-pencil-icon: backlog
+  2-1-4-catalog-create-new-practice-with-full-editor: backlog
+  2-1-5-catalog-duplicate-existing-practice-as-template: backlog
+  2-1-6-catalog-advanced-filtering-tag-method-framework-category: backlog
+  2-1-7-catalog-practice-detail-sidebar-with-complete-information: backlog
+  2-1-8-practice-detail-clickable-pillars-with-popover-context: backlog
+  2-1-9-catalog-and-header-navigation-persistent-aapr-header-on-all-pages: backlog
+  2-1-10-database-schema-create-practice-association-table: backlog
+  2-1-11-database-migration-migrate-associated-practices-from-json-to-relational: backlog
+  2-1-12-database-cleanup-remove-category-id-from-practices-table: backlog
+  epic-2-1-retrospective: optional
 
   # Epic 3: Big Five Personality Profiling
   epic-3: backlog

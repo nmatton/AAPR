@@ -1,4 +1,4 @@
-import type { PracticesResponse } from '../types'
+import type { PracticesResponse, Practice } from '../types'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
@@ -78,6 +78,57 @@ export const fetchPractices = async (
     total: data.total,
     requestId: data.requestId ?? 'unknown'
   }
+}
+
+export type PracticeDetailResponse = {
+  practice: Practice & {
+    description?: string | null
+    method?: string | null
+    tags?: unknown | null
+    activities?: unknown | null
+    roles?: unknown | null
+    workProducts?: unknown | null
+    completionCriteria?: string | null
+    metrics?: unknown | null
+    guidelines?: unknown | null
+    pitfalls?: unknown | null
+    benefits?: unknown | null
+    associatedPractices?: unknown | null
+    importedBy?: string | null
+    updatedAt: string
+  }
+}
+
+export const fetchPracticeDetail = async (id: number): Promise<PracticeDetailResponse> => {
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE_URL}/api/v1/practices/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Request-Id': generateRequestId()
+      },
+      credentials: 'include'
+    })
+  } catch (error) {
+    if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      throw new ApiError('network_error', 'Unable to reach server. Check your connection.')
+    }
+    throw new ApiError('unknown_error', 'Unexpected error while fetching practice detail', { originalError: error })
+  }
+
+  const data = await parseJsonSafely<PracticeDetailResponse & { code?: string; message?: string; details?: unknown }>(response)
+
+  if (!response.ok || !data) {
+    throw new ApiError(
+      data?.code ?? 'unknown_error',
+      data?.message ?? 'Unable to load practice detail',
+      data?.details,
+      response.status
+    )
+  }
+
+  return { practice: data.practice }
 }
 
 export const logCatalogViewed = async (teamId: number | null, practiceCount: number): Promise<void> => {

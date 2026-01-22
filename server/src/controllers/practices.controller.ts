@@ -72,3 +72,28 @@ export const getPractices = async (
     next(error);
   }
 };
+
+/**
+ * GET /api/v1/practices/:id
+ * Fetch full practice detail by ID
+ */
+export const getPracticeDetail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id < 1) {
+      throw new AppError('validation_error', 'Invalid practice ID', { id }, 400);
+    }
+
+    const detail = await practicesService.getPracticeDetail(id);
+    res.json({ practice: detail, requestId: req.id });
+  } catch (error: any) {
+    if (error && req.id) {
+      error.requestId = req.id;
+    }
+    next(error);
+  }
+};

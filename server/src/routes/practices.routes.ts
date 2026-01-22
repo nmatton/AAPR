@@ -8,3 +8,9 @@ export const practicesRouter = Router();
  * Fetch practice catalog for selection UI
  */
 practicesRouter.get('/', practicesController.getPractices);
+
+/**
+ * GET /api/v1/practices/:id
+ * Fetch full practice detail by ID
+ */
+practicesRouter.get('/:id', practicesController.getPracticeDetail);
