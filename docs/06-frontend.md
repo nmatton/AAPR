@@ -2,7 +2,7 @@
 
 **Frontend Architecture & UI for AAPR Platform**
 
-Last Updated: January 21, 2026  
+Last Updated: January 22, 2026  
 Stack: React 18.2, TypeScript 5.2+, Vite 5.0+, TailwindCSS 3.0+
 
 ---
@@ -374,6 +374,45 @@ PracticeRemovalImpact: {
 - `willCreateGaps: true` means at least one pillar loses all coverage
 - Modal shows explicit warning with gap pillar list
 - After removal, gap pillars are highlighted with suggestion: "Consider adding a practice that covers [Pillar Name]"
+
+---
+
+## Edit Practice Details (Story 2.8)
+
+**Entry Points:**
+- Practice cards in the catalog and team practice list
+- Practice detail sidebar (Edit button)
+
+**Component:** [PracticeEditForm.tsx](../client/src/features/teams/components/PracticeEditForm.tsx)
+
+**Features:**
+- Pre-filled fields (title, goal, category, pillars)
+- Real-time character counters (title 2-100, goal 1-500)
+- Auto-expanding goal textarea
+- Pillar multi-select with live count ("X pillars selected")
+- Unsaved change guard on close and navigation
+- Optimistic conflict banner with [Refresh] action
+- Global practice warning when used by multiple teams
+- Save-as-copy option for team-specific customization
+
+**State Integration:**
+- [managePracticesSlice.ts](../client/src/features/teams/state/managePracticesSlice.ts)
+  - `editPractice(teamId, practiceId, payload)`
+  - Updates local practice list or reloads after save-as-copy
+
+**API Client:** [teamPracticesApi.ts](../client/src/features/teams/api/teamPracticesApi.ts)
+```typescript
+editPracticeForTeam(teamId, practiceId, payload): Promise<EditPracticeResponse>
+```
+
+**UX Flow:**
+1. User clicks [Edit] on a practice
+2. Modal opens with pre-filled fields
+3. User edits title/goal/pillars/category
+4. If global and used by multiple teams, warning dialog appears before saving
+5. Save changes or save as team-specific copy
+6. Success toast: "Practice updated successfully"
+7. Teams list refreshed to update coverage stats
 
 ---
 

@@ -57,6 +57,9 @@ interface PracticeCardProps {
   actionLabel?: string
   actionAriaLabel?: string
   actionIcon?: ReactNode
+  onEdit?: (practice: Practice) => void
+  editLabel?: string
+  editAriaLabel?: string
 }
 
 export const PracticeCard = ({
@@ -66,7 +69,10 @@ export const PracticeCard = ({
   onAction,
   actionLabel,
   actionAriaLabel,
-  actionIcon
+  actionIcon,
+  onEdit,
+  editLabel = 'Edit',
+  editAriaLabel
 }: PracticeCardProps) => {
   return (
     <div
@@ -103,19 +109,34 @@ export const PracticeCard = ({
             ))}
           </div>
         </div>
-        {onAction && (
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation()
-              onAction(practice)
-            }}
-            aria-label={actionAriaLabel ?? actionLabel ?? 'Action'}
-            className="mt-1 inline-flex items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-2 text-blue-700 hover:bg-blue-100"
-          >
-            {actionIcon ?? <span className="text-lg leading-none">+</span>}
-          </button>
-        )}
+        <div className="flex flex-col items-end gap-2">
+          {onEdit && (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation()
+                onEdit(practice)
+              }}
+              aria-label={editAriaLabel ?? editLabel}
+              className="text-xs font-medium text-blue-700 hover:text-blue-900"
+            >
+              {editLabel}
+            </button>
+          )}
+          {onAction && (
+            <button
+              type="button"
+              onClick={(event) => {
+                event.stopPropagation()
+                onAction(practice)
+              }}
+              aria-label={actionAriaLabel ?? actionLabel ?? 'Action'}
+              className="mt-1 inline-flex items-center justify-center rounded-full border border-blue-200 bg-blue-50 px-2.5 py-2 text-blue-700 hover:bg-blue-100"
+            >
+              {actionIcon ?? <span className="text-lg leading-none">+</span>}
+            </button>
+          )}
+        </div>
       </div>
       {actionLabel && (
         <span className="sr-only">{actionLabel}</span>

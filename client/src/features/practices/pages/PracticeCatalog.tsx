@@ -7,6 +7,8 @@ import { PracticeEmptyState } from '../components/PracticeEmptyState'
 import { PracticeErrorState } from '../components/PracticeErrorState'
 import { PracticeCatalogDetail } from '../components/PracticeCatalogDetail'
 import { PillarFilterDropdown } from '../components/PillarFilterDropdown'
+import { PracticeEditForm } from '../../teams/components/PracticeEditForm'
+import type { Practice } from '../types'
 
 const PAGE_SIZE = 100
 
@@ -59,6 +61,7 @@ export const PracticeCatalog = () => {
   const [isDebouncing, setIsDebouncing] = useState(false)
   const lastResultsSignature = useRef<string | null>(null)
   const lastScrollPosition = useRef(0)
+  const [practiceToEdit, setPracticeToEdit] = useState<Practice | null>(null)
 
   // Debounce search input
   useEffect(() => {
@@ -82,6 +85,10 @@ export const PracticeCatalog = () => {
     lastScrollPosition.current = window.scrollY
     void loadPractices(1, PAGE_SIZE, teamId)
   }, [loadPractices, searchParams, searchQuery, selectedPillars])
+
+  const teamIdParam = searchParams.get('teamId')
+  const teamId = teamIdParam ? Number(teamIdParam) : null
+  const canEdit = Number.isFinite(teamId)
 
   useEffect(() => {
     void loadAvailablePillars()
@@ -298,17 +305,43 @@ export const PracticeCatalog = () => {
                     practice={practice}
                     onSelect={setCurrentDetail}
                     highlightQuery={searchQuery}
+                    onEdit={canEdit ? setPracticeToEdit : undefined}
+                    editLabel="Edit"
                   />
                 ))}
               </div>
             </div>
 
             {currentDetail && (
-              <PracticeCatalogDetail practice={currentDetail} onClose={() => setCurrentDetail(null)} />
+              <PracticeCatalogDetail
+                practice={currentDetail}
+                onClose={() => setCurrentDetail(null)}
+                onEdit={canEdit ? () => setPracticeToEdit(currentDetail) : undefined}
+              />
             )}
           </div>
         )}
       </main>
+
+      {practiceToEdit && canEdit && teamId && (
+        <PracticeEditForm
+          teamId={teamId}
+          practice={practiceToEdit}
+          onClose={() => setPracticeToEdit(null)}
+          onSaved={async () => {
+            await loadPractices(1, PAGE_SIZE, teamId)
+          }}
+          onRefreshRequested={async () => {
+            await loadPractices(1, PAGE_SIZE, teamId)
+            const refreshedPractice = usePracticesStore.getState().practices
+              .find((entry) => entry.id === practiceToEdit.id) ?? null
+            if (refreshedPractice) {
+              setPracticeToEdit(refreshedPractice)
+            }
+            return refreshedPractice
+          }}
+        />
+      )}
     </div>
   )
 }

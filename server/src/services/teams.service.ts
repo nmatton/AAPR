@@ -1,5 +1,6 @@
 import * as teamsRepository from '../repositories/teams.repository';
 import * as practiceRepository from '../repositories/practice.repository';
+import * as coverageService from './coverage.service';
 import type { TeamWithStats, TeamPracticeWithPillars } from '../repositories/teams.repository';
 import { prisma } from '../lib/prisma';
 import { AppError } from './auth.service';
@@ -253,6 +254,9 @@ export const getAvailablePractices = async (
       goal: practice.goal,
       categoryId: practice.categoryId,
       categoryName: practice.category.name,
+      isGlobal: practice.isGlobal,
+      practiceVersion: practice.practiceVersion,
+      usedByTeamsCount: practice._count?.teamPractices ?? 0,
       pillars: practice.practicePillars.map((pp) => ({
         id: pp.pillar.id,
         name: pp.pillar.name,
@@ -291,6 +295,9 @@ export const getTeamPractices = async (teamId: number): Promise<PracticeDto[]> =
     goal: tp.practice.goal,
     categoryId: tp.practice.categoryId,
     categoryName: tp.practice.category.name,
+    isGlobal: tp.practice.isGlobal,
+    practiceVersion: tp.practice.practiceVersion,
+    usedByTeamsCount: tp.practice._count?.teamPractices ?? 0,
     pillars: tp.practice.practicePillars.map((pp) => ({
       id: pp.pillar.id,
       name: pp.pillar.name,
@@ -334,6 +341,22 @@ export interface CreateCustomPracticePayload {
 export interface CreateCustomPracticeResult {
   practiceId: number;
   coverage: number;
+}
+
+export interface EditPracticePayload {
+  title: string;
+  goal: string;
+  pillarIds: number[];
+  categoryId: string;
+  saveAsCopy?: boolean;
+  version: number;
+}
+
+export interface EditPracticeResult {
+  practice?: PracticeDto;
+  practiceId?: number;
+  coverageByTeam: Array<{ teamId: number; coverage: number }>;
+  usedByTeamsCount: number;
 }
 
 /**
@@ -770,4 +793,307 @@ export const createCustomPracticeForTeam = async (
     throw error;
   }
 };
+
+const buildPracticeChangeSet = (current: {
+  title: string;
+  goal: string;
+  categoryId: string;
+  pillarIds: number[];
+}, next: {
+  title: string;
+  goal: string;
+  categoryId: string;
+  pillarIds: number[];
+}): Record<string, { from: Prisma.InputJsonValue; to: Prisma.InputJsonValue }> => {
+  const changes: Record<string, { from: Prisma.InputJsonValue; to: Prisma.InputJsonValue }> = {}
+
+  if (current.title !== next.title) {
+    changes.title = { from: current.title, to: next.title }
+  }
+
+  if (current.goal !== next.goal) {
+    changes.goal = { from: current.goal, to: next.goal }
+  }
+
+  if (current.categoryId !== next.categoryId) {
+    changes.categoryId = { from: current.categoryId, to: next.categoryId }
+  }
+
+  const currentPillars = [...current.pillarIds].sort((a, b) => a - b)
+  const nextPillars = [...next.pillarIds].sort((a, b) => a - b)
+  if (currentPillars.join(',') !== nextPillars.join(',')) {
+    changes.pillarIds = { from: currentPillars, to: nextPillars }
+  }
+
+  return changes
+}
+
+export const editPracticeForTeam = async (
+  teamId: number,
+  userId: number,
+  practiceId: number,
+  payload: EditPracticePayload
+): Promise<EditPracticeResult> => {
+  const { title, goal, pillarIds, categoryId, saveAsCopy = false, version } = payload
+
+  const existingPractice = await practiceRepository.findById(practiceId)
+  if (!existingPractice) {
+    throw new AppError(
+      'practice_not_found',
+      'Practice not found',
+      { practiceId },
+      404
+    )
+  }
+
+  if (!existingPractice.isGlobal) {
+    const teamPractice = await prisma.teamPractice.findUnique({
+      where: {
+        teamId_practiceId: {
+          teamId,
+          practiceId
+        }
+      }
+    })
+    if (!teamPractice) {
+      throw new AppError(
+        'practice_not_found',
+        'Practice not found in team portfolio',
+        { teamId, practiceId },
+        404
+      )
+    }
+  }
+
+  const invalidPillars = await practiceRepository.validatePillarIds(pillarIds)
+  if (invalidPillars.length > 0) {
+    throw new AppError(
+      'invalid_pillar_ids',
+      'Some pillar IDs do not exist',
+      { invalid: invalidPillars },
+      400
+    )
+  }
+
+  const categoryExists = await practiceRepository.validateCategoryId(categoryId)
+  if (!categoryExists) {
+    throw new AppError(
+      'invalid_category_id',
+      'Category not found',
+      { categoryId },
+      400
+    )
+  }
+
+  const currentPillarIds = existingPractice.practicePillars.map((pp) => pp.pillar.id)
+  const changes = buildPracticeChangeSet(
+    {
+      title: existingPractice.title,
+      goal: existingPractice.goal,
+      categoryId: existingPractice.categoryId,
+      pillarIds: currentPillarIds
+    },
+    {
+      title,
+      goal,
+      categoryId,
+      pillarIds
+    }
+  )
+
+  if (saveAsCopy) {
+    const createdPractice = await prisma.$transaction(async (tx) => {
+      const newPractice = await practiceRepository.createPractice(
+        {
+          title,
+          goal,
+          description: existingPractice.description ?? undefined,
+          category: { connect: { id: categoryId } },
+          method: existingPractice.method ?? undefined,
+          tags: existingPractice.tags ?? undefined,
+          activities: existingPractice.activities ?? undefined,
+          roles: existingPractice.roles ?? undefined,
+          workProducts: existingPractice.workProducts ?? undefined,
+          completionCriteria: existingPractice.completionCriteria ?? undefined,
+          metrics: existingPractice.metrics ?? undefined,
+          guidelines: existingPractice.guidelines ?? undefined,
+          pitfalls: existingPractice.pitfalls ?? undefined,
+          benefits: existingPractice.benefits ?? undefined,
+          associatedPractices: existingPractice.associatedPractices ?? undefined,
+          importedAt: existingPractice.importedAt ?? undefined,
+          sourceFile: existingPractice.sourceFile ?? undefined,
+          jsonChecksum: existingPractice.jsonChecksum ?? undefined,
+          importedBy: existingPractice.importedBy ?? undefined,
+          sourceGitSha: existingPractice.sourceGitSha ?? undefined,
+          rawJson: existingPractice.rawJson ?? undefined,
+          isGlobal: false
+        },
+        tx
+      )
+
+      await practiceRepository.createPracticePillars(newPractice.id, pillarIds, tx)
+      await tx.teamPractice.upsert({
+        where: {
+          teamId_practiceId: {
+            teamId,
+            practiceId: newPractice.id
+          }
+        },
+        update: {},
+        create: {
+          teamId,
+          practiceId: newPractice.id
+        }
+      })
+
+      const eventPayload: Prisma.InputJsonObject = {
+        teamId,
+        practiceId: newPractice.id,
+        editedBy: userId,
+        copiedFrom: existingPractice.id,
+        changes,
+        timestamp: new Date().toISOString()
+      }
+
+      await tx.event.create({
+        data: {
+          eventType: 'practice.edited',
+          actorId: userId,
+          teamId,
+          entityType: 'practice',
+          entityId: newPractice.id,
+          action: 'edited',
+          payload: eventPayload,
+          createdAt: new Date()
+        }
+      })
+
+      return newPractice
+    })
+
+    const coverage = await coverageService.getTeamPillarCoverage(teamId)
+    const usedByTeamsCount = await practiceRepository.countTeamsUsingPractice(createdPractice.id)
+
+    // Fetch full practice details to return consistent response structure
+    const fullPractice = await practiceRepository.findById(createdPractice.id)
+    if (!fullPractice) {
+      throw new AppError(
+        'practice_not_found',
+        'Practice not found after creation',
+        { practiceId: createdPractice.id },
+        404
+      )
+    }
+
+    return {
+      practiceId: createdPractice.id,
+      practice: {
+        id: fullPractice.id,
+        title: fullPractice.title,
+        goal: fullPractice.goal,
+        categoryId: fullPractice.categoryId,
+        categoryName: fullPractice.category.name,
+        isGlobal: fullPractice.isGlobal,
+        practiceVersion: fullPractice.practiceVersion,
+        usedByTeamsCount,
+        pillars: fullPractice.practicePillars.map((pp) => ({
+          id: pp.pillar.id,
+          name: pp.pillar.name,
+          category: pp.pillar.category?.name ?? pp.pillar.categoryId,
+          description: pp.pillar.description ?? undefined
+        }))
+      },
+      coverageByTeam: [{ teamId, coverage: coverage.overallCoveragePct }],
+      usedByTeamsCount
+    }
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const updatedCount = await practiceRepository.updatePracticeWithVersion(
+      practiceId,
+      version,
+      { title, goal, categoryId },
+      tx
+    )
+
+    if (updatedCount === 0) {
+      throw new AppError(
+        'practice_version_conflict',
+        'Practice update conflict',
+        { practiceId, expectedVersion: version, currentVersion: existingPractice.practiceVersion },
+        409
+      )
+    }
+
+    await practiceRepository.replacePracticePillars(practiceId, pillarIds, tx)
+
+    const eventPayload: Prisma.InputJsonObject = {
+      teamId,
+      practiceId,
+      editedBy: userId,
+      changes,
+      timestamp: new Date().toISOString()
+    }
+
+    await tx.event.create({
+      data: {
+        eventType: 'practice.edited',
+        actorId: userId,
+        teamId,
+        entityType: 'practice',
+        entityId: practiceId,
+        action: 'edited',
+        payload: eventPayload,
+        createdAt: new Date()
+      }
+    })
+  })
+
+  const updatedPractice = await practiceRepository.findById(practiceId)
+  if (!updatedPractice) {
+    throw new AppError(
+      'practice_not_found',
+      'Practice not found after update',
+      { practiceId },
+      404
+    )
+  }
+
+  const affectedTeamIds = await practiceRepository.findTeamIdsUsingPractice(practiceId)
+  const coverageByTeam = await Promise.all(
+    affectedTeamIds.map(async (affectedTeamId) => {
+      try {
+        const coverage = await coverageService.getTeamPillarCoverage(affectedTeamId)
+        return { teamId: affectedTeamId, coverage: coverage.overallCoveragePct }
+      } catch (error) {
+        // Log error but don't fail the entire operation
+        console.error(`Failed to calculate coverage for team ${affectedTeamId}:`, error)
+        return { teamId: affectedTeamId, coverage: 0 }
+      }
+    })
+  )
+
+  const usedByTeamsCount = await practiceRepository.countTeamsUsingPractice(practiceId)
+
+  return {
+    practice: {
+      id: updatedPractice.id,
+      title: updatedPractice.title,
+      goal: updatedPractice.goal,
+      categoryId: updatedPractice.categoryId,
+      categoryName: updatedPractice.category.name,
+      isGlobal: updatedPractice.isGlobal,
+      practiceVersion: updatedPractice.practiceVersion,
+      usedByTeamsCount,
+      pillars: updatedPractice.practicePillars.map((pp) => ({
+        id: pp.pillar.id,
+        name: pp.pillar.name,
+        category: pp.pillar.category?.name ?? pp.pillar.categoryId,
+        description: pp.pillar.description ?? undefined
+      }))
+    },
+    coverageByTeam,
+    usedByTeamsCount
+  }
+}
 

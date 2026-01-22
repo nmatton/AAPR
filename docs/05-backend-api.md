@@ -2,7 +2,7 @@
 
 **Backend API Reference for AAPR Platform**
 
-Last Updated: January 21, 2026  
+Last Updated: January 22, 2026  
 Base URL: `http://localhost:3000`  
 Stack: Node.js 18+, Express 4.18+, TypeScript 5.2+
 
@@ -362,6 +362,9 @@ Get practices currently selected by the team
       "goal": "Improve team communication through brief daily synchronization meetings",
       "categoryId": "scrum",
       "categoryName": "Scrum",
+      "isGlobal": true,
+      "practiceVersion": 3,
+      "usedByTeamsCount": 4,
       "pillars": [
         {
           "id": 5,
@@ -401,6 +404,11 @@ Get practices not yet selected by the team
       "id": 42,
       "title": "Daily Stand-up",
       "goal": "Improve team communication through brief daily synchronization meetings",
+      "categoryId": "scrum",
+      "categoryName": "Scrum",
+      "isGlobal": true,
+      "practiceVersion": 3,
+      "usedByTeamsCount": 4,
       "description": "A short daily meeting where team members share progress...",
       "pillarId": 5,
       "pillar": {
@@ -573,6 +581,82 @@ Remove a practice from the team's portfolio
 
 **Events Logged:**
 - `practice.removed` (team_id, practice_id, actor_id)
+
+---
+
+#### PATCH /api/v1/teams/:teamId/practices/:practiceId
+Edit a practice (global or team-specific)
+
+**Authentication:** Required  
+**Authorization:** User must be a member of the team  
+
+**Parameters:**
+- `teamId` (path): Team identifier
+- `practiceId` (path): Practice identifier
+
+**Request Body:**
+```json
+{
+  "title": "Updated Practice Title",
+  "goal": "Updated goal text",
+  "pillarIds": [1, 2, 3],
+  "categoryId": "excellence",
+  "saveAsCopy": false,
+  "version": 3
+}
+```
+
+**Response (200 - update):**
+```json
+{
+  "practice": {
+    "id": 42,
+    "title": "Updated Practice Title",
+    "goal": "Updated goal text",
+    "categoryId": "excellence",
+    "categoryName": "EXCELLENCE TECHNIQUE",
+    "isGlobal": true,
+    "practiceVersion": 4,
+    "usedByTeamsCount": 4,
+    "pillars": [
+      { "id": 1, "name": "Communication", "category": "FEEDBACK & APPRENTISSAGE" }
+    ]
+  },
+  "coverageByTeam": [
+    { "teamId": 5, "coverage": 71.43 }
+  ],
+  "usedByTeamsCount": 4,
+  "requestId": "req_edit_123"
+}
+```
+
+**Response (200 - saveAsCopy):**
+```json
+{
+  "practiceId": 123,
+  "coverageByTeam": [
+    { "teamId": 5, "coverage": 71.43 }
+  ],
+  "usedByTeamsCount": 1,
+  "requestId": "req_edit_123"
+}
+```
+
+**Side Effects:**
+- Updates practice fields and `practice_pillars` (OCC enforced with `practiceVersion`)
+- Optionally creates a team-specific copy when `saveAsCopy=true`
+- Logs event `practice.edited` with a change diff
+- Recalculates coverage for all affected teams
+
+**Errors:**
+- 400: `{ "code": "validation_error", "message": "Request validation failed", "requestId": "..." }`
+- 400: `{ "code": "invalid_pillar_ids", "message": "Some pillar IDs do not exist", "requestId": "..." }`
+- 400: `{ "code": "invalid_category_id", "message": "Category not found", "requestId": "..." }`
+- 404: `{ "code": "practice_not_found", "message": "Practice not found", "requestId": "..." }`
+- 409: `{ "code": "practice_version_conflict", "message": "Practice update conflict", "requestId": "..." }`
+
+**Events Logged:**
+- `practice.edited` (team_id, practice_id, actor_id)
 
 ---
 

@@ -62,6 +62,23 @@ export interface CreateCustomPracticeResponse {
   requestId?: string;
 }
 
+export interface EditPracticePayload {
+  title: string;
+  goal: string;
+  pillarIds: number[];
+  categoryId: string;
+  saveAsCopy?: boolean;
+  version: number;
+}
+
+export interface EditPracticeResponse {
+  practice?: Practice;
+  practiceId?: number;
+  coverageByTeam: Array<{ teamId: number; coverage: number }>;
+  usedByTeamsCount: number;
+  requestId?: string;
+}
+
 /**
  * Fetch practices not yet selected by team
  * @param params - Query parameters including teamId, filters
@@ -172,3 +189,23 @@ export const createCustomPractice = async (
     }
   );
 };
+
+/**
+ * Edit a practice (global or team-specific)
+ * @param teamId - Team identifier
+ * @param practiceId - Practice identifier
+ * @param payload - Edit payload
+ */
+export const editPracticeForTeam = async (
+  teamId: number,
+  practiceId: number,
+  payload: EditPracticePayload
+): Promise<EditPracticeResponse> => {
+  return apiClient<EditPracticeResponse>(
+    `/api/v1/teams/${teamId}/practices/${practiceId}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify(payload)
+    }
+  )
+}

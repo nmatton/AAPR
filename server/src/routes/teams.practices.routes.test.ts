@@ -51,6 +51,9 @@ describe('teams routes - practices management', () => {
             goal: 'Plan sprints effectively',
             categoryId: 'scrum',
             categoryName: 'Scrum',
+            isGlobal: true,
+            practiceVersion: 1,
+            usedByTeamsCount: 2,
             pillars: []
           }
         ],

@@ -2,7 +2,7 @@
 
 **Implementation History for AAPR Platform**
 
-Last Updated: January 21, 2026
+Last Updated: January 22, 2026
 
 ---
 
@@ -572,6 +572,48 @@ Last Updated: January 21, 2026
 - Color coding thresholds align with agile maturity assessment standards
 - Practice catalog filtering uses URL query parameter for shareable links
 - Event logging includes category breakdown summary for research audit trail
+
+---
+
+### Story 2-8: Edit Practice Details (Any Practice)
+
+**Status:** ✅ COMPLETE  
+**Date:** January 21, 2026  
+**Developer:** Nicolas
+
+**What Was Built:**
+
+**Backend:**
+- **Endpoint:** `PATCH /api/v1/teams/:teamId/practices/:practiceId`
+  - Auth: `requireAuth` + `validateTeamMembership`
+  - Body: `{ title, goal, pillarIds, categoryId, saveAsCopy?, version }`
+  - Optimistic concurrency via `practiceVersion`
+- **Service:** `teams.service.editPracticeForTeam()`
+  - Updates practice fields and pillar links atomically
+  - Save-as-copy creates team-specific practice and links to team
+  - Coverage recalculated for all affected teams
+- **Repository:** new helpers in `practice.repository.ts`
+  - `updatePracticeWithVersion`, `replacePracticePillars`, `findTeamIdsUsingPractice`
+- **Event Logging:** `practice.edited` with change diff payload
+
+**Frontend:**
+- **Component:** `PracticeEditForm`
+  - Pre-filled fields, counters, auto-expanding textarea
+  - Pillar multi-select with live count
+  - Unsaved changes prompt on close/navigation
+  - Conflict banner with [Refresh]
+  - Global warning with team count + Save-as-copy option
+- **Entry Points:** Edit action on practice cards + detail sidebar
+- **State:** `managePracticesSlice.editPractice()` to update lists
+
+**Testing:**
+- Backend: `teams.service.test.ts` (edit, conflict, save-as-copy, event log)
+- Frontend: `PracticeEditForm.test.tsx` + `teamPracticesApi.test.ts`
+
+**Documentation Updated:**
+- `docs/05-backend-api.md`: PATCH edit endpoint + metadata fields
+- `docs/06-frontend.md`: PracticeEditForm UX and flow
+- `docs/09-changelog.md`: Story 2-8 entry
 
 ---
 

@@ -11,6 +11,9 @@ export interface Practice {
   goal: string;
   categoryId: string;
   categoryName: string;
+  isGlobal?: boolean;
+  practiceVersion?: number;
+  usedByTeamsCount?: number;
   pillars: PracticePillar[];
 }
 

@@ -12,6 +12,7 @@ export type PracticeWithRelations = Practice & {
   practicePillars: Array<{
     pillar: Pillar & { category: Category };
   }>;
+  _count?: { teamPractices: number };
 };
 
 /**
@@ -24,6 +25,7 @@ export async function findAll(): Promise<PracticeWithRelations[]> {
       isGlobal: true,
     },
     include: {
+      _count: { select: { teamPractices: true } },
       category: true,
       practicePillars: {
         include: {
@@ -52,6 +54,7 @@ export async function findPaginated(skip: number, take: number): Promise<Practic
       isGlobal: true,
     },
     include: {
+      _count: { select: { teamPractices: true } },
       category: true,
       practicePillars: {
         include: {
@@ -80,6 +83,7 @@ export async function findById(id: number): Promise<PracticeWithRelations | null
   return prisma.practice.findUnique({
     where: { id },
     include: {
+      _count: { select: { teamPractices: true } },
       category: true,
       practicePillars: {
         include: {
@@ -117,6 +121,7 @@ export async function findByCategory(categoryId: string): Promise<PracticeWithRe
       isGlobal: true,
     },
     include: {
+      _count: { select: { teamPractices: true } },
       category: true,
       practicePillars: {
         include: {
@@ -150,6 +155,7 @@ export async function findByPillar(pillarId: number): Promise<PracticeWithRelati
       isGlobal: true,
     },
     include: {
+      _count: { select: { teamPractices: true } },
       category: true,
       practicePillars: {
         include: {
@@ -187,6 +193,7 @@ export async function search(searchTerm: string): Promise<PracticeWithRelations[
       ],
     },
     include: {
+      _count: { select: { teamPractices: true } },
       category: true,
       practicePillars: {
         include: {
@@ -228,6 +235,7 @@ export async function findByMethod(method: string): Promise<PracticeWithRelation
       isGlobal: true,
     },
     include: {
+      _count: { select: { teamPractices: true } },
       category: true,
       practicePillars: {
         include: {
@@ -377,6 +385,7 @@ export async function searchAndFilter(options: {
       AND: whereConditions,
     },
     include: {
+      _count: { select: { teamPractices: true } },
       category: true,
       practicePillars: {
         include: {
@@ -501,6 +510,7 @@ export async function findAvailableForTeam(
       AND: whereConditions,
     },
     include: {
+      _count: { select: { teamPractices: true } },
       category: true,
       practicePillars: {
         include: {
@@ -578,4 +588,85 @@ export async function countAvailableForTeam(
       AND: whereConditions,
     },
   });
+}
+
+/**
+ * Replace all pillar links for a practice
+ * @param practiceId - Practice identifier
+ * @param pillarIds - Pillar IDs to set
+ * @param tx - Optional Prisma transaction client
+ */
+export async function replacePracticePillars(
+  practiceId: number,
+  pillarIds: number[],
+  tx?: Prisma.TransactionClient
+): Promise<void> {
+  const client = tx ?? prisma
+  await client.practicePillar.deleteMany({
+    where: { practiceId }
+  })
+  if (pillarIds.length > 0) {
+    await client.practicePillar.createMany({
+      data: pillarIds.map((pillarId) => ({
+        practiceId,
+        pillarId
+      }))
+    })
+  }
+}
+
+/**
+ * Update practice fields with optimistic concurrency control
+ * @param practiceId - Practice identifier
+ * @param version - Expected practiceVersion
+ * @param data - Fields to update
+ * @param tx - Optional Prisma transaction client
+ */
+export async function updatePracticeWithVersion(
+  practiceId: number,
+  version: number,
+  data: {
+    title: string
+    goal: string
+    categoryId: string
+  },
+  tx?: Prisma.TransactionClient
+): Promise<number> {
+  const client = tx ?? prisma
+  const result = await client.practice.updateMany({
+    where: {
+      id: practiceId,
+      practiceVersion: version
+    },
+    data: {
+      title: data.title,
+      goal: data.goal,
+      categoryId: data.categoryId,
+      practiceVersion: { increment: 1 }
+    }
+  })
+  return result.count
+}
+
+/**
+ * Find team IDs using a given practice
+ * @param practiceId - Practice identifier
+ */
+export async function findTeamIdsUsingPractice(practiceId: number): Promise<number[]> {
+  const teamPractices = await prisma.teamPractice.findMany({
+    where: { practiceId },
+    select: { teamId: true },
+    distinct: ['teamId']
+  })
+  return teamPractices.map((tp) => tp.teamId)
+}
+
+/**
+ * Count teams using a given practice
+ * @param practiceId - Practice identifier
+ */
+export async function countTeamsUsingPractice(practiceId: number): Promise<number> {
+  return prisma.teamPractice.count({
+    where: { practiceId }
+  })
 }

@@ -8,6 +8,7 @@ import { PillarFilterDropdown } from '../../practices/components/PillarFilterDro
 import { PracticeCatalogDetail } from '../../practices/components/PracticeCatalogDetail';
 import { RemovePracticeModal } from '../components/RemovePracticeModal';
 import { CreatePracticeModal } from '../components/CreatePracticeModal';
+import { PracticeEditForm } from '../components/PracticeEditForm';
 import type { Practice } from '../types/practice.types';
 
 type TabType = 'available' | 'selected';
@@ -48,6 +49,7 @@ export const ManagePracticesView = () => {
   const [practiceToRemove, setPracticeToRemove] = useState<Practice | null>(null);
   const [isRemoving, setIsRemoving] = useState(false);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [practiceToEdit, setPracticeToEdit] = useState<Practice | null>(null);
 
   const numericTeamId = Number(teamId);
   const selectedTeam = teams.find((team) => team.id === numericTeamId);
@@ -174,6 +176,39 @@ export const ManagePracticesView = () => {
       return handleAddPractice(practice);
     }
     : handleRemoveClick;
+
+  const handleEditPractice = (practice: Practice) => {
+    setPracticeToEdit(practice);
+  };
+
+  const handlePracticeSaved = async (result: { practiceId?: number; practice?: Practice }) => {
+    showSuccessMessage('Practice updated successfully');
+    await fetchTeams();
+    if (activeTab === 'selected') {
+      await loadTeamPractices(numericTeamId);
+    } else {
+      await loadAvailablePractices(numericTeamId);
+    }
+    if (result.practice) {
+      setCurrentDetail(result.practice);
+    }
+  };
+
+  const handleRefreshAfterConflict = async () => {
+    await loadTeamPractices(numericTeamId);
+    await loadAvailablePractices(numericTeamId);
+
+    const refreshedTeamPractices = useManagePracticesStore.getState().teamPractices;
+    const refreshedAvailablePractices = useAddPracticesStore.getState().practices;
+    const refreshedPractice = [...refreshedTeamPractices, ...refreshedAvailablePractices]
+      .find((practice) => practice.id === practiceToEdit?.id) ?? null;
+
+    if (refreshedPractice) {
+      setPracticeToEdit(refreshedPractice);
+    }
+
+    return refreshedPractice;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -412,6 +447,8 @@ export const ManagePracticesView = () => {
                   actionLabel={activeTab === 'available' ? 'Add to team' : 'Remove'}
                   actionAriaLabel={activeTab === 'available' ? 'Add to team' : 'Remove from team'}
                   highlightQuery={activeTab === 'available' ? searchQuery : ''}
+                  onEdit={handleEditPractice}
+                  editLabel="Edit"
                 />
               ))}
             </div>
@@ -440,6 +477,7 @@ export const ManagePracticesView = () => {
             onAction={() => activeTab === 'available' ? handleAddPractice(currentDetail) : handleRemoveClick(currentDetail)}
             actionDisabled={isAddingPracticeId === currentDetail.id}
             actionLoading={isAddingPracticeId === currentDetail.id}
+            onEdit={() => handleEditPractice(currentDetail)}
           />
         )}
 
@@ -459,6 +497,16 @@ export const ManagePracticesView = () => {
             teamId={numericTeamId}
             onClose={() => setIsCreateModalOpen(false)}
             onCreated={handlePracticeCreated}
+          />
+        )}
+
+        {practiceToEdit && (
+          <PracticeEditForm
+            teamId={numericTeamId}
+            practice={practiceToEdit}
+            onClose={() => setPracticeToEdit(null)}
+            onSaved={handlePracticeSaved}
+            onRefreshRequested={handleRefreshAfterConflict}
           />
         )}
       </div>

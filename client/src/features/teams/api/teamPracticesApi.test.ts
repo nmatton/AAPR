@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { fetchAvailablePractices, addPracticeToTeam, fetchTeamPractices, removePracticeFromTeam, createCustomPractice } from './teamPracticesApi';
+import { fetchAvailablePractices, addPracticeToTeam, fetchTeamPractices, removePracticeFromTeam, createCustomPractice, editPracticeForTeam } from './teamPracticesApi';
 import * as apiClient from '../../../lib/apiClient';
 
 // Mock apiClient
@@ -158,4 +158,35 @@ describe('teamPracticesApi', () => {
       expect(result).toEqual(mockResponse);
     });
   });
+
+  describe('editPracticeForTeam', () => {
+    it('patches practice edits successfully', async () => {
+      const mockResponse = {
+        practice: { id: 5, title: 'Updated', goal: 'Goal', categoryId: 'feedback', categoryName: 'Feedback', pillars: [] },
+        coverageByTeam: [{ teamId: 1, coverage: 50 }],
+        usedByTeamsCount: 2
+      }
+
+      vi.mocked(apiClient.apiClient).mockResolvedValue(mockResponse)
+
+      const payload = {
+        title: 'Updated',
+        goal: 'Goal',
+        pillarIds: [1],
+        categoryId: 'feedback',
+        version: 2
+      }
+
+      const result = await editPracticeForTeam(1, 5, payload)
+
+      expect(apiClient.apiClient).toHaveBeenCalledWith(
+        '/api/v1/teams/1/practices/5',
+        expect.objectContaining({
+          method: 'PATCH',
+          body: JSON.stringify(payload)
+        })
+      )
+      expect(result).toEqual(mockResponse)
+    })
+  })
 });

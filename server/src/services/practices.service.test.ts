@@ -15,6 +15,9 @@ describe('practices.service', () => {
       goal: 'Sync',
       categoryId: 'FEEDBACK_APPRENTISSAGE',
       category: { id: 'FEEDBACK_APPRENTISSAGE', name: 'FEEDBACK & APPRENTISSAGE' },
+      isGlobal: true,
+      practiceVersion: 2,
+      _count: { teamPractices: 3 },
       practicePillars: [
         {
           pillar: {
@@ -41,6 +44,9 @@ describe('practices.service', () => {
           goal: 'Sync',
           categoryId: 'FEEDBACK_APPRENTISSAGE',
           categoryName: 'FEEDBACK & APPRENTISSAGE',
+          isGlobal: true,
+          practiceVersion: 2,
+          usedByTeamsCount: 3,
           pillars: [
             {
               id: 5,

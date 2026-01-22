@@ -8,6 +8,8 @@ interface PracticeCatalogDetailProps {
   onAction?: () => void
   actionDisabled?: boolean
   actionLoading?: boolean
+  onEdit?: () => void
+  editLabel?: string
 }
 
 export const PracticeCatalogDetail = ({
@@ -16,7 +18,9 @@ export const PracticeCatalogDetail = ({
   actionLabel,
   onAction,
   actionDisabled = false,
-  actionLoading = false
+  actionLoading = false,
+  onEdit,
+  editLabel = 'Edit'
 }: PracticeCatalogDetailProps) => {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -42,14 +46,25 @@ export const PracticeCatalogDetail = ({
       >
         <div className="p-4 border-b flex items-center justify-between">
           <h2 className="text-xl font-semibold text-gray-900">{practice.title}</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close"
-            className="text-gray-500 hover:text-gray-700"
-          >
-            ✕
-          </button>
+          <div className="flex items-center gap-3">
+            {onEdit && (
+              <button
+                type="button"
+                onClick={onEdit}
+                className="text-sm font-medium text-blue-600 hover:text-blue-800"
+              >
+                {editLabel}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close"
+              className="text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </button>
+          </div>
         </div>
         <div className="p-4 space-y-4">
           <div>

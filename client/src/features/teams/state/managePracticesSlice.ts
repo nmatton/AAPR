@@ -1,16 +1,29 @@
 import { create } from 'zustand';
-import { fetchTeamPractices, removePracticeFromTeam, createCustomPractice, type CreateCustomPracticePayload } from '../api/teamPracticesApi';
+import {
+  fetchTeamPractices,
+  removePracticeFromTeam,
+  createCustomPractice,
+  editPracticeForTeam,
+  type CreateCustomPracticePayload,
+  type EditPracticePayload
+} from '../api/teamPracticesApi';
 import type { Practice } from '../types/practice.types';
 
 export interface ManagePracticesState {
   teamPractices: Practice[];
   isLoading: boolean;
   isCreating: boolean;
+  isUpdating: boolean;
   error: string | null;
   
   // Actions
   loadTeamPractices: (teamId: number) => Promise<void>;
   createPractice: (teamId: number, payload: CreateCustomPracticePayload) => Promise<{ practiceId: number; coverage: number }>;
+  editPractice: (
+    teamId: number,
+    practiceId: number,
+    payload: EditPracticePayload
+  ) => Promise<{ coverageByTeam: Array<{ teamId: number; coverage: number }>; practice?: Practice; practiceId?: number }>;
   removePractice: (teamId: number, practiceId: number) => Promise<{ coverage: number; gapPillarNames: string[] }>;
   reset: () => void;
 }
@@ -19,6 +32,7 @@ const initialState = {
   teamPractices: [],
   isLoading: false,
   isCreating: false,
+  isUpdating: false,
   error: null
 };
 
@@ -87,6 +101,51 @@ export const useManagePracticesStore = create<ManagePracticesState>((set, get) =
 
       set({ error: errorMessage, isCreating: false });
       throw error;
+    }
+  },
+
+  editPractice: async (teamId: number, practiceId: number, payload: EditPracticePayload) => {
+    set({ isUpdating: true, error: null })
+
+    try {
+      const result = await editPracticeForTeam(teamId, practiceId, payload)
+
+      if (result.practice) {
+        const { teamPractices } = get()
+        const updatedPractices = teamPractices.map((practice) =>
+          practice.id === result.practice!.id ? result.practice! : practice
+        )
+        set({ teamPractices: updatedPractices })
+      } else if (result.practiceId) {
+        await get().loadTeamPractices(teamId)
+      }
+
+      set({ isUpdating: false })
+
+      return {
+        coverageByTeam: result.coverageByTeam,
+        practice: result.practice,
+        practiceId: result.practiceId
+      }
+    } catch (error: any) {
+      let errorMessage = 'Unable to update practice. Please try again.'
+
+      if (error.statusCode === 401 || error.code === 'session_expired') {
+        errorMessage = 'Session expired. Please log in again.'
+      } else if (error.code === 'practice_version_conflict') {
+        errorMessage = 'This practice was updated by another team member. Please refresh and try again.'
+      } else if (error.code === 'invalid_pillar_ids') {
+        errorMessage = 'One or more selected pillars are invalid.'
+      } else if (error.code === 'invalid_category_id') {
+        errorMessage = 'Selected category is invalid.'
+      } else if (error.code === 'network_error') {
+        errorMessage = 'Connection failed. Check your internet and retry.'
+      } else if (error.message) {
+        errorMessage = error.message
+      }
+
+      set({ error: errorMessage, isUpdating: false })
+      throw error
     }
   },
   

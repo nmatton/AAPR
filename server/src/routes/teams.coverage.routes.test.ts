@@ -55,8 +55,8 @@ describe('teams routes - pillar coverage', () => {
             coveredCount: 1,
             totalCount: 2,
             coveragePct: 50,
-            coveredPillars: [{ id: 1, name: 'Communication', categoryId: 'values', categoryName: 'Human Values' }],
-            gapPillars: [{ id: 2, name: 'Transparency', categoryId: 'values', categoryName: 'Human Values' }]
+            coveredPillars: [{ id: 1, name: 'Communication', categoryId: 'values', categoryName: 'Human Values', practices: [] }],
+            gapPillars: [{ id: 2, name: 'Transparency', categoryId: 'values', categoryName: 'Human Values', practices: [] }]
           }
         ]
       })

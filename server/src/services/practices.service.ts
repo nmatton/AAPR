@@ -14,6 +14,9 @@ export interface PracticeDto {
   goal: string;
   categoryId: string;
   categoryName: string;
+  isGlobal: boolean;
+  practiceVersion: number;
+  usedByTeamsCount: number;
   pillars: PracticePillarDto[];
 }
 
@@ -46,6 +49,9 @@ export const getPractices = async (page = 1, pageSize = 20): Promise<PracticesRe
       goal: practice.goal,
       categoryId: practice.categoryId,
       categoryName: practice.category.name,
+      isGlobal: practice.isGlobal,
+      practiceVersion: practice.practiceVersion,
+      usedByTeamsCount: practice._count?.teamPractices ?? 0,
       pillars: practice.practicePillars.map((pp) => ({
         id: pp.pillar.id,
         name: pp.pillar.name,
@@ -94,6 +100,9 @@ export const searchPractices = async (params: SearchPracticesParams): Promise<Pr
       goal: practice.goal,
       categoryId: practice.categoryId,
       categoryName: practice.category.name,
+      isGlobal: practice.isGlobal,
+      practiceVersion: practice.practiceVersion,
+      usedByTeamsCount: practice._count?.teamPractices ?? 0,
       pillars: practice.practicePillars.map((pp) => ({
         id: pp.pillar.id,
         name: pp.pillar.name,

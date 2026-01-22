@@ -5,6 +5,7 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import * as teamsService from './teams.service';
 import * as teamsRepository from '../repositories/teams.repository';
 import * as practiceRepository from '../repositories/practice.repository';
+import * as coverageService from './coverage.service';
 import { prisma } from '../lib/prisma';
 
 // Mock prisma
@@ -23,6 +24,7 @@ jest.mock('../lib/prisma', () => ({
     },
     teamPractice: {
       findUnique: jest.fn(),
+      upsert: jest.fn()
     },
     $transaction: jest.fn(),
   },
@@ -30,6 +32,7 @@ jest.mock('../lib/prisma', () => ({
 
 jest.mock('../repositories/teams.repository');
 jest.mock('../repositories/practice.repository');
+jest.mock('./coverage.service');
 
 describe('teamsService.createTeam', () => {
   beforeEach(() => {
@@ -563,3 +566,225 @@ describe('teamsService.createCustomPracticeForTeam', () => {
     );
   });
 });
+
+describe('teamsService.editPracticeForTeam', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('updates practice fields and pillars, logs event, and recalculates coverage', async () => {
+    const teamId = 3
+    const userId = 7
+    const practiceId = 12
+
+    const existingPractice = {
+      id: practiceId,
+      title: 'Old Title',
+      goal: 'Old Goal',
+      categoryId: 'feedback',
+      category: { name: 'FEEDBACK & APPRENTISSAGE' },
+      isGlobal: true,
+      practiceVersion: 2,
+      practicePillars: [
+        { pillar: { id: 1 } },
+        { pillar: { id: 2 } }
+      ]
+    } as any
+
+    const updatedPractice = {
+      ...existingPractice,
+      title: 'New Title',
+      goal: 'New Goal',
+      categoryId: 'excellence',
+      category: { name: 'EXCELLENCE TECHNIQUE' },
+      practiceVersion: 3,
+      practicePillars: [
+        { pillar: { id: 2, name: 'Pillar B', categoryId: 'feedback', category: { name: 'FEEDBACK & APPRENTISSAGE' } } },
+        { pillar: { id: 3, name: 'Pillar C', categoryId: 'excellence', category: { name: 'EXCELLENCE TECHNIQUE' } } }
+      ]
+    } as any
+
+    ;(practiceRepository.findById as jest.MockedFunction<typeof practiceRepository.findById>)
+      .mockResolvedValueOnce(existingPractice)
+      .mockResolvedValueOnce(updatedPractice)
+    ;(practiceRepository.validatePillarIds as jest.MockedFunction<typeof practiceRepository.validatePillarIds>)
+      .mockResolvedValue([])
+    ;(practiceRepository.validateCategoryId as jest.MockedFunction<typeof practiceRepository.validateCategoryId>)
+      .mockResolvedValue(true)
+    ;(practiceRepository.updatePracticeWithVersion as jest.MockedFunction<typeof practiceRepository.updatePracticeWithVersion>)
+      .mockResolvedValue(1)
+    ;(practiceRepository.replacePracticePillars as jest.MockedFunction<typeof practiceRepository.replacePracticePillars>)
+      .mockResolvedValue()
+    ;(practiceRepository.findTeamIdsUsingPractice as jest.MockedFunction<typeof practiceRepository.findTeamIdsUsingPractice>)
+      .mockResolvedValue([teamId])
+    ;(practiceRepository.countTeamsUsingPractice as jest.MockedFunction<typeof practiceRepository.countTeamsUsingPractice>)
+      .mockResolvedValue(2)
+
+    ;(coverageService.getTeamPillarCoverage as jest.MockedFunction<typeof coverageService.getTeamPillarCoverage>)
+      .mockResolvedValue({ overallCoveragePct: 84 } as any)
+
+    const mockEventCreate = jest.fn(async () => ({}))
+    const mockTx = { event: { create: mockEventCreate } } as any
+    ;(prisma.$transaction as jest.MockedFunction<typeof prisma.$transaction>)
+      .mockImplementation(async (callback: any) => callback(mockTx))
+
+    const result = await teamsService.editPracticeForTeam(teamId, userId, practiceId, {
+      title: 'New Title',
+      goal: 'New Goal',
+      categoryId: 'excellence',
+      pillarIds: [2, 3],
+      version: 2
+    })
+
+    expect(result.practice?.title).toBe('New Title')
+    expect(result.practice?.practiceVersion).toBe(3)
+    expect(result.coverageByTeam).toEqual([{ teamId, coverage: 84 }])
+    expect(practiceRepository.updatePracticeWithVersion).toHaveBeenCalledWith(
+      practiceId,
+      2,
+      { title: 'New Title', goal: 'New Goal', categoryId: 'excellence' },
+      mockTx
+    )
+    expect(practiceRepository.replacePracticePillars).toHaveBeenCalledWith(practiceId, [2, 3], mockTx)
+    const eventCall = (mockEventCreate as jest.Mock).mock.calls[0][0] as any
+    expect(eventCall.data.eventType).toBe('practice.edited')
+    expect(eventCall.data.teamId).toBe(teamId)
+    expect(eventCall.data.actorId).toBe(userId)
+    expect(eventCall.data.entityId).toBe(practiceId)
+    expect(eventCall.data.payload).toMatchObject({
+      changes: expect.any(Object)
+    })
+  })
+
+  it('returns 409 conflict when version mismatch', async () => {
+    const teamId = 3
+    const userId = 7
+    const practiceId = 12
+
+    const existingPractice = {
+      id: practiceId,
+      title: 'Old Title',
+      goal: 'Old Goal',
+      categoryId: 'feedback',
+      category: { name: 'FEEDBACK & APPRENTISSAGE' },
+      isGlobal: true,
+      practiceVersion: 4,
+      practicePillars: [{ pillar: { id: 1 } }]
+    } as any
+
+    ;(practiceRepository.findById as jest.MockedFunction<typeof practiceRepository.findById>)
+      .mockResolvedValue(existingPractice)
+    ;(practiceRepository.validatePillarIds as jest.MockedFunction<typeof practiceRepository.validatePillarIds>)
+      .mockResolvedValue([])
+    ;(practiceRepository.validateCategoryId as jest.MockedFunction<typeof practiceRepository.validateCategoryId>)
+      .mockResolvedValue(true)
+    ;(practiceRepository.updatePracticeWithVersion as jest.MockedFunction<typeof practiceRepository.updatePracticeWithVersion>)
+      .mockResolvedValue(0)
+
+    const mockTx = { event: { create: jest.fn() } } as any
+    ;(prisma.$transaction as jest.MockedFunction<typeof prisma.$transaction>)
+      .mockImplementation(async (callback: any) => callback(mockTx))
+
+    await expect(
+      teamsService.editPracticeForTeam(teamId, userId, practiceId, {
+        title: 'New Title',
+        goal: 'New Goal',
+        categoryId: 'excellence',
+        pillarIds: [1, 2],
+        version: 1
+      })
+    ).rejects.toThrow(
+      expect.objectContaining({
+        code: 'practice_version_conflict',
+        statusCode: 409
+      })
+    )
+  })
+
+  it('creates a team-specific copy when saveAsCopy is true', async () => {
+    const teamId = 4
+    const userId = 9
+    const practiceId = 18
+
+    const existingPractice = {
+      id: practiceId,
+      title: 'Global Practice',
+      goal: 'Goal',
+      categoryId: 'values',
+      category: { name: 'VALEURS HUMAINES' },
+      isGlobal: true,
+      practiceVersion: 1,
+      practicePillars: [{ pillar: { id: 1 } }]
+    } as any
+
+    const newPractice = {
+      id: 77,
+      title: 'Custom Title',
+      goal: 'Custom Goal',
+      categoryId: 'values',
+      category: { name: 'VALEURS HUMAINES' },
+      isGlobal: false,
+      practiceVersion: 1,
+      practicePillars: [
+        { pillar: { id: 1, name: 'Pillar 1', categoryId: 'values' } },
+        { pillar: { id: 2, name: 'Pillar 2', categoryId: 'values' } }
+      ]
+    } as any
+
+    ;(practiceRepository.findById as jest.MockedFunction<typeof practiceRepository.findById>)
+      .mockResolvedValueOnce(existingPractice)
+      .mockResolvedValueOnce(newPractice)
+    ;(practiceRepository.validatePillarIds as jest.MockedFunction<typeof practiceRepository.validatePillarIds>)
+      .mockResolvedValue([])
+    ;(practiceRepository.validateCategoryId as jest.MockedFunction<typeof practiceRepository.validateCategoryId>)
+      .mockResolvedValue(true)
+    ;(practiceRepository.createPractice as jest.MockedFunction<typeof practiceRepository.createPractice>)
+      .mockResolvedValue({ id: 77 } as any)
+    ;(practiceRepository.createPracticePillars as jest.MockedFunction<typeof practiceRepository.createPracticePillars>)
+      .mockResolvedValue({ count: 2 } as any)
+    ;(practiceRepository.countTeamsUsingPractice as jest.MockedFunction<typeof practiceRepository.countTeamsUsingPractice>)
+      .mockResolvedValue(1)
+
+    ;(coverageService.getTeamPillarCoverage as jest.MockedFunction<typeof coverageService.getTeamPillarCoverage>)
+      .mockResolvedValue({ overallCoveragePct: 52 } as any)
+
+    const mockEventCreate = jest.fn(async () => ({}))
+    const mockTeamPracticeUpsert = jest.fn(async () => ({}))
+    const mockTx = {
+      event: { create: mockEventCreate },
+      teamPractice: { upsert: mockTeamPracticeUpsert }
+    } as any
+    ;(prisma.$transaction as jest.MockedFunction<typeof prisma.$transaction>)
+      .mockImplementation(async (callback: any) => callback(mockTx))
+
+    const result = await teamsService.editPracticeForTeam(teamId, userId, practiceId, {
+      title: 'Custom Title',
+      goal: 'Custom Goal',
+      categoryId: 'values',
+      pillarIds: [1, 2],
+      saveAsCopy: true,
+      version: 1
+    })
+
+    expect(result.practiceId).toBe(77)
+    expect(result.practice).toBeDefined()
+    expect(result.practice?.title).toBe('Custom Title')
+    expect(result.practice?.goal).toBe('Custom Goal')
+    expect(result.practice?.isGlobal).toBe(false)
+    expect(result.coverageByTeam).toEqual([{ teamId, coverage: 52 }])
+    expect(practiceRepository.createPractice).toHaveBeenCalledWith(
+      expect.objectContaining({
+        title: 'Custom Title',
+        goal: 'Custom Goal',
+        isGlobal: false
+      }),
+      mockTx
+    )
+    expect(mockTeamPracticeUpsert).toHaveBeenCalled()
+    const copyEventCall = (mockEventCreate as jest.Mock).mock.calls[0][0] as any
+    expect(copyEventCall.data.eventType).toBe('practice.edited')
+    expect(copyEventCall.data.payload).toMatchObject({
+      copiedFrom: practiceId
+    })
+  })
+})

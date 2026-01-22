@@ -59,8 +59,8 @@ describe('App auth flow integration', () => {
       expect(useAuthStore.getState().isLoading).toBe(false)
     })
 
-    expect(await screen.findByRole('button', { name: /create team/i })).toBeInTheDocument()
-    expect(screen.getByText('My Teams')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'My Teams', level: 1 })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /create team/i })).toBeInTheDocument()
   })
 
   it('restores session on refresh and stays on /teams', async () => {

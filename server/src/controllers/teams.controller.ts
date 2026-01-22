@@ -134,6 +134,24 @@ const createCustomPracticeSchema = z.object({
 });
 
 /**
+ * Validation schema for editing a practice
+ */
+const editPracticeSchema = z.object({
+  title: z.string()
+    .min(2, 'Title is required')
+    .max(100, 'Title must be between 2 and 100 characters'),
+  goal: z.string()
+    .min(1, 'Goal is required')
+    .max(500, 'Goal must be between 1 and 500 characters'),
+  pillarIds: z.array(z.number().int().positive())
+    .min(1, 'Select at least one pillar'),
+  categoryId: z.string()
+    .min(1, 'Category is required'),
+  saveAsCopy: z.boolean().optional(),
+  version: z.number().int().positive()
+});
+
+/**
  * GET /api/v1/teams/:teamId/practices/available
  * Get practices not yet selected by team
  * 
@@ -343,6 +361,64 @@ export const getPracticeRemovalImpact = async (
       error.requestId = req.id;
     }
     next(error);
+  }
+};
+
+/**
+ * PATCH /api/v1/teams/:teamId/practices/:practiceId
+ * Edit practice details (global or team-specific)
+ * 
+ * @param req - Express request with teamId, practiceId, and edit payload
+ * @param res - Express response
+ * @param next - Express next function
+ */
+export const editPracticeDetails = async (
+  req: Request<{ teamId: string; practiceId: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const teamId = parseInt(req.params.teamId, 10)
+    const practiceId = parseInt(req.params.practiceId, 10)
+    const userId = req.user!.userId
+
+    if (!Number.isInteger(teamId) || !Number.isInteger(practiceId)) {
+      throw new AppError(
+        'validation_error',
+        'Request validation failed',
+        [{ path: 'params', message: 'Invalid teamId or practiceId', code: 'invalid_type' }],
+        400
+      )
+    }
+
+    const validationResult = editPracticeSchema.safeParse(req.body)
+
+    if (!validationResult.success) {
+      const details = validationResult.error.issues.map((issue) => ({
+        path: issue.path.join('.'),
+        message: issue.message,
+        code: issue.code
+      }))
+
+      throw new AppError(
+        'validation_error',
+        'Request validation failed',
+        details,
+        400
+      )
+    }
+
+    const result = await teamsService.editPracticeForTeam(teamId, userId, practiceId, validationResult.data)
+
+    res.json({
+      ...result,
+      requestId: req.id
+    })
+  } catch (error: any) {
+    if (error && req.id) {
+      error.requestId = req.id
+    }
+    next(error)
   }
 };
 

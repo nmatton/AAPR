@@ -24,6 +24,7 @@ export type TeamPracticeWithPillars = Prisma.TeamPracticeGetPayload<{
     practice: {
       include: {
         category: true;
+        _count: { select: { teamPractices: true } };
         practicePillars: {
           include: {
             pillar: { include: { category: true } };
@@ -90,6 +91,7 @@ export const getTeamPracticesWithPillars = async (teamId: number): Promise<TeamP
       practice: {
         include: {
           category: true,
+          _count: { select: { teamPractices: true } },
           practicePillars: {
             include: {
               pillar: {
