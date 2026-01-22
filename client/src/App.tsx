@@ -2,6 +2,7 @@ import { TeamDashboard } from './features/teams/components/TeamDashboard'
 import { CreateTeamForm } from './features/teams/components/CreateTeamForm'
 import { MemberDetailView } from './features/teams/components/MemberDetailView'
 import { AddPracticesView } from './features/teams/pages/AddPracticesView'
+import { CoverageDetailsView } from './features/teams/pages/CoverageDetailsView'
 import { ManagePracticesView } from './features/teams/pages/ManagePracticesView'
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { useEffect } from 'react'
@@ -161,6 +162,14 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute>
               <ManagePracticesView />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teams/:teamId/coverage"
+          element={
+            <ProtectedRoute>
+              <CoverageDetailsView />
             </ProtectedRoute>
           }
         />

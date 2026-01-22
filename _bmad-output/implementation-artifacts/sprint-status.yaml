@@ -67,7 +67,7 @@ development_status:
   # Epic 2.1: Team Dashboard & Catalog UX Refinement + Database Normalization
   epic-2-1: in-progress
   2-1-0-redesign-team-dashboard-make-practices-central: done
-  2-1-1-optimize-coverage-visualization-3-categories-per-row: backlog
+  2-1-1-optimize-coverage-visualization-3-categories-per-row: done
   2-1-2-move-members-and-invitations-to-dedicated-members-page: backlog
   2-1-3-team-name-inline-editing-with-pencil-icon: backlog
   2-1-4-catalog-create-new-practice-with-full-editor: backlog

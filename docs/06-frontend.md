@@ -730,23 +730,47 @@ await createTeam("Alpha Squad", [1, 5, 12]);
 
 ---
 
+#### CoverageDetailsView
+**File:** `src/features/teams/pages/CoverageDetailsView.tsx`
+
+**Features:**
+- Dedicated coverage details page for category-level drill-down
+- Fetches coverage from `useCoverageStore`
+- Shows loading/error states without stale data
+- Hosts `CategoryCoverageBreakdown` and wires CTA navigation
+
+**Route:**
+- `/teams/:teamId/coverage`
+
+---
+
 #### CategoryCoverageBreakdown
 **File:** `src/features/teams/components/CategoryCoverageBreakdown.tsx`
 
 **Features:**
-- Displays category-level coverage breakdown (5 categories)
-- Categories: VALEURS HUMAINES, FEEDBACK & APPRENTISSAGE, EXCELLENCE TECHNIQUE, ORGANISATION & AUTONOMIE, FLUX & RAPIDITÉ
-- Color-coded progress bars:
-  - Green (75%+): Strong coverage
-  - Yellow (50-74%): Moderate coverage
-  - Red (<50%): Gap, needs attention
-- Click category to expand and see:
-  - Covered pillars (✅)
-  - Gap pillars (❌)
+- Displays category-level coverage breakdown (5 categories) in a responsive grid layout
+- Grid Layout: 3 columns (desktop), 2 columns (tablet), 1 column (mobile)
+- Categories: VALEURS HUMAINES, FEEDBACK & APPRENTISSAGE, EXCELLENCE TECHNIQUE, ITÉRATION & FLUX, COLLABORATION & AUTONOMIE
+- Each category card displays:
+  - Category name with coverage badge (✅ green for 75%+, ⚠️ yellow for 50-74%, ❌ red for <50%)
+  - Coverage percentage in large bold text with color coding
+  - Compact progress bar (h-2) with same color coding
+  - Tiny pillar indicators (2x2px dots): green for covered, gray for gaps
+  - Warning icon (⚠️) for categories <50%
+- Click category card to expand drill-down view showing:
+  - Covered pillars (✅) with practice details
+  - Gap pillars (❌) with practice recommendations
   - Warning message if category < 50%
-  - [View Available Practices] button to filter practice catalog by category
-- Filters practice catalog by category via URL parameter: `/teams/:teamId/practices/add?category=:categoryId`
-- Automatically refreshes after practice add/remove
+  - [View Available Practices] button (only for <50% categories) to filter practice catalog by category
+- Accessibility features:
+  - Full keyboard navigation (Enter/Space to expand/collapse)
+  - ARIA labels for all interactive elements
+  - Progress bars with aria-valuenow/min/max attributes
+  - Role attributes for semantic structure
+- Automatically refreshes after practice add/remove via `useCoverageStore`
+
+**Navigation:**
+- [View Available Practices] routes to: `/teams/:teamId/practices/manage?category=<categoryId>` with category filter
 
 **UI highlights:**
 ```tsx

@@ -575,6 +575,84 @@ Last Updated: January 22, 2026
 
 ---
 
+### Story 2-1-1: Optimize Coverage Visualization (3 Categories per Row)
+
+**Status:** ✅ COMPLETE  
+**Date:** January 22, 2026  
+**Developer:** Nicolas (via Dev Agent - Claude Sonnet 4.5)
+
+**What Was Built:**
+
+**Frontend:**
+- **Component:** `CategoryCoverageBreakdown` (refactored for responsive grid layout)
+  - **Grid Layout:** Responsive 3-column (desktop), 2-column (tablet), 1-column (mobile) using Tailwind classes (`grid-cols-1 md:grid-cols-2 lg:grid-cols-3`)
+  - **Category Cards:** Compact card design with:
+    - Category name with coverage badge (✅ green for 75%+, ⚠️ yellow for 50-74%, ❌ red for <50%)
+    - Large bold coverage percentage with color coding
+    - Compact progress bar (h-2) replacing previous h-3 bars
+    - Tiny pillar indicators (2x2px dots): green for covered, gray for gaps
+    - Warning icon (⚠️) displayed in card header for categories <50%
+  - **Drill-Down Interaction:** Card click expands to show:
+    - Covered pillars (✅) with practice details
+    - Gap pillars (❌) with practice recommendations
+    - Warning alert (role="alert") for categories <50%
+    - [View Available Practices] button (only visible for <50% categories)
+  - **Accessibility Features:**
+    - Native button keyboard support (Enter/Space keys to expand/collapse)
+    - ARIA labels for all interactive elements (`aria-label`, `aria-expanded`)
+    - Progress bars with `aria-valuenow`, `aria-valuemin`, `aria-valuemax` attributes
+    - Role attributes for semantic structure (buttons, alerts, progressbars)
+  - **Navigation:** [View Available Practices] routes to `/teams/:teamId/practices/manage` with category context
+  - **Data Flow:** Continues to use `useCoverageStore` as single source of truth; updates automatically when practices added/removed
+
+- **Page:** `CoverageDetailsView`
+  - Dedicated route for coverage drill-down: `/teams/:teamId/coverage`
+  - Uses `useCoverageStore` for loading/error states and real-time updates
+  - Wires CTA navigation to `/teams/:teamId/practices/manage?category=<categoryId>`
+
+**Testing:**
+- **Unit Tests:** Extended `CategoryCoverageBreakdown.test.tsx` with 18 tests:
+  - ✅ Renders all 5 categories with percentages (validates grid contains 5 cards)
+  - ✅ Renders grid layout with correct responsive classes
+  - ✅ Applies color coding thresholds (green 75%+, yellow 50-74%, red <50%)
+  - ✅ Displays warning icon for categories <50%
+  - ✅ Expands category to show drill-down view on click
+  - ✅ Supports keyboard activation (Enter and Space keys)
+  - ✅ Shows covered and gap pillars separately
+  - ✅ Displays warning badge for categories <50%
+  - ✅ Displays tiny pillar indicators (green/gray dots)
+  - ✅ Renders compact progress bar with correct width
+  - ✅ Calls onViewPractices handler when CTA clicked
+  - ✅ Only shows View Available Practices button for <50% categories
+  - ✅ Collapses category when clicked again
+  - ✅ Only shows one category expanded at a time (accordion behavior)
+  - ✅ Includes aria-labels for accessibility
+  - ✅ Includes progress bar with aria attributes
+- **All 18 tests passing** ✅
+
+**Documentation Updated:**
+- `docs/06-frontend.md`: Updated `CategoryCoverageBreakdown` section with detailed grid layout, card design, accessibility features, and navigation behavior
+- `docs/09-changelog.md`: Added Story 2-1-1 entry
+
+**Technical Decisions:**
+- Used Tailwind responsive grid classes for automatic layout adaptation (3/2/1 columns)
+- Maintained existing expandable accordion behavior (only one category expanded at a time)
+- Kept existing `useCoverageStore` integration for real-time updates
+- Added comprehensive accessibility attributes for keyboard navigation and screen readers
+- Reduced progress bar height from h-3 to h-2 for more compact design
+- Added tiny pillar indicators (2x2px dots) for quick visual scanning of covered vs gap pillars
+- Warning icon and CTA button only display for categories <50% to reduce visual noise
+- Added dedicated coverage details route to keep drill-down accessible from the dashboard
+
+**UX Improvements:**
+- Faster visual scanning with compact cards and grid layout
+- Clearer information hierarchy (percentage emphasized, pillar count secondary)
+- Better responsiveness across device sizes (3/2/1 column fallback)
+- Enhanced accessibility for keyboard and screen reader users
+- Improved drill-down context without leaving main coverage view
+
+---
+
 ### Story 2-8: Edit Practice Details (Any Practice)
 
 **Status:** ✅ COMPLETE  

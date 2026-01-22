@@ -41,7 +41,7 @@ export const CoverageSidebar = ({ teamId }: CoverageSidebarProps) => {
           </div>
           <button
             type="button"
-            onClick={() => navigate(`/teams/${teamId}/practices/manage`)}
+            onClick={() => navigate(`/teams/${teamId}/coverage`)}
             className="mt-4 text-xs font-medium text-blue-600 hover:text-blue-800"
             aria-label="View coverage details"
           >

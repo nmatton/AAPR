@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTeamsStore } from '../state/teamsSlice';
 import { useAddPracticesStore } from '../state/addPracticesSlice';
 import { useManagePracticesStore } from '../state/managePracticesSlice';
@@ -16,6 +16,7 @@ type TabType = 'available' | 'selected';
 export const ManagePracticesView = () => {
   const { teamId } = useParams<{ teamId: string }>();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { teams, fetchTeams } = useTeamsStore();
   const { 
     practices: availablePractices, 
@@ -51,6 +52,8 @@ export const ManagePracticesView = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [practiceToEdit, setPracticeToEdit] = useState<Practice | null>(null);
 
+  const categoryFilter = searchParams.get('category');
+
   const numericTeamId = Number(teamId);
   const selectedTeam = teams.find((team) => team.id === numericTeamId);
 
@@ -73,6 +76,13 @@ export const ManagePracticesView = () => {
     return Array.from(pillarMap.values()).sort((a, b) => a.name.localeCompare(b.name));
   }, [availablePractices]);
 
+  const filteredAvailablePractices = useMemo(() => {
+    if (!categoryFilter) {
+      return availablePractices;
+    }
+    return availablePractices.filter((practice) => practice.categoryId === categoryFilter);
+  }, [availablePractices, categoryFilter]);
+
   useEffect(() => {
     if (teams.length === 0) {
       fetchTeams();
@@ -90,6 +100,12 @@ export const ManagePracticesView = () => {
       loadTeamPractices(numericTeamId);
     }
   }, [numericTeamId, activeTab, loadTeamPractices]);
+
+  useEffect(() => {
+    if (categoryFilter && activeTab !== 'available') {
+      setActiveTab('available');
+    }
+  }, [activeTab, categoryFilter]);
 
   const showSuccessMessage = (message: string) => {
     setSuccessMessage(message);
@@ -166,7 +182,7 @@ export const ManagePracticesView = () => {
   const hasMoreAvailable = availableTotal > availablePractices.length;
   const isLoading = activeTab === 'available' ? isLoadingAvailable : isLoadingSelected;
   const error = activeTab === 'available' ? availableError : selectedError;
-  const practices = activeTab === 'available' ? availablePractices : teamPractices;
+  const practices = activeTab === 'available' ? filteredAvailablePractices : teamPractices;
   const isBlockingError = !isLoading && error && practices.length === 0;
   const handlePracticeAction = activeTab === 'available'
     ? (practice: Practice) => {
@@ -179,6 +195,12 @@ export const ManagePracticesView = () => {
 
   const handleEditPractice = (practice: Practice) => {
     setPracticeToEdit(practice);
+  };
+
+  const clearCategoryFilter = () => {
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('category');
+    setSearchParams(nextParams);
   };
 
   const handlePracticeSaved = async (result: { practiceId?: number; practice?: Practice }) => {
@@ -312,6 +334,20 @@ export const ManagePracticesView = () => {
         {/* Filters (only on available tab) */}
         {activeTab === 'available' && (
           <div className="mb-6 space-y-4">
+            {categoryFilter && (
+              <div className="flex items-center justify-between rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm text-blue-800">
+                <span>
+                  Filtering by category: <strong>{categoryFilter}</strong>
+                </span>
+                <button
+                  type="button"
+                  onClick={clearCategoryFilter}
+                  className="text-xs font-medium text-blue-700 hover:text-blue-900"
+                >
+                  Clear category filter
+                </button>
+              </div>
+            )}
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
                 <input
