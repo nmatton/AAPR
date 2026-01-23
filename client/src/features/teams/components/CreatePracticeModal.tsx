@@ -176,12 +176,32 @@ export const CreatePracticeModal = ({ teamId, onClose, onCreated }: CreatePracti
     setStep('template');
   };
 
+  const generateUniqueCopyTitle = (baseName: string): string => {
+    const simpleCopy = `${baseName} (Copy)`;
+    const existingNames = new Set(templates.map((practice) => practice.title.toLowerCase()));
+
+    if (!existingNames.has(simpleCopy.toLowerCase())) {
+      return simpleCopy;
+    }
+
+    // Find next available " - Copy N"
+    let counter = 1;
+    let candidateName = `${baseName} - Copy ${counter}`;
+    while (existingNames.has(candidateName.toLowerCase())) {
+      counter++;
+      candidateName = `${baseName} - Copy ${counter}`;
+    }
+    return candidateName;
+  };
+
   const handleDuplicateTemplate = () => {
     const selected = templates.find((practice) => practice.id === selectedTemplateId);
     if (!selected) return;
 
+    const uniqueTitle = generateUniqueCopyTitle(selected.title);
+
     setFormState({
-      title: `${selected.title} (Copy)`,
+      title: uniqueTitle,
       goal: selected.goal,
       description: selected.description ?? '',
       categoryId: selected.categoryId,

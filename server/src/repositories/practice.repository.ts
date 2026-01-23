@@ -349,10 +349,13 @@ export async function linkPracticeToTeam(
 export async function searchAndFilter(options: {
   search?: string;
   pillars?: number[];
+  categories?: string[];
+  methods?: string[];
+  tags?: string[];
   skip: number;
   take: number;
 }): Promise<PracticeWithRelations[]> {
-  const { search, pillars, skip, take } = options;
+  const { search, pillars, categories, methods, tags, skip, take } = options;
 
   const whereConditions: Prisma.PracticeWhereInput[] = [{ isGlobal: true }];
 
@@ -377,6 +380,35 @@ export async function searchAndFilter(options: {
           },
         },
       },
+    });
+  }
+
+  // Add category filter (IN logic)
+  if (categories && categories.length > 0) {
+    whereConditions.push({
+      categoryId: {
+        in: categories,
+      },
+    });
+  }
+
+  // Add method filter (IN logic)
+  if (methods && methods.length > 0) {
+    whereConditions.push({
+      method: {
+        in: methods,
+      },
+    });
+  }
+
+  // Add tags filter (OR logic: practice has ANY of the selected tags)
+  if (tags && tags.length > 0) {
+    whereConditions.push({
+      OR: tags.map(tag => ({
+        tags: {
+          array_contains: tag,
+        },
+      })),
     });
   }
 
@@ -413,8 +445,11 @@ export async function searchAndFilter(options: {
 export async function countFiltered(options: {
   search?: string;
   pillars?: number[];
+  categories?: string[];
+  methods?: string[];
+  tags?: string[];
 }): Promise<number> {
-  const { search, pillars } = options;
+  const { search, pillars, categories, methods, tags } = options;
 
   const whereConditions: Prisma.PracticeWhereInput[] = [{ isGlobal: true }];
 
@@ -442,6 +477,35 @@ export async function countFiltered(options: {
     });
   }
 
+  // Add category filter
+  if (categories && categories.length > 0) {
+    whereConditions.push({
+      categoryId: {
+        in: categories,
+      },
+    });
+  }
+
+  // Add method filter
+  if (methods && methods.length > 0) {
+    whereConditions.push({
+      method: {
+        in: methods,
+      },
+    });
+  }
+
+  // Add tags filter
+  if (tags && tags.length > 0) {
+    whereConditions.push({
+      OR: tags.map(tag => ({
+        tags: {
+          array_contains: tag,
+        },
+      })),
+    });
+  }
+
   return prisma.practice.count({
     where: {
       AND: whereConditions,
@@ -461,11 +525,14 @@ export async function findAvailableForTeam(
   options: {
     search?: string;
     pillars?: number[];
+    categories?: string[];
+    methods?: string[];
+    tags?: string[];
     skip: number;
     take: number;
   }
 ): Promise<PracticeWithRelations[]> {
-  const { search, pillars, skip, take } = options;
+  const { search, pillars, categories, methods, tags, skip, take } = options;
 
   const whereConditions: Prisma.PracticeWhereInput[] = [
     { isGlobal: true },
@@ -502,6 +569,35 @@ export async function findAvailableForTeam(
           },
         },
       },
+    });
+  }
+
+  // Add category filter
+  if (categories && categories.length > 0) {
+    whereConditions.push({
+      categoryId: {
+        in: categories,
+      },
+    });
+  }
+
+  // Add method filter
+  if (methods && methods.length > 0) {
+    whereConditions.push({
+      method: {
+        in: methods,
+      },
+    });
+  }
+
+  // Add tags filter
+  if (tags && tags.length > 0) {
+    whereConditions.push({
+      OR: tags.map(tag => ({
+        tags: {
+          array_contains: tag,
+        },
+      })),
     });
   }
 
@@ -541,9 +637,12 @@ export async function countAvailableForTeam(
   options: {
     search?: string;
     pillars?: number[];
+    categories?: string[];
+    methods?: string[];
+    tags?: string[];
   }
 ): Promise<number> {
-  const { search, pillars } = options;
+  const { search, pillars, categories, methods, tags } = options;
 
   const whereConditions: Prisma.PracticeWhereInput[] = [
     { isGlobal: true },
@@ -580,6 +679,35 @@ export async function countAvailableForTeam(
           },
         },
       },
+    });
+  }
+
+  // Add category filter
+  if (categories && categories.length > 0) {
+    whereConditions.push({
+      categoryId: {
+        in: categories,
+      },
+    });
+  }
+
+  // Add method filter
+  if (methods && methods.length > 0) {
+    whereConditions.push({
+      method: {
+        in: methods,
+      },
+    });
+  }
+
+  // Add tags filter
+  if (tags && tags.length > 0) {
+    whereConditions.push({
+      OR: tags.map(tag => ({
+        tags: {
+          array_contains: tag,
+        },
+      })),
     });
   }
 

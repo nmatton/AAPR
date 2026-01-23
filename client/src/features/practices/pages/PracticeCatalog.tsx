@@ -7,30 +7,19 @@ import { PracticeEmptyState } from '../components/PracticeEmptyState'
 import { PracticeErrorState } from '../components/PracticeErrorState'
 import { PracticeCatalogDetail } from '../components/PracticeCatalogDetail'
 import { PillarFilterDropdown } from '../components/PillarFilterDropdown'
+import { CategoryFilter } from '../components/CategoryFilter'
+import { MethodFilter } from '../components/MethodFilter'
+import { TagFilter } from '../components/TagFilter'
+import { ActiveFilters } from '../components/ActiveFilters'
 import { PracticeEditForm } from '../../teams/components/PracticeEditForm'
 import type { Practice } from '../types'
 
 const PAGE_SIZE = 100
 
-const CATEGORY_COLORS: Record<string, string> = {
-  VALEURS_HUMAINES: 'bg-red-100 text-red-700',
-  FEEDBACK_APPRENTISSAGE: 'bg-blue-100 text-blue-700',
-  EXCELLENCE_TECHNIQUE: 'bg-purple-100 text-purple-700',
-  ORGANISATION_AUTONOMIE: 'bg-green-100 text-green-700',
-  FLUX_RAPIDITE: 'bg-amber-100 text-amber-700'
-}
 
-const normalizeCategoryKey = (value: string) =>
-  value
-    .toUpperCase()
-    .replace(/&/g, ' ')
-    .replace(/\s+/g, '_')
-    .replace(/__+/g, '_')
-    .replace(/[^A-Z_]/g, '')
-    .trim()
 
-const getPillarBadgeClass = (category: string) =>
-  CATEGORY_COLORS[normalizeCategoryKey(category)] ?? 'bg-gray-100 text-gray-700'
+
+
 import { useAuthStore } from '../../auth/state/authSlice'
 
 export const PracticeCatalog = () => {
@@ -84,7 +73,7 @@ export const PracticeCatalog = () => {
     const teamId = Number.isFinite(parsedTeamId) ? parsedTeamId : null
     lastScrollPosition.current = window.scrollY
     void loadPractices(1, PAGE_SIZE, teamId)
-  }, [loadPractices, searchParams, searchQuery, selectedPillars])
+  }, [loadPractices, searchParams, searchQuery, selectedPillars, selectedCategories, selectedMethods, selectedTags])
 
   const teamIdParam = searchParams.get('teamId')
   const teamId = teamIdParam ? Number(teamIdParam) : null
@@ -132,10 +121,6 @@ export const PracticeCatalog = () => {
   const emptyStateMessage = searchQuery.trim().length > 0
     ? `No practices found for "${searchQuery.trim()}". Try a different search.`
     : 'No practices found for the selected filters. Try a different search.'
-
-  const selectedPillarLabels = selectedPillars
-    .map((pillarId) => availablePillars.find((pillar) => pillar.id === pillarId))
-    .filter((pillar): pillar is NonNullable<typeof pillar> => Boolean(pillar))
 
   useEffect(() => {
     if (isLoading) return
@@ -192,55 +177,40 @@ export const PracticeCatalog = () => {
             <div className="mb-6 space-y-4">
               <p className="text-gray-600 text-sm">Browse all practices with goals and pillar coverage.</p>
 
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search practices..."
-                  value={localSearchQuery}
-                  onChange={(e) => setLocalSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-                {localSearchQuery && (
-                  <button
-                    onClick={() => setLocalSearchQuery('')}
-                    className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
-                  >
-                    ×
-                  </button>
-                )}
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3">
-                <PillarFilterDropdown
-                  pillars={availablePillars}
-                  selectedPillars={selectedPillars}
-                  onToggle={togglePillar}
-                  onClear={handleClearFilters}
-                  isLoading={isPillarsLoading}
-                />
-              </div>
-
-              {hasActiveFilters && (
-                <div className="flex items-center gap-2 flex-wrap">
-                  {selectedPillarLabels.map((pillar) => (
+              <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 space-y-4">
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search practices..."
+                    value={localSearchQuery}
+                    onChange={(e) => setLocalSearchQuery(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  />
+                  {localSearchQuery && (
                     <button
-                      key={pillar.id}
-                      type="button"
-                      onClick={() => togglePillar(pillar.id)}
-                      className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${getPillarBadgeClass(pillar.category)}`}
+                      onClick={() => setLocalSearchQuery('')}
+                      className="absolute right-3 top-2.5 text-gray-400 hover:text-gray-600"
                     >
-                      {pillar.name}
-                      <span aria-hidden>×</span>
+                      ×
                     </button>
-                  ))}
-                  <button
-                    onClick={handleClearFilters}
-                    className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                  >
-                    Clear All Filters
-                  </button>
+                  )}
                 </div>
-              )}
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <PillarFilterDropdown
+                    pillars={availablePillars}
+                    selectedPillars={selectedPillars}
+                    onToggle={togglePillar}
+                    onClear={handleClearFilters}
+                    isLoading={isPillarsLoading}
+                  />
+                  <CategoryFilter />
+                  <MethodFilter />
+                  <TagFilter />
+                </div>
+
+                <ActiveFilters />
+              </div>
             </div>
           </div>
         )}

@@ -31,7 +31,10 @@ export const fetchPractices = async (
   page = 1,
   pageSize = 20,
   search?: string,
-  pillars?: number[]
+  pillars?: number[],
+  categories?: string[],
+  methods?: string[],
+  tags?: string[]
 ): Promise<PracticesResponse> => {
   let response: Response
   try {
@@ -43,6 +46,15 @@ export const fetchPractices = async (
     }
     if (pillars && pillars.length > 0) {
       params.append('pillars', pillars.join(','))
+    }
+    if (categories && categories.length > 0) {
+      params.append('categories', categories.join(','))
+    }
+    if (methods && methods.length > 0) {
+      params.append('methods', methods.join(','))
+    }
+    if (tags && tags.length > 0) {
+      params.append('tags', tags.join(','))
     }
 
     response = await fetch(`${API_BASE_URL}/api/v1/practices?${params.toString()}`, {
@@ -152,6 +164,9 @@ export const logCatalogSearched = async (params: {
   teamId: number | null
   query: string
   pillarsSelected: number[]
+  categoriesSelected?: string[]
+  methodsSelected?: string[]
+  tagsSelected?: string[]
   timestamp: string
 }): Promise<void> => {
   try {
@@ -167,6 +182,9 @@ export const logCatalogSearched = async (params: {
         teamId: params.teamId,
         query: params.query,
         pillarsSelected: params.pillarsSelected,
+        categoriesSelected: params.categoriesSelected,
+        methodsSelected: params.methodsSelected,
+        tagsSelected: params.tagsSelected,
         timestamp: params.timestamp
       })
     })

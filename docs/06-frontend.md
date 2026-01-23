@@ -424,7 +424,7 @@ editPracticeForTeam(teamId, practiceId, payload): Promise<EditPracticeResponse>
 
 ---
 
-## Create Custom Practices (Story 2.5)
+## Create Custom Practices (Stories 2.1.4 & 2.1.5)
 
 **Entry Point:** "Create New Practice" button in [ManagePracticesView.tsx](../client/src/features/teams/pages/ManagePracticesView.tsx)
 
@@ -433,19 +433,30 @@ editPracticeForTeam(teamId, practiceId, payload): Promise<EditPracticeResponse>
 **Flow:**
 1. User opens modal and chooses:
   - **Create from Scratch** (empty form)
-  - **Use Existing as Template** (select practice, duplicate with "(Copy)" title)
-2. Form fields: title, goal/objective, detailed description, category, pillars (multi-select), method/framework, tags, benefits, pitfalls, work products
-3. Client-side validation:
+  - **Use Existing as Template** (select practice, duplicate with unique title)
+2. **Template Selection (Story 2.1.5):**
+  - Loads all team + global catalog practices
+  - Search/filter by practice name or goal
+  - On selection, pre-fills form with template data
+  - **Title Generation Logic:**
+    - If no conflict: `[Original Name] (Copy)`
+    - If "(Copy)" exists: `[Original Name] - Copy 1`
+    - Increments counter if "- Copy N" exists
+  - All fields editable after pre-fill
+  - Sends `templatePracticeId` to backend for event logging
+3. Form fields: title, goal/objective, detailed description, category, pillars (multi-select), method/framework, tags, benefits, pitfalls, work products
+4. Client-side validation:
   - Title required, 2-100 chars
   - Goal required, 1-500 chars
   - Category required
   - At least one pillar selected
   - Optional fields normalized (comma/newline-separated lists to arrays)
-4. On success:
+5. On success:
   - Toast: "New practice created: [Practice Name]"
   - Modal closes
   - Team practices refreshed
   - Team coverage refreshed via `fetchTeams()`
+  - Backend logs `practice.created` event with `createdFrom: templatePracticeId` if duplicated
 
 **State Management:** [managePracticesSlice.ts](../client/src/features/teams/state/managePracticesSlice.ts)
 - `createPractice(teamId, payload)` calls `createCustomPractice` API
@@ -455,9 +466,16 @@ editPracticeForTeam(teamId, practiceId, payload): Promise<EditPracticeResponse>
 **API Integration:**
 - Uses `fetchTeamPractices()` and `fetchAvailablePractices()` to build template list
 - POST `/api/v1/teams/:teamId/practices/custom` for creation
+- Payload includes optional `templatePracticeId` field when duplicating
 
 **Testing:**
-- `CreatePracticeModal.test.tsx`: option selection, template prefill, validation
+- `CreatePracticeModal.test.tsx`: 
+  - Option selection (From Scratch vs Template)
+  - Template selection and form pre-fill
+  - Title suffix logic (handles "(Copy)", "- Copy N")
+  - `templatePracticeId` included in API call
+  - Field editing after pre-fill
+  - Validation errors block submit
 - `ManagePracticesView.test.tsx`: creation success refreshes practices + coverage
 
 ---

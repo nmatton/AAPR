@@ -12,6 +12,8 @@ interface PracticeEditFormProps {
     goal: string
     categoryId: string
     categoryName: string
+    method?: string | null
+    tags?: unknown | null
     pillars: Array<{ id: number; name: string; category: string; description?: string | null }>
     isGlobal?: boolean
     practiceVersion?: number
@@ -38,6 +40,8 @@ export const PracticeEditForm = ({
   const [title, setTitle] = useState(practice.title)
   const [goal, setGoal] = useState(practice.goal)
   const [categoryId, setCategoryId] = useState(practice.categoryId)
+  const [method, setMethod] = useState(practice.method ?? '')
+  const [tags, setTags] = useState((practice.tags && Array.isArray(practice.tags)) ? (practice.tags as string[]).join(', ') : '')
   const [pillarIds, setPillarIds] = useState<number[]>(practice.pillars.map((pillar) => pillar.id))
   const [availablePillars, setAvailablePillars] = useState(practice.pillars)
   const [categories, setCategories] = useState<CategoryOption[]>([])
@@ -51,6 +55,8 @@ export const PracticeEditForm = ({
     title: practice.title,
     goal: practice.goal,
     categoryId: practice.categoryId,
+    method: practice.method ?? '',
+    tags: (practice.tags && Array.isArray(practice.tags)) ? (practice.tags as string[]).join(', ') : '',
     pillarIds: practice.pillars.map((pillar) => pillar.id).sort((a, b) => a - b)
   }), [practice])
 
@@ -60,9 +66,11 @@ export const PracticeEditForm = ({
       title !== initialState.title ||
       goal !== initialState.goal ||
       categoryId !== initialState.categoryId ||
+      method !== initialState.method ||
+      tags !== initialState.tags ||
       sortedCurrent.join(',') !== initialState.pillarIds.join(',')
     )
-  }, [title, goal, categoryId, pillarIds, initialState])
+  }, [title, goal, categoryId, method, tags, pillarIds, initialState])
 
   const isGlobal = Boolean(practice.isGlobal)
   const usedByTeamsCount = practice.usedByTeamsCount ?? 0
@@ -181,6 +189,8 @@ export const PracticeEditForm = ({
         title: title.trim(),
         goal: goal.trim(),
         categoryId,
+        method: method || null,
+        tags: tags.split(',').map(t => t.trim()).filter(Boolean),
         pillarIds,
         saveAsCopy,
         version: practice.practiceVersion ?? 1
@@ -287,6 +297,37 @@ export const PracticeEditForm = ({
             {errors.categoryId && (
               <p className="text-xs text-red-600 mt-1">{errors.categoryId}</p>
             )}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Method / Framework</label>
+              <select
+                value={method}
+                onChange={(event) => setMethod(event.target.value)}
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              >
+                <option value="">None</option>
+                <option value="Scrum">Scrum</option>
+                <option value="XP">XP</option>
+                <option value="Kanban">Kanban</option>
+                <option value="Lean">Lean</option>
+                <option value="SAFe">SAFe</option>
+                <option value="Custom">Custom</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+              <input
+                type="text"
+                value={tags}
+                onChange={(event) => setTags(event.target.value)}
+                placeholder="e.g. Visual, Async, Planning"
+                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              />
+              <p className="text-xs text-gray-500 mt-1">Separate tags with commas</p>
+            </div>
           </div>
 
           <div>

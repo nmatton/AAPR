@@ -1,7 +1,8 @@
 _bmad
 .vscode
 .github/agents
-
+.agent
+.claude
 # Dependencies
 node_modules
 npm-debug.log*

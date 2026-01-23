@@ -416,6 +416,59 @@ Last Updated: January 23, 2026
 
 ---
 
+### Story 2-1-5: Catalog - Duplicate Existing Practice as Template
+
+**Status:** ✅ COMPLETE  
+**Date:** January 23, 2026  
+**Developer:** Nicolas (via Dev Agent - Claude Sonnet 4.5)
+
+**What Was Built:**
+
+**Frontend:**
+- **Template Title Generation Logic:**
+  - Generates unique copy title avoiding conflicts
+  - If no conflict: `[Original Name] (Copy)`
+  - If "(Copy)" exists: `[Original Name] - Copy 1`
+  - Increments counter if "- Copy N" exists (e.g., "- Copy 2", "- Copy 3", etc.)
+  - Case-insensitive conflict detection
+- **Template Selection Flow:**
+  - Modal step: 'choice' → 'template' → 'form'
+  - Template picker loads team + global catalog practices
+  - Search/filter by practice name or goal
+  - Radio selection with template preview
+  - Pre-fills all fields from selected template
+  - All fields remain fully editable after pre-fill
+  - Sends `templatePracticeId` in API payload
+
+**Backend:**
+- **Validation Schema:** `createCustomPracticeSchema` already accepts optional `templatePracticeId: z.number().int().positive().optional()`
+- **Event Logging:** `createCustomPracticeForTeam` includes `createdFrom: templatePracticeId` in `practice.created` event payload when templatePracticeId is provided
+- **Template Validation:** Validates template practice exists (404 if not found)
+
+**Testing:**
+- **Frontend Tests (8 total, all passing):**
+  - Template selection shows picker with search
+  - Pre-fills form with template data
+  - Generates unique copy title without conflicts
+  - Handles multiple conflicts with incrementing counter ("- Copy 1", "- Copy 2")
+  - Includes `templatePracticeId` in API call when duplicating
+  - Allows editing all fields after pre-fill
+- **Backend Tests (2 new, all 162 tests passing):**
+  - Includes `createdFrom` in event when `templatePracticeId` provided
+  - Omits `createdFrom` when no templatePracticeId
+  - Validates template practice existence (404 on missing template)
+
+**Documentation Updated:**
+- `docs/06-frontend.md` - Expanded CreatePracticeModal section with template duplication flow
+- `docs/09-changelog.md` - Added Story 2-1-5 completion entry
+
+**Test Results:**
+- Frontend: 238 tests passing ✅
+- Backend: 162 tests passing ✅
+- Zero regressions ✅
+
+---
+
 ### Story 2-3: Add Selected Practices to Team Portfolio
 
 **Status:** ✅ COMPLETE  

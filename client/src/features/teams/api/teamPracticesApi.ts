@@ -73,6 +73,8 @@ export interface EditPracticePayload {
   goal: string;
   pillarIds: number[];
   categoryId: string;
+  method?: string | null;
+  tags?: string[];
   saveAsCopy?: boolean;
   version: number;
 }
@@ -94,20 +96,20 @@ export const fetchAvailablePractices = async (
   params: AvailablePracticesParams
 ): Promise<AvailablePracticesResponse> => {
   const { teamId, page = 1, pageSize = 20, search, pillars } = params;
-  
+
   const queryParams = new URLSearchParams({
     page: page.toString(),
     pageSize: pageSize.toString(),
   });
-  
+
   if (search) {
     queryParams.append('search', search);
   }
-  
+
   if (pillars && pillars.length > 0) {
     queryParams.append('pillars', pillars.join(','));
   }
-  
+
   return apiClient<AvailablePracticesResponse>(
     `/api/v1/teams/${teamId}/practices/available?${queryParams.toString()}`
   );

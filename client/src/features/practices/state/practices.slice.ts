@@ -16,6 +16,9 @@ export interface PracticesState {
   lastTeamId: number | null
   searchQuery: string
   selectedPillars: number[]
+  selectedCategories: string[]
+  selectedMethods: string[]
+  selectedTags: string[]
   loadPractices: (page?: number, pageSize?: number, teamId?: number | null) => Promise<void>
   loadAvailablePillars: () => Promise<void>
   setCurrentDetail: (practice: Practice | null) => void
@@ -23,11 +26,14 @@ export interface PracticesState {
   setSelectedPillars: (pillars: number[]) => void
   setPillarFilters: (pillars: number[]) => void
   togglePillar: (pillarId: number) => void
+  toggleCategory: (categoryId: string) => void
+  toggleMethod: (method: string) => void
+  setTags: (tags: string[]) => void
   clearFilters: () => void
   retry: () => Promise<void>
 }
 
-const initialState: Omit<PracticesState, 'loadPractices' | 'loadAvailablePillars' | 'setCurrentDetail' | 'setSearchQuery' | 'setSelectedPillars' | 'setPillarFilters' | 'togglePillar' | 'clearFilters' | 'retry'> = {
+const initialState: Omit<PracticesState, 'loadPractices' | 'loadAvailablePillars' | 'setCurrentDetail' | 'setSearchQuery' | 'setSelectedPillars' | 'setPillarFilters' | 'togglePillar' | 'toggleCategory' | 'toggleMethod' | 'setTags' | 'clearFilters' | 'retry'> = {
   practices: [],
   availablePillars: [],
   isPillarsLoading: false,
@@ -40,7 +46,10 @@ const initialState: Omit<PracticesState, 'loadPractices' | 'loadAvailablePillars
   catalogViewed: false,
   lastTeamId: null,
   searchQuery: '',
-  selectedPillars: []
+  selectedPillars: [],
+  selectedCategories: [],
+  selectedMethods: [],
+  selectedTags: []
 }
 
 export const usePracticesStore = create<PracticesState>((set, get) => ({
@@ -49,14 +58,17 @@ export const usePracticesStore = create<PracticesState>((set, get) => ({
   loadPractices: async (page = 1, pageSize = 20, teamId: number | null = null) => {
     set({ isLoading: true, error: null, page, pageSize, lastTeamId: teamId })
     try {
-      const { searchQuery, selectedPillars } = get()
+      const { searchQuery, selectedPillars, selectedCategories, selectedMethods, selectedTags } = get()
       const trimmedSearch = searchQuery.trim()
-      const hasFilters = trimmedSearch.length > 0 || selectedPillars.length > 0
+      const hasFilters = trimmedSearch.length > 0 || selectedPillars.length > 0 || selectedCategories.length > 0 || selectedMethods.length > 0 || selectedTags.length > 0
       const data = await fetchPractices(
         page,
         pageSize,
         trimmedSearch || undefined,
-        selectedPillars.length > 0 ? selectedPillars : undefined
+        selectedPillars.length > 0 ? selectedPillars : undefined,
+        selectedCategories.length > 0 ? selectedCategories : undefined,
+        selectedMethods.length > 0 ? selectedMethods : undefined,
+        selectedTags.length > 0 ? selectedTags : undefined
       )
       set({
         practices: data.items,
@@ -73,6 +85,9 @@ export const usePracticesStore = create<PracticesState>((set, get) => ({
           teamId,
           query: trimmedSearch,
           pillarsSelected: selectedPillars,
+          categoriesSelected: selectedCategories,
+          methodsSelected: selectedMethods,
+          tagsSelected: selectedTags,
           timestamp: new Date().toISOString()
         })
       }
@@ -122,8 +137,28 @@ export const usePracticesStore = create<PracticesState>((set, get) => ({
     set({ selectedPillars: newPillars, page: 1 })
   },
 
+  toggleCategory: (categoryId) => {
+    const { selectedCategories } = get()
+    const newCategories = selectedCategories.includes(categoryId)
+      ? selectedCategories.filter(id => id !== categoryId)
+      : [...selectedCategories, categoryId]
+    set({ selectedCategories: newCategories, page: 1 })
+  },
+
+  toggleMethod: (method) => {
+    const { selectedMethods } = get()
+    const newMethods = selectedMethods.includes(method)
+      ? selectedMethods.filter(m => m !== method)
+      : [...selectedMethods, method]
+    set({ selectedMethods: newMethods, page: 1 })
+  },
+
+  setTags: (tags) => {
+    set({ selectedTags: tags, page: 1 })
+  },
+
   clearFilters: () => {
-    set({ searchQuery: '', selectedPillars: [], page: 1 })
+    set({ searchQuery: '', selectedPillars: [], selectedCategories: [], selectedMethods: [], selectedTags: [], page: 1 })
   },
 
   retry: async () => {
@@ -136,8 +171,11 @@ export const selectFilteredPractices = (state: PracticesState): Practice[] => {
   const searchValue = state.searchQuery.trim().toLowerCase()
   const hasSearch = searchValue.length > 0
   const hasPillarFilters = state.selectedPillars.length > 0
+  const hasCategoryFilters = state.selectedCategories.length > 0
+  const hasMethodFilters = state.selectedMethods.length > 0
+  const hasTagFilters = state.selectedTags.length > 0
 
-  if (!hasSearch && !hasPillarFilters) {
+  if (!hasSearch && !hasPillarFilters && !hasCategoryFilters && !hasMethodFilters && !hasTagFilters) {
     return state.practices
   }
 
@@ -149,11 +187,26 @@ export const selectFilteredPractices = (state: PracticesState): Practice[] => {
     const matchesPillars = !hasPillarFilters
       || practice.pillars.some((pillar) => state.selectedPillars.includes(pillar.id))
 
-    return matchesSearch && matchesPillars
+    const matchesCategories = !hasCategoryFilters
+      || state.selectedCategories.includes(practice.categoryId)
+
+    const matchesMethods = !hasMethodFilters
+      || (practice.method && state.selectedMethods.includes(practice.method))
+
+    // For tags, existing client side logic would need to inspect practice.tags
+    // But practice.tags in store is normalized string array
+    const matchesTags = !hasTagFilters
+      || (practice.tags && state.selectedTags.some(tag => practice.tags!.includes(tag)))
+
+    return matchesSearch && matchesPillars && matchesCategories && matchesMethods && matchesTags
   })
 }
 
 export const selectHasActiveFilters = (state: PracticesState): boolean =>
-  state.searchQuery.trim().length > 0 || state.selectedPillars.length > 0
+  state.searchQuery.trim().length > 0 ||
+  state.selectedPillars.length > 0 ||
+  state.selectedCategories.length > 0 ||
+  state.selectedMethods.length > 0 ||
+  state.selectedTags.length > 0
 
 export const selectResultCount = (state: PracticesState): number => state.total

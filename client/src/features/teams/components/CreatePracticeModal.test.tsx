@@ -181,4 +181,178 @@ describe('CreatePracticeModal', () => {
       });
     });
   });
+
+  describe('Template Duplication', () => {
+    it('generates unique copy title when conflicts exist', async () => {
+      // Add practice with title "Daily Standup (Copy)" to simulate conflict
+      const practicesWithConflict: Practice[] = [
+        ...mockPractices,
+        {
+          id: 3,
+          title: 'Daily Standup (Copy)',
+          goal: 'Sync team',
+          description: null,
+          categoryId: 'scrum',
+          categoryName: 'Scrum',
+          method: 'Scrum',
+          tags: [],
+          benefits: [],
+          pitfalls: [],
+          workProducts: [],
+          pillars: [{ id: 10, name: 'Communication', category: 'Human Values', description: null }]
+        }
+      ];
+
+      vi.mocked(teamPracticesApi.fetchTeamPractices).mockResolvedValue({
+        items: practicesWithConflict,
+        requestId: 'req_1'
+      });
+
+      render(
+        <CreatePracticeModal
+          teamId={1}
+          onClose={vi.fn()}
+          onCreated={vi.fn()}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Use Existing as Template'));
+
+      const templateOption = await screen.findByText('Daily Standup');
+      fireEvent.click(templateOption);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Duplicate' }));
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('Title')).toHaveValue('Daily Standup - Copy 1');
+      });
+    });
+
+    it('generates incrementing copy numbers for multiple conflicts', async () => {
+      const practicesWithMultipleConflicts: Practice[] = [
+        ...mockPractices,
+        {
+          id: 3,
+          title: 'Daily Standup (Copy)',
+          goal: 'Sync team',
+          description: null,
+          categoryId: 'scrum',
+          categoryName: 'Scrum',
+          method: 'Scrum',
+          tags: [],
+          benefits: [],
+          pitfalls: [],
+          workProducts: [],
+          pillars: [{ id: 10, name: 'Communication', category: 'Human Values', description: null }]
+        },
+        {
+          id: 4,
+          title: 'Daily Standup - Copy 1',
+          goal: 'Sync team',
+          description: null,
+          categoryId: 'scrum',
+          categoryName: 'Scrum',
+          method: 'Scrum',
+          tags: [],
+          benefits: [],
+          pitfalls: [],
+          workProducts: [],
+          pillars: [{ id: 10, name: 'Communication', category: 'Human Values', description: null }]
+        }
+      ];
+
+      vi.mocked(teamPracticesApi.fetchTeamPractices).mockResolvedValue({
+        items: practicesWithMultipleConflicts,
+        requestId: 'req_1'
+      });
+
+      render(
+        <CreatePracticeModal
+          teamId={1}
+          onClose={vi.fn()}
+          onCreated={vi.fn()}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Use Existing as Template'));
+
+      const templateOption = await screen.findByText('Daily Standup');
+      fireEvent.click(templateOption);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Duplicate' }));
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('Title')).toHaveValue('Daily Standup - Copy 2');
+      });
+    });
+
+    it('includes templatePracticeId when submitting duplicated practice', async () => {
+      const createPractice = vi.fn().mockResolvedValue({ practiceId: 100, coverage: 25 });
+
+      (useManagePracticesStore as any).mockReturnValue({
+        createPractice,
+        isCreating: false,
+        error: null
+      });
+
+      render(
+        <CreatePracticeModal
+          teamId={1}
+          onClose={vi.fn()}
+          onCreated={vi.fn()}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Use Existing as Template'));
+
+      const templateOption = await screen.findByText('Daily Standup');
+      fireEvent.click(templateOption);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Duplicate' }));
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('Title')).toHaveValue('Daily Standup (Copy)');
+      });
+
+      fireEvent.click(screen.getByRole('button', { name: 'Create Practice' }));
+
+      await waitFor(() => {
+        expect(createPractice).toHaveBeenCalledWith(1, expect.objectContaining({
+          title: 'Daily Standup (Copy)',
+          goal: 'Sync the team daily',
+          templatePracticeId: 1
+        }));
+      });
+    });
+
+    it('allows editing all fields after template pre-fill', async () => {
+      render(
+        <CreatePracticeModal
+          teamId={1}
+          onClose={vi.fn()}
+          onCreated={vi.fn()}
+        />
+      );
+
+      fireEvent.click(screen.getByText('Use Existing as Template'));
+
+      const templateOption = await screen.findByText('Daily Standup');
+      fireEvent.click(templateOption);
+
+      fireEvent.click(screen.getByRole('button', { name: 'Duplicate' }));
+
+      await waitFor(() => {
+        expect(screen.getByLabelText('Title')).toHaveValue('Daily Standup (Copy)');
+      });
+
+      // Edit all fields
+      fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Custom Standup' } });
+      fireEvent.change(screen.getByLabelText('Goal / Objective'), { target: { value: 'Custom goal' } });
+      fireEvent.change(screen.getByLabelText('Detailed Description'), { target: { value: 'Custom description' } });
+
+      expect(screen.getByLabelText('Title')).toHaveValue('Custom Standup');
+      expect(screen.getByLabelText('Goal / Objective')).toHaveValue('Custom goal');
+      expect(screen.getByLabelText('Detailed Description')).toHaveValue('Custom description');
+    });
+  });
 });

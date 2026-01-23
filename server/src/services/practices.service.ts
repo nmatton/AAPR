@@ -36,6 +36,9 @@ export interface PracticesResponse {
 export interface SearchPracticesParams {
   search?: string;
   pillars?: number[];
+  categories?: string[];
+  methods?: string[];
+  tags?: string[];
   page?: number;
   pageSize?: number;
 }
@@ -114,7 +117,7 @@ export const getPractices = async (page = 1, pageSize = 20): Promise<PracticesRe
  * @returns Paginated practices matching criteria
  */
 export const searchPractices = async (params: SearchPracticesParams): Promise<PracticesResponse> => {
-  const { search, pillars, page = 1, pageSize = 20 } = params;
+  const { search, pillars, categories, methods, tags, page = 1, pageSize = 20 } = params;
 
   // Validate pillar IDs if provided
   if (pillars && pillars.length > 0) {
@@ -129,11 +132,17 @@ export const searchPractices = async (params: SearchPracticesParams): Promise<Pr
     }
   }
 
+  // Validate category IDs if provided
+  if (categories && categories.length > 0) {
+    // Ideally validate categories exist, but for now assuming valid strings or repository will return empty
+    // Could add validateCategoryIds logic similar to pillars if needed
+  }
+
   const skip = (page - 1) * pageSize;
 
   const [practices, total] = await Promise.all([
-    practiceRepository.searchAndFilter({ search, pillars, skip, take: pageSize }),
-    practiceRepository.countFiltered({ search, pillars })
+    practiceRepository.searchAndFilter({ search, pillars, categories, methods, tags, skip, take: pageSize }),
+    practiceRepository.countFiltered({ search, pillars, categories, methods, tags })
   ]);
 
   return {

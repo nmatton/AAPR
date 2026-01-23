@@ -25,6 +25,9 @@ export const getPractices = async (
     const pageSize = req.query.pageSize ? Number(req.query.pageSize) : 20;
     const search = req.query.search ? String(req.query.search) : undefined;
     const pillarsParam = req.query.pillars ? String(req.query.pillars) : undefined;
+    const categoriesParam = req.query.categories ? String(req.query.categories) : undefined;
+    const methodsParam = req.query.methods ? String(req.query.methods) : undefined;
+    const tagsParam = req.query.tags ? String(req.query.tags) : undefined;
 
     const invalidPage = !Number.isInteger(page) || page < 1;
     const invalidPageSize = !Number.isInteger(pageSize) || pageSize < 1 || pageSize > 100;
@@ -43,7 +46,7 @@ export const getPractices = async (
     if (pillarsParam) {
       const pillarIds = pillarsParam.split(',').map(id => Number(id.trim()));
       const invalidPillarIds = pillarIds.filter(id => !Number.isInteger(id) || id < 1);
-      
+
       if (invalidPillarIds.length > 0) {
         throw new AppError(
           'validation_error',
@@ -52,13 +55,19 @@ export const getPractices = async (
           400
         );
       }
-      
+
       pillars = pillarIds;
     }
 
+    // Parse categories, methods, tags (comma-separated strings)
+    const categories = categoriesParam ? categoriesParam.split(',').map(s => s.trim()).filter(Boolean) : undefined;
+    const methods = methodsParam ? methodsParam.split(',').map(s => s.trim()).filter(Boolean) : undefined;
+    // Tags might contain commas? Assuming simple tags for now. If tags contain commas, this splitting is problematic, but standard URL usage often uses repeating params or comma-separated. AC says "comma-separated text input" for UI, probably same for API.
+    const tags = tagsParam ? tagsParam.split(',').map(s => s.trim()).filter(Boolean) : undefined;
+
     // Use searchPractices if search or filter params provided
-    const practices = (search || pillars)
-      ? await practicesService.searchPractices({ search, pillars, page, pageSize })
+    const practices = (search || pillars || categories || methods || tags)
+      ? await practicesService.searchPractices({ search, pillars, categories, methods, tags, page, pageSize })
       : await practicesService.getPractices(page, pageSize);
 
     res.json({
