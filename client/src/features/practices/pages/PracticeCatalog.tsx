@@ -40,6 +40,9 @@ export const PracticeCatalog = () => {
     setCurrentDetail,
     searchQuery,
     selectedPillars,
+    selectedCategories,
+    selectedMethods,
+    selectedTags,
     setSearchQuery,
     togglePillar,
     clearFilters

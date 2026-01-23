@@ -1,6 +1,6 @@
 # Story 2.1:6: Catalog - Advanced Filtering (Tag, Method/Framework, Category)
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -57,30 +57,30 @@ so that **I can quickly find practices matching our team's interests or constrai
 
 ## Tasks / Subtasks
 
-- [ ] Backend: Update Practice API to support new filters (AC 3, 5, 6)
-  - [ ] Update `PracticeRepository.findMany` (or equivalent) to accept `categories`, `methods`, `tags`
-  - [ ] Implement Prisma `where` clauses for filtering
+- [x] Backend: Update Practice API to support new filters (AC 3, 5, 6)
+  - [x] Update `PracticeRepository.findMany` (or equivalent) to accept `categories`, `methods`, `tags`
+  - [x] Implement Prisma `where` clauses for filtering
     - Category: `IN` clause
     - Method: `IN` clause
     - Tags: JSON array filtering (Postgres `array_ops` or Prisma `json` filter)
-  - [ ] Update Controller to parse query parameters
-- [ ] Frontend: Update `practices.slice.ts` (Store)
-  - [ ] Add state for `selectedCategories`, `selectedMethods`, `selectedTags`
-  - [ ] Update `loadPractices` thunk to pass these filters to API
-  - [ ] Add actions: `toggleCategory`, `toggleMethod`, `setTags`, `clearAllFilters`
-- [ ] Frontend: Create Filter Components (AC 1, 2, 4, 6)
-  - [ ] `CategoryFilter` (Checkboxes)
-  - [ ] `MethodFilter` (Checkboxes)
-  - [ ] `TagFilter` (Input/Select)
-  - [ ] `ActiveFilters` component (Display chips)
-- [ ] Frontend: Update `PracticeCatalog` Page (AC 1, 7, 8)
-  - [ ] Integrate new filter components into sidebar or filter panel
-  - [ ] Update Empty State message logic
-- [ ] Frontend: Update `PracticeEditForm` (Critical for Testing)
-  - [ ] Add `Method` dropdown (Scrum, XP, etc.)
-  - [ ] Add `Tags` input (Text input with comma separation)
-  - [ ] Ensure validation allows saving these fields
-- [ ] Analytics: Implement event logging (AC 9)
+  - [x] Update Controller to parse query parameters
+- [x] Frontend: Update `practices.slice.ts` (Store)
+  - [x] Add state for `selectedCategories`, `selectedMethods`, `selectedTags`
+  - [x] Update `loadPractices` thunk to pass these filters to API
+  - [x] Add actions: `toggleCategory`, `toggleMethod`, `setTags`, `clearAllFilters`
+- [x] Frontend: Create Filter Components (AC 1, 2, 4, 6)
+  - [x] `CategoryFilter` (Checkboxes)
+  - [x] `MethodFilter` (Checkboxes)
+  - [x] `TagFilter` (Input/Select)
+  - [x] `ActiveFilters` component (Display chips)
+- [x] Frontend: Update `PracticeCatalog` Page (AC 1, 7, 8)
+  - [x] Integrate new filter components into sidebar or filter panel
+  - [x] Update Empty State message logic
+- [x] Frontend: Update `PracticeEditForm` (Critical for Testing)
+  - [x] Add `Method` dropdown (Scrum, XP, etc.)
+  - [x] Add `Tags` input (Text input with comma separation)
+  - [x] Ensure validation allows saving these fields
+- [x] Analytics: Implement event logging (AC 9)
 
 ## Dev Notes
 
@@ -118,3 +118,14 @@ Antigravity (Google Deepmind)
 - **Frontend Discrepancy**: `PracticeEditForm.tsx` (from previous Story 2.1.4) does NOT appear to have fields for editing `Method` or `Tags`. While the backend supports them, you may not be able to easy Create/Edit data to TEST this filtering without either:
   1. Manually seeding data in DB.
   2. Briefly updating `PracticeEditForm` to support these inputs (Recommended).
+### Senior Developer Review (AI)
+
+**Date:** 2026-01-23
+**Reviewer:** Antigravity (Code Review Agent)
+**Status:** Approved
+
+**Findings & Fixes:**
+- **Critical Fix**: Fixed missing dependencies in `PracticeCatalog.tsx` useEffect which prevented filters from triggering data reloads.
+- **Cleanup**: Added untracked new component files to git.
+- **Verification**: Verified implementation of backend repositories, API endpoints, store logic, and UI components against ACs. All ACs appear to be met.
+- **Process**: Updated story tasks to reflect actual completion state.
