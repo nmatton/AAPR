@@ -199,11 +199,11 @@ describe('teamsService.updateTeamName', () => {
     const updatedTeam = { id: teamId, name: 'New Name', version: 2, updatedAt: new Date('2026-01-23T10:00:00Z') };
 
     const mockFindUnique = jest
-      .fn()
+      .fn<(...args: any[]) => Promise<any>>()
       .mockResolvedValueOnce(currentTeam)
       .mockResolvedValueOnce(null);
-    const mockUpdate = jest.fn().mockResolvedValue(updatedTeam);
-    const mockEventCreate = jest.fn().mockResolvedValue({});
+    const mockUpdate = jest.fn<(...args: any[]) => Promise<any>>().mockResolvedValue(updatedTeam);
+    const mockEventCreate = jest.fn<(...args: any[]) => Promise<any>>().mockResolvedValue({});
 
     (prisma.$transaction as jest.Mock).mockImplementation(async (callback: any) => {
       return callback({
@@ -228,7 +228,7 @@ describe('teamsService.updateTeamName', () => {
     const userId = 2;
     const currentTeam = { id: teamId, name: 'Current Name', version: 2 };
 
-    const mockFindUnique = jest.fn().mockResolvedValue(currentTeam);
+    const mockFindUnique = jest.fn<(...args: any[]) => Promise<any>>().mockResolvedValue(currentTeam);
 
     (prisma.$transaction as jest.Mock).mockImplementation(async (callback: any) => {
       return callback({
@@ -261,7 +261,7 @@ describe('teamsService.updateTeamName', () => {
     const existingTeam = { id: 99, name: 'New Name' };
 
     const mockFindUnique = jest
-      .fn()
+      .fn<(...args: any[]) => Promise<any>>()
       .mockResolvedValueOnce(currentTeam)
       .mockResolvedValueOnce(existingTeam);
 
@@ -535,7 +535,13 @@ describe('teamsService.createCustomPracticeForTeam', () => {
       title: 'Team Retro Plus',
       goal: 'Improve retrospective outcomes',
       pillarIds: [1, 2],
-      categoryId: 'scrum'
+      categoryId: 'scrum',
+      description: 'Structured retrospective with extra prompts',
+      method: 'Scrum',
+      tags: ['retro', 'team'],
+      benefits: ['Alignment'],
+      pitfalls: ['Over-analysis'],
+      workProducts: ['Action list']
     };
 
     (practiceRepository.validatePillarIds as jest.MockedFunction<typeof practiceRepository.validatePillarIds>)
@@ -567,6 +573,12 @@ describe('teamsService.createCustomPracticeForTeam', () => {
       expect.objectContaining({
         title: payload.title,
         goal: payload.goal,
+        description: payload.description,
+        method: payload.method,
+        tags: payload.tags,
+        benefits: payload.benefits,
+        pitfalls: payload.pitfalls,
+        workProducts: payload.workProducts,
         isGlobal: false,
         category: {
           connect: { id: payload.categoryId }

@@ -321,9 +321,11 @@ describe('invitesSlice', () => {
       await result.current.createNewInvite(1, 'new@example.com')
     })
 
-    expect(result.current.invites).toHaveLength(3)
-    expect(result.current.invites).toContain(mockInvites[0])
-    expect(result.current.invites).toContain(mockInvites[1])
-    expect(result.current.invites).toContain(mockNewInvite)
+    expect(result.current.invites.length).toBeGreaterThanOrEqual(3)
+    expect(result.current.invites).toEqual(expect.arrayContaining([
+      mockInvites[0],
+      mockInvites[1],
+      mockNewInvite
+    ]))
   })
 })

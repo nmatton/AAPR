@@ -17,8 +17,14 @@ describe('CreatePracticeModal', () => {
       id: 1,
       title: 'Daily Standup',
       goal: 'Sync the team daily',
+      description: 'Share daily progress and blockers.',
       categoryId: 'scrum',
       categoryName: 'Scrum',
+      method: 'Scrum',
+      tags: ['sync', 'daily'],
+      benefits: ['Team alignment', 'Fast issue discovery'],
+      pitfalls: ['Too long updates'],
+      workProducts: ['Daily action list'],
       pillars: [
         { id: 10, name: 'Communication', category: 'Human Values', description: null }
       ]
@@ -27,8 +33,14 @@ describe('CreatePracticeModal', () => {
       id: 2,
       title: 'Kanban Review',
       goal: 'Review workflow',
+      description: null,
       categoryId: 'kanban',
       categoryName: 'Kanban',
+      method: 'Kanban',
+      tags: [],
+      benefits: [],
+      pitfalls: [],
+      workProducts: [],
       pillars: [
         { id: 11, name: 'Flow', category: 'Process', description: null }
       ]
@@ -90,6 +102,12 @@ describe('CreatePracticeModal', () => {
       expect(screen.getByLabelText('Title')).toHaveValue('Daily Standup (Copy)');
       expect(screen.getByLabelText('Goal / Objective')).toHaveValue('Sync the team daily');
       expect(screen.getByLabelText('Category')).toHaveValue('scrum');
+      expect(screen.getByLabelText('Detailed Description')).toHaveValue('Share daily progress and blockers.');
+      expect(screen.getByLabelText('Method / Framework')).toHaveValue('Scrum');
+      expect(screen.getByLabelText('Tags')).toHaveValue('sync, daily');
+      expect(screen.getByLabelText('Benefits')).toHaveValue('Team alignment, Fast issue discovery');
+      expect(screen.getByLabelText('Pitfalls')).toHaveValue('Too long updates');
+      expect(screen.getByLabelText('Work Products')).toHaveValue('Daily action list');
     });
   });
 
@@ -110,6 +128,57 @@ describe('CreatePracticeModal', () => {
       expect(screen.getByText('Title is required')).toBeInTheDocument();
       expect(screen.getByText('Goal is required')).toBeInTheDocument();
       expect(screen.getByText('Select at least one pillar')).toBeInTheDocument();
+    });
+  });
+
+  it('submits optional fields as normalized arrays', async () => {
+    const createPractice = vi.fn().mockResolvedValue({ practiceId: 100, coverage: 25 });
+
+    (useManagePracticesStore as any).mockReturnValue({
+      createPractice,
+      isCreating: false,
+      error: null
+    });
+
+    render(
+      <CreatePracticeModal
+        teamId={1}
+        onClose={vi.fn()}
+        onCreated={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByText('Create from Scratch'));
+
+    await screen.findByText('Communication');
+
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Remote Retrospective' } });
+    fireEvent.change(screen.getByLabelText('Goal / Objective'), { target: { value: 'Improve remote retros' } });
+    fireEvent.change(screen.getByLabelText('Category'), { target: { value: 'scrum' } });
+    fireEvent.click(screen.getByText('Communication'));
+
+    fireEvent.change(screen.getByLabelText('Detailed Description'), { target: { value: 'Async-friendly format.' } });
+    fireEvent.change(screen.getByLabelText('Method / Framework'), { target: { value: 'Custom' } });
+    fireEvent.change(screen.getByLabelText('Tags'), { target: { value: 'async, remote,  , team' } });
+    fireEvent.change(screen.getByLabelText('Benefits'), { target: { value: 'Better focus\nReduced fatigue' } });
+    fireEvent.change(screen.getByLabelText('Pitfalls'), { target: { value: 'Low participation' } });
+    fireEvent.change(screen.getByLabelText('Work Products'), { target: { value: 'Action list, Decision log' } });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create Practice' }));
+
+    await waitFor(() => {
+      expect(createPractice).toHaveBeenCalledWith(1, {
+        title: 'Remote Retrospective',
+        goal: 'Improve remote retros',
+        categoryId: 'scrum',
+        pillarIds: [10],
+        description: 'Async-friendly format.',
+        method: 'Custom',
+        tags: ['async', 'remote', 'team'],
+        benefits: ['Better focus', 'Reduced fatigue'],
+        pitfalls: ['Low participation'],
+        workProducts: ['Action list', 'Decision log']
+      });
     });
   });
 });

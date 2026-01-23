@@ -14,8 +14,14 @@ type ModalStep = 'choice' | 'template' | 'form';
 type FormState = {
   title: string;
   goal: string;
+  description: string;
   categoryId: string;
   pillarIds: number[];
+  tags: string;
+  method: string;
+  benefits: string;
+  pitfalls: string;
+  workProducts: string;
   templatePracticeId?: number;
 };
 
@@ -30,9 +36,26 @@ export const CreatePracticeModal = ({ teamId, onClose, onCreated }: CreatePracti
   const [formState, setFormState] = useState<FormState>({
     title: '',
     goal: '',
+    description: '',
     categoryId: '',
-    pillarIds: []
+    pillarIds: [],
+    tags: '',
+    method: '',
+    benefits: '',
+    pitfalls: '',
+    workProducts: ''
   });
+
+  const joinValues = (values?: string[] | null) =>
+    values?.map((value) => value.trim()).filter(Boolean).join(', ') ?? '';
+
+  const normalizeListInput = (value: string): string[] | undefined => {
+    const parts = value
+      .split(/[\n,]/)
+      .map((item) => item.trim())
+      .filter(Boolean);
+    return parts.length > 0 ? parts : undefined;
+  };
 
   useEffect(() => {
     if (step === 'choice') return;
@@ -134,7 +157,18 @@ export const CreatePracticeModal = ({ teamId, onClose, onCreated }: CreatePracti
 
 
   const handleStartScratch = () => {
-    setFormState({ title: '', goal: '', categoryId: '', pillarIds: [] });
+    setFormState({
+      title: '',
+      goal: '',
+      description: '',
+      categoryId: '',
+      pillarIds: [],
+      tags: '',
+      method: '',
+      benefits: '',
+      pitfalls: '',
+      workProducts: ''
+    });
     setStep('form');
   };
 
@@ -149,8 +183,14 @@ export const CreatePracticeModal = ({ teamId, onClose, onCreated }: CreatePracti
     setFormState({
       title: `${selected.title} (Copy)`,
       goal: selected.goal,
+      description: selected.description ?? '',
       categoryId: selected.categoryId,
       pillarIds: selected.pillars.map((pillar) => pillar.id),
+      tags: joinValues(selected.tags ?? undefined),
+      method: selected.method ?? '',
+      benefits: joinValues(selected.benefits ?? undefined),
+      pitfalls: joinValues(selected.pitfalls ?? undefined),
+      workProducts: joinValues(selected.workProducts ?? undefined),
       templatePracticeId: selected.id
     });
     setStep('form');
@@ -172,7 +212,22 @@ export const CreatePracticeModal = ({ teamId, onClose, onCreated }: CreatePracti
     }
 
     try {
-      await createPractice(teamId, formState);
+      const description = formState.description.trim();
+      const method = formState.method.trim();
+
+      await createPractice(teamId, {
+        title: formState.title.trim(),
+        goal: formState.goal.trim(),
+        categoryId: formState.categoryId,
+        pillarIds: formState.pillarIds,
+        description: description.length > 0 ? description : undefined,
+        method: method.length > 0 ? method : undefined,
+        tags: normalizeListInput(formState.tags),
+        benefits: normalizeListInput(formState.benefits),
+        pitfalls: normalizeListInput(formState.pitfalls),
+        workProducts: normalizeListInput(formState.workProducts),
+        templatePracticeId: formState.templatePracticeId
+      });
       onCreated(formState.title.trim());
     } catch (submitError) {
       // Error handled via store error
@@ -340,6 +395,19 @@ export const CreatePracticeModal = ({ teamId, onClose, onCreated }: CreatePracti
               </div>
 
               <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="practice-description">
+                  Detailed Description
+                </label>
+                <textarea
+                  id="practice-description"
+                  value={formState.description}
+                  onChange={(event) => setFormState({ ...formState, description: event.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  rows={4}
+                />
+              </div>
+
+              <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="practice-category">
                   Category
                 </label>
@@ -379,6 +447,83 @@ export const CreatePracticeModal = ({ teamId, onClose, onCreated }: CreatePracti
                 {validationErrors.pillarIds && (
                   <p className="text-xs text-red-600 mt-1">{validationErrors.pillarIds}</p>
                 )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="practice-method">
+                  Method / Framework
+                </label>
+                <select
+                  id="practice-method"
+                  value={formState.method}
+                  onChange={(event) => setFormState({ ...formState, method: event.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select a method</option>
+                  <option value="Scrum">Scrum</option>
+                  <option value="XP">XP</option>
+                  <option value="Kanban">Kanban</option>
+                  <option value="Lean">Lean</option>
+                  <option value="SAFe">SAFe</option>
+                  <option value="Custom">Custom</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="practice-tags">
+                  Tags
+                </label>
+                <input
+                  id="practice-tags"
+                  type="text"
+                  value={formState.tags}
+                  onChange={(event) => setFormState({ ...formState, tags: event.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g. async, remote, facilitation"
+                />
+                <p className="text-xs text-gray-500 mt-1">Separate tags with commas or new lines.</p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="practice-benefits">
+                  Benefits
+                </label>
+                <textarea
+                  id="practice-benefits"
+                  value={formState.benefits}
+                  onChange={(event) => setFormState({ ...formState, benefits: event.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                  placeholder="List benefits separated by commas or new lines"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="practice-pitfalls">
+                  Pitfalls
+                </label>
+                <textarea
+                  id="practice-pitfalls"
+                  value={formState.pitfalls}
+                  onChange={(event) => setFormState({ ...formState, pitfalls: event.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                  placeholder="List pitfalls separated by commas or new lines"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="practice-work-products">
+                  Work Products
+                </label>
+                <textarea
+                  id="practice-work-products"
+                  value={formState.workProducts}
+                  onChange={(event) => setFormState({ ...formState, workProducts: event.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                  placeholder="List work products separated by commas or new lines"
+                />
               </div>
 
               <div className="flex justify-end gap-3">

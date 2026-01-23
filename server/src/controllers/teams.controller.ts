@@ -194,10 +194,24 @@ const createCustomPracticeSchema = z.object({
   goal: z.string()
     .min(1, 'Goal is required')
     .max(500, 'Goal must be between 1 and 500 characters'),
+  description: z.string()
+    .max(10000, 'Description must be under 10000 characters')
+    .optional()
+    .transform((value) => value?.trim())
+    .refine((value) => value === undefined || value.length > 0, 'Description cannot be empty'),
   pillarIds: z.array(z.number().int().positive())
     .min(1, 'Select at least one pillar'),
   categoryId: z.string()
     .min(1, 'Category is required'),
+  method: z.string()
+    .max(50, 'Method must be under 50 characters')
+    .optional()
+    .transform((value) => value?.trim())
+    .refine((value) => value === undefined || value.length > 0, 'Method cannot be empty'),
+  tags: z.array(z.string().min(1).max(100)).optional(),
+  benefits: z.array(z.string().min(1).max(500)).optional(),
+  pitfalls: z.array(z.string().min(1).max(500)).optional(),
+  workProducts: z.array(z.string().min(1).max(500)).optional(),
   templatePracticeId: z.number().int().positive().optional()
 });
 

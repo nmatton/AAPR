@@ -53,6 +53,12 @@ export interface CreateCustomPracticePayload {
   goal: string;
   pillarIds: number[];
   categoryId: string;
+  description?: string;
+  method?: string;
+  tags?: string[];
+  benefits?: string[];
+  pitfalls?: string[];
+  workProducts?: string[];
   templatePracticeId?: number;
 }
 

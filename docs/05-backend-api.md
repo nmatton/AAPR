@@ -2,7 +2,7 @@
 
 **Backend API Reference for AAPR Platform**
 
-Last Updated: January 22, 2026  
+Last Updated: January 23, 2026  
 Base URL: `http://localhost:3000`  
 Stack: Node.js 18+, Express 4.18+, TypeScript 5.2+
 
@@ -436,8 +436,14 @@ Get practices currently selected by the team
       "id": 42,
       "title": "Daily Stand-up",
       "goal": "Improve team communication through brief daily synchronization meetings",
+      "description": "Short daily meeting for progress and blockers",
       "categoryId": "scrum",
       "categoryName": "Scrum",
+      "method": "Scrum",
+      "tags": ["sync", "daily"],
+      "benefits": ["Team alignment"],
+      "pitfalls": ["Overlong updates"],
+      "workProducts": ["Daily action list"],
       "isGlobal": true,
       "practiceVersion": 3,
       "usedByTeamsCount": 4,
@@ -480,18 +486,24 @@ Get practices not yet selected by the team
       "id": 42,
       "title": "Daily Stand-up",
       "goal": "Improve team communication through brief daily synchronization meetings",
+      "description": "A short daily meeting where team members share progress",
       "categoryId": "scrum",
       "categoryName": "Scrum",
+      "method": "Scrum",
+      "tags": ["sync", "daily"],
+      "benefits": ["Team alignment"],
+      "pitfalls": ["Overlong updates"],
+      "workProducts": ["Daily action list"],
       "isGlobal": true,
       "practiceVersion": 3,
       "usedByTeamsCount": 4,
-      "description": "A short daily meeting where team members share progress...",
-      "pillarId": 5,
-      "pillar": {
-        "id": 5,
-        "name": "Communication",
-        "color": "#10B981"
-      }
+      "pillars": [
+        {
+          "id": 5,
+          "name": "Communication",
+          "category": "Human Values"
+        }
+      ]
     }
   ],
   "page": 1,
@@ -578,7 +590,13 @@ Create a custom practice for the team (scratch or template)
   "title": "Team Retro Plus",
   "goal": "Improve retrospective outcomes",
   "pillarIds": [1, 2],
-  "categoryId": "scrum"
+  "categoryId": "scrum",
+  "description": "Structured retrospective with extra prompts",
+  "method": "Scrum",
+  "tags": ["retro", "team"],
+  "benefits": ["Alignment"],
+  "pitfalls": ["Over-analysis"],
+  "workProducts": ["Action list"]
 }
 ```
 
@@ -589,6 +607,12 @@ Create a custom practice for the team (scratch or template)
   "goal": "Sync the team daily",
   "pillarIds": [5, 7],
   "categoryId": "scrum",
+  "description": "Short daily meeting for progress and blockers",
+  "method": "Scrum",
+  "tags": ["sync", "daily"],
+  "benefits": ["Team alignment"],
+  "pitfalls": ["Overlong updates"],
+  "workProducts": ["Daily action list"],
   "templatePracticeId": 12
 }
 ```
@@ -598,6 +622,12 @@ Create a custom practice for the team (scratch or template)
 - `goal`: 1-500 characters (required)
 - `pillarIds`: at least one pillar ID (required)
 - `categoryId`: must exist
+- `description`: optional, max 10,000 characters
+- `method`: optional, max 50 characters
+- `tags`: optional array of strings
+- `benefits`: optional array of strings
+- `pitfalls`: optional array of strings
+- `workProducts`: optional array of strings
 - `templatePracticeId`: optional, must exist if provided
 
 **Response (201):**
@@ -1329,4 +1359,4 @@ Get pillar-level coverage for a team, including category breakdown
 
 ---
 
-**Last Updated:** January 21, 2026
+**Last Updated:** January 23, 2026

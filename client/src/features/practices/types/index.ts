@@ -9,8 +9,14 @@ export interface Practice {
   id: number
   title: string
   goal: string
+  description?: string | null
   categoryId: string
   categoryName: string
+  method?: string | null
+  tags?: string[] | null
+  benefits?: string[] | null
+  pitfalls?: string[] | null
+  workProducts?: string[] | null
   isGlobal?: boolean
   practiceVersion?: number
   usedByTeamsCount?: number

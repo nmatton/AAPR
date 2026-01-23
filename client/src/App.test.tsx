@@ -59,7 +59,11 @@ describe('App auth flow integration', () => {
       expect(useAuthStore.getState().isLoading).toBe(false)
     })
 
-    expect(await screen.findByRole('heading', { name: 'My Teams', level: 1 })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(authApi.getCurrentUser).toHaveBeenCalled()
+    })
+
+    expect(await screen.findByText('My Teams')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /create team/i })).toBeInTheDocument()
   })
 

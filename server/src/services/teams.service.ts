@@ -26,6 +26,15 @@ export interface TeamDto {
  */
 const TOTAL_PILLARS = 19;
 
+const normalizeStringArray = (value: unknown): string[] | null => {
+  if (!Array.isArray(value)) return null
+  const normalized = value
+    .filter((item): item is string => typeof item === 'string')
+    .map((item) => item.trim())
+    .filter(Boolean)
+  return normalized.length > 0 ? normalized : null
+}
+
 /**
  * Update team name with optimistic locking
  * Prevents concurrent updates by checking version before applying changes
@@ -373,8 +382,14 @@ export const getAvailablePractices = async (
       id: practice.id,
       title: practice.title,
       goal: practice.goal,
+      description: practice.description ?? null,
       categoryId: practice.categoryId,
       categoryName: practice.category.name,
+      method: practice.method ?? null,
+      tags: normalizeStringArray(practice.tags),
+      benefits: normalizeStringArray(practice.benefits),
+      pitfalls: normalizeStringArray(practice.pitfalls),
+      workProducts: normalizeStringArray(practice.workProducts),
       isGlobal: practice.isGlobal,
       practiceVersion: practice.practiceVersion,
       usedByTeamsCount: practice._count?.teamPractices ?? 0,
@@ -414,8 +429,14 @@ export const getTeamPractices = async (teamId: number): Promise<PracticeDto[]> =
     id: tp.practice.id,
     title: tp.practice.title,
     goal: tp.practice.goal,
+    description: tp.practice.description ?? null,
     categoryId: tp.practice.categoryId,
     categoryName: tp.practice.category.name,
+    method: tp.practice.method ?? null,
+    tags: normalizeStringArray(tp.practice.tags),
+    benefits: normalizeStringArray(tp.practice.benefits),
+    pitfalls: normalizeStringArray(tp.practice.pitfalls),
+    workProducts: normalizeStringArray(tp.practice.workProducts),
     isGlobal: tp.practice.isGlobal,
     practiceVersion: tp.practice.practiceVersion,
     usedByTeamsCount: tp.practice._count?.teamPractices ?? 0,
@@ -456,6 +477,12 @@ export interface CreateCustomPracticePayload {
   goal: string;
   pillarIds: number[];
   categoryId: string;
+  description?: string;
+  method?: string;
+  tags?: string[];
+  benefits?: string[];
+  pitfalls?: string[];
+  workProducts?: string[];
   templatePracticeId?: number;
 }
 
@@ -815,7 +842,31 @@ export const createCustomPracticeForTeam = async (
   userId: number,
   payload: CreateCustomPracticePayload
 ): Promise<CreateCustomPracticeResult> => {
-  const { title, goal, pillarIds, categoryId, templatePracticeId } = payload;
+  const {
+    title,
+    goal,
+    pillarIds,
+    categoryId,
+    templatePracticeId,
+    description,
+    method,
+    tags,
+    benefits,
+    pitfalls,
+    workProducts
+  } = payload;
+
+  const normalizedDescription = description?.trim() || undefined;
+  const normalizedMethod = method?.trim() || undefined;
+  const normalizeOptionalList = (values?: string[]): string[] | undefined => {
+    if (!values) return undefined;
+    const normalized = values.map((value) => value.trim()).filter(Boolean);
+    return normalized.length > 0 ? normalized : undefined;
+  };
+  const normalizedTags = normalizeOptionalList(tags);
+  const normalizedBenefits = normalizeOptionalList(benefits);
+  const normalizedPitfalls = normalizeOptionalList(pitfalls);
+  const normalizedWorkProducts = normalizeOptionalList(workProducts);
 
   // Validate pillar IDs exist
   const invalidPillars = await practiceRepository.validatePillarIds(pillarIds);
@@ -858,10 +909,16 @@ export const createCustomPracticeForTeam = async (
         {
           title,
           goal,
+          description: normalizedDescription,
           isGlobal: false,
           category: {
             connect: { id: categoryId }
-          }
+          },
+          method: normalizedMethod,
+          tags: normalizedTags,
+          benefits: normalizedBenefits,
+          pitfalls: normalizedPitfalls,
+          workProducts: normalizedWorkProducts
         },
         tx
       );

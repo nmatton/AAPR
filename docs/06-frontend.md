@@ -137,7 +137,7 @@ retry(): Promise<void>
 - `PracticeCardSkeleton.tsx`: Shimmer placeholders (10 items)
 - `PracticeEmptyState.tsx`: "No practices available. Please contact support."
 - `PracticeErrorState.tsx`: Error copy + [Retry]
-- `PracticeCatalogDetail.tsx`: Slide-in sidebar with goal, category, pillars, notes
+- `PracticeCatalogDetail.tsx`: Slide-in sidebar with goal, description, category, method, tags, pillars, benefits, pitfalls, work products, notes
 
 **API Client:** [practices.api.ts](../client/src/features/practices/api/practices.api.ts)
 - `fetchPractices(page, pageSize)` → `{ items, page, pageSize, total, requestId }`
@@ -329,6 +329,12 @@ createCustomPractice(
     goal: string,
     pillarIds: number[],
     categoryId: string,
+    description?: string,
+    method?: string,
+    tags?: string[],
+    benefits?: string[],
+    pitfalls?: string[],
+    workProducts?: string[],
     templatePracticeId?: number
   }
 ): Promise<{ practiceId: number; coverage: number }>
@@ -428,12 +434,13 @@ editPracticeForTeam(teamId, practiceId, payload): Promise<EditPracticeResponse>
 1. User opens modal and chooses:
   - **Create from Scratch** (empty form)
   - **Use Existing as Template** (select practice, duplicate with "(Copy)" title)
-2. Form fields: title, goal/objective, category, pillars (multi-select)
+2. Form fields: title, goal/objective, detailed description, category, pillars (multi-select), method/framework, tags, benefits, pitfalls, work products
 3. Client-side validation:
   - Title required, 2-100 chars
   - Goal required, 1-500 chars
   - Category required
   - At least one pillar selected
+  - Optional fields normalized (comma/newline-separated lists to arrays)
 4. On success:
   - Toast: "New practice created: [Practice Name]"
   - Modal closes
@@ -1458,8 +1465,14 @@ interface Practice {
   id: number;
   title: string;
   goal: string;
+  description?: string | null;
   categoryId: string;
   categoryName: string;
+  method?: string | null;
+  tags?: string[] | null;
+  benefits?: string[] | null;
+  pitfalls?: string[] | null;
+  workProducts?: string[] | null;
   pillars: Array<{
     id: number;
     name: string;
@@ -1747,4 +1760,4 @@ interface PracticesResponse {
 
 ---
 
-**Last Updated:** January 21, 2026
+**Last Updated:** January 23, 2026

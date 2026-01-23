@@ -143,7 +143,13 @@ describe('teamPracticesApi', () => {
         goal: 'Goal',
         pillarIds: [1, 2],
         categoryId: 'scrum',
-        templatePracticeId: 10
+        templatePracticeId: 10,
+        description: 'Detailed description',
+        method: 'Scrum',
+        tags: ['team', 'focus'],
+        benefits: ['Alignment'],
+        pitfalls: ['Fatigue'],
+        workProducts: ['Action list']
       };
 
       const result = await createCustomPractice(1, payload);

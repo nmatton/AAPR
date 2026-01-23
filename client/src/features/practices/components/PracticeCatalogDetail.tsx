@@ -71,10 +71,34 @@ export const PracticeCatalogDetail = ({
             <p className="text-sm text-gray-600">Goal</p>
             <p className="text-gray-800">{practice.goal}</p>
           </div>
+          {practice.description && (
+            <div>
+              <p className="text-sm text-gray-600">Detailed Description</p>
+              <p className="text-gray-800 whitespace-pre-line">{practice.description}</p>
+            </div>
+          )}
           <div>
             <p className="text-sm text-gray-600">Category</p>
             <p className="text-gray-800">{practice.categoryName}</p>
           </div>
+          {practice.method && (
+            <div>
+              <p className="text-sm text-gray-600">Method / Framework</p>
+              <p className="text-gray-800">{practice.method}</p>
+            </div>
+          )}
+          {practice.tags && practice.tags.length > 0 && (
+            <div>
+              <p className="text-sm text-gray-600 mb-2">Tags</p>
+              <div className="flex flex-wrap gap-2">
+                {practice.tags.map((tag) => (
+                  <span key={tag} className="px-2 py-1 text-xs rounded-full bg-blue-50 text-blue-700">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
           <div>
             <p className="text-sm text-gray-600 mb-2">Pillars</p>
             <div className="flex flex-wrap gap-2">
@@ -95,6 +119,36 @@ export const PracticeCatalogDetail = ({
                   </div>
                 ) : null
               ))}
+            </div>
+          )}
+          {practice.benefits && practice.benefits.length > 0 && (
+            <div>
+              <p className="text-sm text-gray-600">Benefits</p>
+              <ul className="list-disc pl-5 text-gray-800 text-sm space-y-1">
+                {practice.benefits.map((benefit) => (
+                  <li key={benefit}>{benefit}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {practice.pitfalls && practice.pitfalls.length > 0 && (
+            <div>
+              <p className="text-sm text-gray-600">Pitfalls</p>
+              <ul className="list-disc pl-5 text-gray-800 text-sm space-y-1">
+                {practice.pitfalls.map((pitfall) => (
+                  <li key={pitfall}>{pitfall}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {practice.workProducts && practice.workProducts.length > 0 && (
+            <div>
+              <p className="text-sm text-gray-600">Work Products</p>
+              <ul className="list-disc pl-5 text-gray-800 text-sm space-y-1">
+                {practice.workProducts.map((product) => (
+                  <li key={product}>{product}</li>
+                ))}
+              </ul>
             </div>
           )}
           {actionLabel && onAction && (

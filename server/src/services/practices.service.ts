@@ -12,8 +12,14 @@ export interface PracticeDto {
   id: number;
   title: string;
   goal: string;
+  description?: string | null;
   categoryId: string;
   categoryName: string;
+  method?: string | null;
+  tags?: string[] | null;
+  benefits?: string[] | null;
+  pitfalls?: string[] | null;
+  workProducts?: string[] | null;
   isGlobal: boolean;
   practiceVersion: number;
   usedByTeamsCount: number;
@@ -59,6 +65,12 @@ export interface PracticeDetailDto {
   pillars: PracticePillarDto[];
 }
 
+const normalizeStringArray = (value: unknown): string[] | null => {
+  if (!Array.isArray(value)) return null
+  const normalized = value.filter((item): item is string => typeof item === 'string').map((item) => item.trim()).filter(Boolean)
+  return normalized.length > 0 ? normalized : null
+}
+
 export const getPractices = async (page = 1, pageSize = 20): Promise<PracticesResponse> => {
   const skip = (page - 1) * pageSize;
 
@@ -72,8 +84,14 @@ export const getPractices = async (page = 1, pageSize = 20): Promise<PracticesRe
       id: practice.id,
       title: practice.title,
       goal: practice.goal,
+      description: practice.description ?? null,
       categoryId: practice.categoryId,
       categoryName: practice.category.name,
+      method: practice.method ?? null,
+      tags: normalizeStringArray(practice.tags),
+      benefits: normalizeStringArray(practice.benefits),
+      pitfalls: normalizeStringArray(practice.pitfalls),
+      workProducts: normalizeStringArray(practice.workProducts),
       isGlobal: practice.isGlobal,
       practiceVersion: practice.practiceVersion,
       usedByTeamsCount: practice._count?.teamPractices ?? 0,
@@ -123,8 +141,14 @@ export const searchPractices = async (params: SearchPracticesParams): Promise<Pr
       id: practice.id,
       title: practice.title,
       goal: practice.goal,
+      description: practice.description ?? null,
       categoryId: practice.categoryId,
       categoryName: practice.category.name,
+      method: practice.method ?? null,
+      tags: normalizeStringArray(practice.tags),
+      benefits: normalizeStringArray(practice.benefits),
+      pitfalls: normalizeStringArray(practice.pitfalls),
+      workProducts: normalizeStringArray(practice.workProducts),
       isGlobal: practice.isGlobal,
       practiceVersion: practice.practiceVersion,
       usedByTeamsCount: practice._count?.teamPractices ?? 0,

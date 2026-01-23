@@ -2,7 +2,7 @@
 
 **Implementation History for AAPR Platform**
 
-Last Updated: January 22, 2026
+Last Updated: January 23, 2026
 
 ---
 
@@ -383,6 +383,36 @@ Last Updated: January 22, 2026
 - **Error Differentiation:** Separate error codes for validation (400), not found (404), and conflict (409) errors enable precise client-side error handling and user messaging
 - **Client-Side Validation:** Character counter and input truncation improve UX by providing immediate feedback before network request
 - **Memoization:** Character count calculation memoized to prevent unnecessary re-renders during rapid user input
+
+---
+
+### Story 2-1-4: Catalog - Create New Practice with Full Editor
+
+**Status:** ✅ COMPLETE  
+**Date:** January 23, 2026  
+**Developer:** Nicolas (via Dev Agent - GPT-5.2-Codex)
+
+**What Was Built:**
+
+**Frontend:**
+- **CreatePracticeModal:** Expanded full editor with description, method/framework, tags, benefits, pitfalls, and work products.
+- **Validation:** Required fields (title, goal, category, pillars) block submit; optional fields normalized into arrays.
+- **Template Flow:** Copies full optional fields and defaults title to “(Copy)”.
+- **Detail View:** PracticeCatalogDetail now renders optional fields when present.
+
+**Backend:**
+- **Validation:** `createCustomPracticeSchema` accepts optional fields with length rules.
+- **Service:** `createCustomPracticeForTeam` persists optional fields (JSON arrays) and keeps transactional event logging.
+- **Responses:** Practice list responses include optional fields for detail rendering.
+
+**Testing:**
+- Frontend: CreatePracticeModal validation + payload normalization; API payload shape tests.
+- Backend: Controller schema validation; service create tests with optional fields.
+
+**Documentation Updated:**
+- `docs/05-backend-api.md`
+- `docs/06-frontend.md`
+- `docs/09-changelog.md`
 
 ---
 
@@ -1443,7 +1473,7 @@ AAPR Team
 
 ---
 
-**Last Updated:** January 21, 2026
+**Last Updated:** January 23, 2026
 
 ---
 
