@@ -97,3 +97,23 @@ export const removeMember = async (teamId: number, userId: number): Promise<bool
   )
   return data.removed
 }
+
+export const logMembersPageViewed = async (teamId: number): Promise<void> => {
+  try {
+    await fetch(`${API_BASE_URL}/api/v1/events`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Request-Id': generateRequestId()
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        action: 'members_page.viewed',
+        teamId,
+        timestamp: new Date().toISOString()
+      })
+    })
+  } catch (error) {
+    console.warn('members_page.viewed event logging failed', error)
+  }
+}

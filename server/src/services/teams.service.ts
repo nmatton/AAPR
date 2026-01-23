@@ -13,6 +13,7 @@ import { Prisma } from '@prisma/client';
 export interface TeamDto {
   id: number;
   name: string;
+  version: number;
   memberCount: number;
   practiceCount: number;
   coverage: number;
@@ -24,6 +25,124 @@ export interface TeamDto {
  * Total number of agile pillars in the framework
  */
 const TOTAL_PILLARS = 19;
+
+/**
+ * Update team name with optimistic locking
+ * Prevents concurrent updates by checking version before applying changes
+ * 
+ * @param teamId - Team identifier
+ * @param newName - New team name (3-50 characters)
+ * @param expectedVersion - Current version for optimistic locking
+ * @param userId - User making the change (for event logging)
+ * @returns Updated team with incremented version
+ * @throws AppError if validation fails (400), team not found (404), name already exists (409), or version conflict (409)
+ */
+export const updateTeamName = async (
+  teamId: number,
+  newName: string,
+  expectedVersion: number,
+  userId: number
+): Promise<{ id: number; name: string; version: number; updatedAt: Date }> => {
+  // Validate team name
+  if (!newName || newName.trim().length < 3) {
+    throw new AppError(
+      'validation_error',
+      'Team name must be at least 3 characters',
+      { field: 'name', minLength: 3 },
+      400
+    );
+  }
+
+  if (newName.length > 50) {
+    throw new AppError(
+      'validation_error',
+      'Team name must not exceed 50 characters',
+      { field: 'name', maxLength: 50 },
+      400
+    );
+  }
+
+  const trimmedName = newName.trim();
+
+  // Use transaction for atomic update + event logging
+  const result = await prisma.$transaction(async (tx) => {
+    // Fetch current team to get old name and verify version
+    const currentTeam = await tx.team.findUnique({
+      where: { id: teamId }
+    });
+
+    if (!currentTeam) {
+      throw new AppError(
+        'not_found',
+        'Team not found',
+        { teamId },
+        404
+      );
+    }
+
+    // Check if version matches (optimistic locking)
+    if (currentTeam.version !== expectedVersion) {
+      const error = new AppError(
+        'version_mismatch',
+        'Team was modified by another user',
+        {
+          expectedVersion,
+          currentVersion: currentTeam.version,
+          currentName: currentTeam.name
+        },
+        409
+      );
+      throw error;
+    }
+
+    // Check for duplicate name (but allow same team to keep its name)
+    if (trimmedName !== currentTeam.name) {
+      const existingTeam = await tx.team.findUnique({
+        where: { name: trimmedName }
+      });
+
+      if (existingTeam) {
+        throw new AppError(
+          'duplicate_name',
+          'A team with this name already exists',
+          { teamId, name: trimmedName },
+          409
+        );
+      }
+    }
+
+    // Update team name and increment version
+    const updatedTeam = await tx.team.update({
+      where: { id: teamId },
+      data: {
+        name: trimmedName,
+        version: { increment: 1 } // Increment version for next update
+      }
+    });
+
+    // Log the event atomically
+    await tx.event.create({
+      data: {
+        eventType: 'team.name_updated',
+        teamId,
+        actorId: userId,
+        entityType: 'team',
+        entityId: teamId,
+        action: 'updated',
+        payload: {
+          oldName: currentTeam.name,
+          newName: trimmedName,
+          timestamp: new Date().toISOString()
+        },
+        schemaVersion: 'v1'
+      }
+    });
+
+    return updatedTeam;
+  });
+
+  return result;
+};
 
 /**
  * Calculate team's practice coverage percentage
@@ -70,6 +189,7 @@ export const getUserTeams = async (userId: number): Promise<TeamDto[]> => {
     return {
       id: team.id,
       name: team.name,
+      version: team.version,
       memberCount: team._count.teamMembers,
       practiceCount: team._count.teamPractices,
       coverage,
@@ -175,6 +295,7 @@ export const createTeam = async (
   return {
     id: team.id,
     name: team.name,
+    version: team.version,
     memberCount: 1, // Creator is first member
     practiceCount: practiceIds.length,
     coverage,

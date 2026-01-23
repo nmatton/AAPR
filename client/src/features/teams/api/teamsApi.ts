@@ -109,3 +109,36 @@ export const createTeam = async (
   });
   return data.team;
 };
+
+/**
+ * Update team name response
+ */
+export interface UpdateTeamNameResponse {
+  id: number;
+  name: string;
+  version: number;
+  updatedAt: string;
+}
+
+/**
+ * Update team name with optimistic locking
+ * @param teamId - Team identifier
+ * @param newName - New team name (3-50 chars)
+ * @param currentVersion - Current version for optimistic locking
+ * @returns Updated team data
+ * @throws ApiError if validation fails or version conflict
+ */
+export const updateTeamName = async (
+  teamId: number,
+  newName: string,
+  currentVersion: number
+): Promise<UpdateTeamNameResponse> => {
+  const data = await requestWithRefresh<{ data: UpdateTeamNameResponse }>(
+    `/api/v1/teams/${teamId}`,
+    {
+      method: 'PATCH',
+      body: JSON.stringify({ name: newName, version: currentVersion })
+    }
+  );
+  return data.data;
+};

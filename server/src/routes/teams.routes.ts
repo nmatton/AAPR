@@ -23,6 +23,13 @@ teamsRouter.get('/', requireAuth, teamsController.getTeams);
 teamsRouter.post('/', requireAuth, teamsController.createTeam);
 
 /**
+ * PATCH /api/v1/teams/:teamId
+ * Update team name with optimistic locking
+ * Protected by requireAuth + team membership validation
+ */
+teamsRouter.patch('/:teamId', requireAuth, validateTeamMembership, teamsController.updateTeam);
+
+/**
  * POST /api/v1/teams/:teamId/invites
  * Create a team invite (new or existing user)
  * Protected by requireAuth + team membership validation

@@ -27,6 +27,16 @@ const createTeamSchema = z.object({
 });
 
 /**
+ * Validation schema for team name update
+ */
+const updateTeamSchema = z.object({
+  name: z.string()
+    .min(3, 'Team name must be at least 3 characters')
+    .max(50, 'Team name must be less than 50 characters'),
+  version: z.number().int().positive('Version is required for optimistic locking')
+});
+
+/**
  * GET /api/v1/teams
  * Get all teams for the authenticated user
  * 
@@ -98,6 +108,64 @@ export const createTeam = async (
     
     res.status(201).json({
       team,
+      requestId: req.id
+    });
+  } catch (error: any) {
+    // Attach requestId to error for tracing
+    if (error && req.id) {
+      error.requestId = req.id;
+    }
+    next(error);
+  }
+};
+
+/**
+ * PATCH /api/v1/teams/:teamId
+ * Update team name with optimistic locking
+ * 
+ * @param req - Express request with teamId param and name + version in body
+ * @param res - Express response
+ * @param next - Express next function
+ */
+export const updateTeam = async (
+  req: Request<{ teamId: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const teamId = parseInt(req.params.teamId, 10);
+    const userId = req.user!.userId;
+    
+    // Validate request body
+    const validationResult = updateTeamSchema.safeParse(req.body);
+    
+    if (!validationResult.success) {
+      const details = validationResult.error.issues.map((issue) => ({
+        path: issue.path.join('.'),
+        message: issue.message,
+        code: issue.code
+      }));
+      
+      throw new AppError(
+        'validation_error',
+        'Request validation failed',
+        details,
+        400
+      );
+    }
+    
+    const { name, version } = validationResult.data;
+    
+    // Update team name
+    const updatedTeam = await teamsService.updateTeamName(teamId, name, version, userId);
+    
+    res.json({
+      data: {
+        id: updatedTeam.id,
+        name: updatedTeam.name,
+        version: updatedTeam.version,
+        updatedAt: updatedTeam.updatedAt.toISOString()
+      },
       requestId: req.id
     });
   } catch (error: any) {

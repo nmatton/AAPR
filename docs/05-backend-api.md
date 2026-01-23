@@ -202,6 +202,82 @@ Create a new team with selected practices
 
 ---
 
+#### PATCH /api/v1/teams/:teamId
+Update team name (Story 2-1-3)
+
+**Authentication:** Required
+
+**Authorization:** User must be a member of the team
+
+**Request:**
+```json
+{
+  "name": "New Team Name",
+  "version": 1
+}
+```
+
+**Validation:**
+- `name`: String, required, 3-50 characters, no leading/trailing spaces
+- `version`: Integer, required, must match current team version (optimistic locking)
+
+**Response (200):**
+```json
+{
+  "id": 5,
+  "name": "New Team Name",
+  "version": 2,
+  "updatedAt": "2026-01-23T14:30:00Z"
+}
+```
+
+**Error Responses:**
+
+**400 Bad Request (Validation Error):**
+```json
+{
+  "code": "validation_error",
+  "message": "Invalid request: name must be 3-50 characters",
+  "details": { "field": "name", "reason": "length_out_of_range" }
+}
+```
+
+**404 Not Found:**
+```json
+{
+  "code": "team_not_found",
+  "message": "Team with ID 999 not found"
+}
+```
+
+**409 Conflict (Version Mismatch - Optimistic Locking):**
+```json
+{
+  "code": "version_mismatch",
+  "message": "Team was modified by another user. Current version: 2, your version: 1",
+  "details": { "currentVersion": 2 }
+}
+```
+
+**409 Conflict (Duplicate Name):**
+```json
+{
+  "code": "duplicate_team_name",
+  "message": "Team with name 'New Team Name' already exists in your account"
+}
+```
+
+**Implementation Details:**
+- **Optimistic Locking:** Uses `version` field on Team model to prevent concurrent edit conflicts. Update only succeeds if current version matches provided version
+- **Event Logging:** On successful update, a `team.name_updated` event is logged transactionally with the update
+- **Duplicate Detection:** Team names are unique per user account (case-insensitive)
+- **Atomicity:** Database update and event logging occur in a single transaction to ensure consistency
+
+**Events Logged:**
+- `team.name_updated` (team_id, actor_id, old_name, new_name)
+
+---
+
 ### Team Members
 
 #### GET /api/teams/:teamId/members

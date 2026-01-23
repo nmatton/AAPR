@@ -87,6 +87,7 @@ The AAPR database uses a **normalized relational schema** (3NF) with the followi
 | name | VARCHAR(100) | UNIQUE, NOT NULL | Team name |
 | created_at | TIMESTAMP | DEFAULT NOW() | Team creation |
 | updated_at | TIMESTAMP | DEFAULT NOW() | Last update |
+| version | INTEGER | DEFAULT 1 | Optimistic locking version (Story 2-1-3) |
 
 **Indexes:**
 - PRIMARY KEY on `id`

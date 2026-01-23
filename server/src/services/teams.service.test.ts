@@ -14,6 +14,8 @@ jest.mock('../lib/prisma', () => ({
     team: {
       findFirst: jest.fn(),
       create: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn()
     },
     teamMember: {
       findUnique: jest.fn(),
@@ -25,6 +27,9 @@ jest.mock('../lib/prisma', () => ({
     teamPractice: {
       findUnique: jest.fn(),
       upsert: jest.fn()
+    },
+    event: {
+      create: jest.fn()
     },
     $transaction: jest.fn(),
   },
@@ -179,6 +184,100 @@ describe('teamsService.createTeam', () => {
     
     // Transaction was attempted
     expect(prisma.$transaction).toHaveBeenCalled();
+  });
+});
+
+describe('teamsService.updateTeamName', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('updates team name and increments version', async () => {
+    const teamId = 1;
+    const userId = 2;
+    const currentTeam = { id: teamId, name: 'Old Name', version: 1 };
+    const updatedTeam = { id: teamId, name: 'New Name', version: 2, updatedAt: new Date('2026-01-23T10:00:00Z') };
+
+    const mockFindUnique = jest
+      .fn()
+      .mockResolvedValueOnce(currentTeam)
+      .mockResolvedValueOnce(null);
+    const mockUpdate = jest.fn().mockResolvedValue(updatedTeam);
+    const mockEventCreate = jest.fn().mockResolvedValue({});
+
+    (prisma.$transaction as jest.Mock).mockImplementation(async (callback: any) => {
+      return callback({
+        team: { findUnique: mockFindUnique, update: mockUpdate },
+        event: { create: mockEventCreate }
+      });
+    });
+
+    const result = await teamsService.updateTeamName(teamId, 'New Name', 1, userId);
+
+    expect(result.name).toBe('New Name');
+    expect(result.version).toBe(2);
+    expect(mockUpdate).toHaveBeenCalledWith({
+      where: { id: teamId },
+      data: { name: 'New Name', version: { increment: 1 } }
+    });
+    expect(mockEventCreate).toHaveBeenCalled();
+  });
+
+  it('throws error on version mismatch', async () => {
+    const teamId = 1;
+    const userId = 2;
+    const currentTeam = { id: teamId, name: 'Current Name', version: 2 };
+
+    const mockFindUnique = jest.fn().mockResolvedValue(currentTeam);
+
+    (prisma.$transaction as jest.Mock).mockImplementation(async (callback: any) => {
+      return callback({
+        team: { findUnique: mockFindUnique, update: jest.fn() },
+        event: { create: jest.fn() }
+      });
+    });
+
+    await expect(teamsService.updateTeamName(teamId, 'New Name', 1, userId)).rejects.toThrow(
+      expect.objectContaining({
+        code: 'version_mismatch',
+        statusCode: 409
+      })
+    );
+  });
+
+  it('throws error when name is too short', async () => {
+    await expect(teamsService.updateTeamName(1, 'AB', 1, 1)).rejects.toThrow(
+      expect.objectContaining({
+        code: 'validation_error',
+        statusCode: 400
+      })
+    );
+  });
+
+  it('throws error when name already exists', async () => {
+    const teamId = 1;
+    const userId = 2;
+    const currentTeam = { id: teamId, name: 'Old Name', version: 1 };
+    const existingTeam = { id: 99, name: 'New Name' };
+
+    const mockFindUnique = jest
+      .fn()
+      .mockResolvedValueOnce(currentTeam)
+      .mockResolvedValueOnce(existingTeam);
+
+    (prisma.$transaction as jest.Mock).mockImplementation(async (callback: any) => {
+      return callback({
+        team: { findUnique: mockFindUnique, update: jest.fn() },
+        event: { create: jest.fn() }
+      });
+    });
+
+    await expect(teamsService.updateTeamName(teamId, 'New Name', 1, userId)).rejects.toThrow(
+      expect.objectContaining({
+        code: 'duplicate_name',
+        statusCode: 409
+      })
+    );
   });
 });
 

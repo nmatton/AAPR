@@ -1,6 +1,7 @@
 import { TeamDashboard } from './features/teams/components/TeamDashboard'
 import { CreateTeamForm } from './features/teams/components/CreateTeamForm'
 import { MemberDetailView } from './features/teams/components/MemberDetailView'
+import { TeamMembersView } from './features/teams/pages/TeamMembersView'
 import { AddPracticesView } from './features/teams/pages/AddPracticesView'
 import { CoverageDetailsView } from './features/teams/pages/CoverageDetailsView'
 import { ManagePracticesView } from './features/teams/pages/ManagePracticesView'
@@ -138,6 +139,14 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute>
               <TeamDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/teams/:teamId/members"
+          element={
+            <ProtectedRoute>
+              <TeamMembersView />
             </ProtectedRoute>
           }
         />

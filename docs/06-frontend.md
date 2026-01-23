@@ -2,8 +2,8 @@
 
 **Frontend Architecture & UI for AAPR Platform**
 
-Last Updated: January 22, 2026  
-Stack: React 18.2, TypeScript 5.2+, Vite 5.0+, TailwindCSS 3.0+
+Last Updated: January 23, 2026  
+Stack: React 18.2, TypeScript 5.2+, Vite 5.0+, TailwindCSS 3.3+
 
 ---
 
@@ -12,7 +12,7 @@ Stack: React 18.2, TypeScript 5.2+, Vite 5.0+, TailwindCSS 3.0+
 The AAPR frontend is a **single-page application (SPA)** built with:
 - **UI Framework:** React 18.2 (locked version for stability)
 - **State Management:** Zustand 4.4+ (lightweight, no boilerplate)
-- **Routing:** React Router 6.x (declarative routing)
+- **Routing:** React Router 7.12+ (declarative routing)
 - **Styling:** TailwindCSS 3.0+ (utility-first CSS)
 - **HTTP Client:** Fetch API (native, no axios)
 - **Build Tool:** Vite 5.0+ (fast HMR, optimized builds)
@@ -54,8 +54,10 @@ client/
 | `/login` | `LoginForm` | Public | User login |
 | `/teams` | `TeamsList` | Required | List user's teams |
 | `/teams/create` | `CreateTeamForm` | Required | Create new team |
-| `/teams/:id` | `TeamDetail` | Required | Team practices (Epic 2) |
-| `/practices` | `PracticeCatalog` | Required | Global practice catalog (Story 2.1) |
+| `/teams/:teamId` | `TeamDashboard` | Required | Team practices dashboard (Epic 2) |
+| `/teams/:teamId/members` | `TeamMembersView` | Required | Team members management (Story 2.1.2) |
+| `/teams/:teamId/members/:userId` | `MemberDetailView` | Required | Member detail view |
+| `/practices` | `PracticeCatalog` | Required | Global practice catalog |
 
 ### Route Guards
 
@@ -452,6 +454,190 @@ editPracticeForTeam(teamId, practiceId, payload): Promise<EditPracticeResponse>
 - `ManagePracticesView.test.tsx`: creation success refreshes practices + coverage
 
 ---
+
+## Team Members Management (Story 2.1.2)
+
+**Route:** `/teams/:teamId/members` (protected)
+
+**Page:** [TeamMembersView.tsx](../client/src/features/teams/pages/TeamMembersView.tsx)
+
+**Purpose:** Centralized team member management page with full-width layout for better usability
+
+**Components:**
+- **MembersList:** Table of current team members with remove functionality
+- **InvitePanel:** Email invite form (sticky sidebar)
+- **PendingInvitesList:** List of pending/failed invitations with retry
+
+**Entry Points:**
+- Header "Members" button in `TeamDashboard` navigates to `/teams/:teamId/members`
+- Or click "Manage Members" in the members sidebar card
+
+**Features:**
+
+### Members List Component
+
+**File:** [src/features/teams/components/MembersList.tsx](../client/src/features/teams/components/MembersList.tsx)
+
+**Displays:**
+- Table with: Name, Email, Join Date, [Remove] button
+- Formatted dates: "Jan 1, 2025"
+- Member count badge
+- Empty state: "No team members yet"
+
+**Interactions:**
+- Click [Remove] → Confirmation dialog
+- Dialog: "Remove [Name] from team? They'll lose access."
+- Confirm/Cancel buttons
+- On success: Member removed, row disappears
+- On error: Error toast shown
+
+**State:** Uses `useMembersStore` from `membersSlice.ts`
+
+### Invite Panel Component
+
+**File:** [src/features/teams/components/InvitePanel.tsx](../client/src/features/teams/components/InvitePanel.tsx)
+
+**Form:**
+- Email input field
+- Validation: Required + valid email format
+- [Send Invite] button (disabled until valid)
+- Success toast: "Invite sent to [email]"
+- Error toast: "[error message]"
+
+**Validation:**
+- Empty email: "Email is required"
+- Invalid format: "Please enter a valid email address"
+- Duplicate email: "This email has already been invited"
+- Network error: "Connection failed. Check your internet and retry."
+
+**State:** Uses `useInvitesStore` from `invitesSlice.ts`
+- `createNewInvite(teamId, email)` action
+- `isCreating` controls button state
+- Auto-clear on success
+
+### Pending Invites List Component
+
+**File:** [src/features/teams/components/PendingInvitesList.tsx](../client/src/features/teams/components/PendingInvitesList.tsx)
+
+**Displays:**
+- Table with: Email, Status badge, Sent date, [Retry] button
+- Status: "Pending" (yellow), "Failed" (red)
+- Only shows non-"Added" invites
+- Empty state: "No pending invitations"
+
+**Retry Functionality:**
+- [Retry] button only shows for "Failed" status
+- Click Retry → "Resending..." state
+- On success: Status updates, toast shown
+- On error: Error toast shown
+
+**State:** Uses `useInvitesStore` from `invitesSlice.ts`
+- `resendInviteEmail(teamId, inviteId)` action
+
+### State Management
+
+**Files:**
+- [membersSlice.ts](../client/src/features/teams/state/membersSlice.ts)
+- [invitesSlice.ts](../client/src/features/teams/state/invitesSlice.ts)
+
+**membersSlice State:**
+```typescript
+{
+  members: TeamMemberSummary[],
+  isLoading: boolean,
+  isRemoving: boolean,
+  error: string | null
+}
+```
+
+**membersSlice Actions:**
+```typescript
+fetchMembers(teamId: number): Promise<void>
+removeTeamMember(teamId: number, memberId: number): Promise<void>
+reset(): void
+```
+
+**invitesSlice State:**
+```typescript
+{
+  invites: TeamInvite[],
+  isLoading: boolean,
+  isCreating: boolean,
+  isResending: boolean,
+  error: string | null
+}
+```
+
+**invitesSlice Actions:**
+```typescript
+fetchInvites(teamId: number): Promise<void>
+createNewInvite(teamId: number, email: string): Promise<TeamInvite>
+resendInviteEmail(teamId: number, inviteId: number): Promise<void>
+reset(): void
+```
+
+### API Integration
+
+**Files:**
+- [membersApi.ts](../client/src/features/teams/api/membersApi.ts)
+- [invitesApi.ts](../client/src/features/teams/api/invitesApi.ts)
+
+**Member API Functions:**
+```typescript
+getMembers(teamId: number): Promise<TeamMemberSummary[]>
+removeMember(teamId: number, userId: number): Promise<boolean>
+```
+
+**Invite API Functions:**
+```typescript
+getInvites(teamId: number): Promise<TeamInvite[]>
+createInvite(teamId: number, email: string): Promise<TeamInvite>
+resendInvite(teamId: number, inviteId: number): Promise<TeamInvite>
+```
+
+### Analytics
+
+**Events Logged:**
+- `members_page.viewed`: { teamId, timestamp } - On page load
+
+**Existing Events (from Epic 1):**
+- `team_member.removed`: { teamId, userId } - When member removed
+- `invite.created`: { inviteId, teamId, email } - When invite sent
+- `invite.resent`: { inviteId, teamId } - When invite retried
+
+### Dashboard Layout Changes
+
+**Before Story 2.1.2:**
+- Grid: 3fr (practices) | 1fr (coverage) | 1fr (members sidebar)
+- Members sidebar shows avatar stack + "Manage Members" link
+
+**After Story 2.1.2:**
+- Grid: 3fr (practices) | 1fr (coverage)
+- Added "Members" button in header next to "Add Practices"
+- Members sidebar removed entirely
+- Practice list gets more horizontal space
+
+### Testing
+
+**Component Tests:**
+- `TeamMembersView.test.tsx`: Rendering, data loading, tabs
+- `MembersList.test.tsx`: Display, remove dialog, confirmation flow
+- `InvitePanel.test.tsx`: Email validation, form submission, success/error
+- `PendingInvitesList.test.tsx`: Display, status badges, retry logic
+
+**State Tests:**
+- `membersSlice.test.ts`: Fetch, remove, error handling
+- `invitesSlice.test.ts`: Fetch, create, resend, error handling
+
+**Coverage:**
+- Loading states
+- Error states with proper error messages
+- Empty states
+- Accessibility: aria-labels, keyboard navigation
+- Success toasts
+- Error toasts
+
+---
 - Generic: "Failed to add practice"
 
 **Performance:**
@@ -815,7 +1001,80 @@ await createTeam("Alpha Squad", [1, 5, 12]);
 - Highlights gap pillars and shows suggestion: "Consider adding a practice that covers [Pillar Name]"
 - Parent refreshes team stats to update coverage in real-time
 
-**UI (modal excerpt):**
+---
+
+#### TeamNameEditor
+**File:** `src/features/teams/components/TeamNameEditor.tsx` (Story 2-1-3)
+
+**Purpose:** Inline editor component for updating team name with optimistic concurrency control
+
+**Features:**
+- Text input field with real-time character counter (0/50)
+- Green [✓ Save] button - enabled only when:
+  - Name has 3-50 characters
+  - Name differs from original
+- Red [✕ Cancel] button - always enabled
+- Keyboard shortcuts:
+  - **Enter:** Submit save (if valid)
+  - **Escape:** Cancel edit
+- Client-side truncation at 50 characters
+- Memoized character count for performance
+- Loading state during save (buttons disabled, "Saving..." text)
+- Error display for validation/version conflict messages
+
+**Props:**
+```typescript
+interface TeamNameEditorProps {
+  currentValue: string;
+  onSave: (newValue: string) => Promise<void>;
+  onCancel: () => void;
+  isSaving?: boolean;
+  error?: string | null;
+}
+```
+
+**Usage Example:**
+```tsx
+<TeamNameEditor
+  currentValue={teamName}
+  onSave={handleSaveName}
+  onCancel={handleCancelEdit}
+  isSaving={isSaving}
+  error={editError}
+/>
+```
+
+**Integration with TeamDashboard:**
+- Pencil icon (✏️) button appears next to team name heading
+- Click pencil → Open TeamNameEditor in inline mode
+- Editor replaces team name display temporarily
+- On save: Calls `updateTeamNameApi(teamId, newName, currentVersion)` with optimistic locking
+- On version conflict (409): Shows error "Team was modified by another user. Please refresh."
+- On duplicate name (409): Shows error "Team name already exists in your account"
+- On validation error (400): Shows specific validation message to user
+- On success: Updates UI with new name and incremented version
+- Automatic error recovery: User can retry or cancel
+
+**Error Handling:**
+- **Validation Errors (400):** Display validation message to user, allow retry or cancel
+- **Version Conflicts (409 version_mismatch):** Display conflict message with current version, allow retry or cancel
+- **Duplicate Names (409 duplicate_team_name):** Display duplicate message, allow retry or cancel
+- **Network Errors:** Display "Failed to save. Please try again."
+
+**Testing:**
+- `TeamNameEditor.test.tsx`: 12 test cases
+  - Rendering with current value
+  - Character count display (0/50)
+  - onChange callback
+  - Save button enabled/disabled logic
+  - Cancel button click
+  - Enter/Escape keyboard shortcuts
+  - Saving state (disabled buttons)
+  - Client-side truncation to 50 chars
+- Uses vitest and React Testing Library
+- All tests passing
+
+---
 ```tsx
 <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/40 p-4">
   <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">

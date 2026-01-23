@@ -252,6 +252,140 @@ Last Updated: January 22, 2026
 
 ---
 
+### Story 2-1-3: Team Name Inline Editing with Pencil Icon
+
+**Status:** ✅ COMPLETE  
+**Date:** January 23, 2026  
+**Developer:** Nicolas (via Dev Agent - Claude Haiku 4.5)
+
+**What Was Built:**
+
+**Backend:**
+- **Endpoint:** `PATCH /api/v1/teams/:teamId` (protected, team member required)
+- **Request Body:**
+  ```json
+  {
+    "name": "New Team Name",
+    "version": 1
+  }
+  ```
+- **Response (200):**
+  ```json
+  {
+    "id": 5,
+    "name": "New Team Name",
+    "version": 2,
+    "updatedAt": "2026-01-23T14:30:00Z"
+  }
+  ```
+- **Error Handling:**
+  - `400 Bad Request`: Invalid name length (< 3 or > 50 chars)
+  - `404 Not Found`: Team does not exist
+  - `409 Conflict (version_mismatch)`: Another user modified team
+  - `409 Conflict (duplicate_team_name)`: Name already used by this user
+- **Validation:**
+  - Name must be 3-50 characters, no leading/trailing spaces
+  - Version must match current team version (optimistic locking)
+  - Name must be unique per user (case-insensitive)
+- **Concurrency Control (Optimistic Locking):**
+  - Team table has `version INT DEFAULT 1`
+  - On update: `WHERE id = :id AND version = :version`
+  - If no rows affected: 409 Conflict returned with current version
+  - Version incremented on successful update
+- **Event Logging:**
+  - On successful update: `team.name_updated` event created transactionally
+  - Event contains old/new name for audit trail
+  - Atomicity ensured via database transaction
+- **Service Layer:** `updateTeamName()` in `teams.service.ts`
+  - Validates name format (3-50 chars, no leading/trailing spaces)
+  - Checks for duplicate names (case-insensitive)
+  - Performs versioned update with transactional event logging
+  - Returns updated team object with new version
+- **Database Migration:** `20260123110633_add_team_version_for_optimistic_locking`
+  - Adds `version INT NOT NULL DEFAULT 1` column to teams table
+
+**Frontend:**
+- **Component:** `TeamNameEditor.tsx` (82 lines)
+  - Inline text editor with character counter (0/50)
+  - Green [✓ Save] button (enabled when name is 3-50 chars and differs from original)
+  - Red [✕ Cancel] button (always enabled)
+  - Keyboard shortcuts: Enter to save, Escape to cancel
+  - Client-side truncation at 50 characters
+  - Loading state with disabled buttons and "Saving..." text
+  - Error display for validation/version conflict messages
+- **Integration:** `TeamDashboard.tsx` enhanced with:
+  - Pencil icon (✏️) button next to team name heading
+  - State variables: `isEditingName`, `editingValue`, `originalName`, `currentVersion`, `isSaving`, `editError`
+  - Event handlers: `handleEditStart`, `handleEditCancel`, `handleEditSave`
+  - Conditional rendering: Shows TeamNameEditor when `isEditingName === true`
+  - Version tracking: Stores current team version for optimistic locking
+  - Error handling: Catches and displays version conflicts and duplicate name errors
+  - User feedback: Clear error messages for all failure scenarios
+- **API Client:** `updateTeamName()` in `teamsApi.ts`
+  - Parameters: `teamId`, `newName`, `currentVersion`
+  - Sends: `PATCH /api/v1/teams/:teamId` with `{ name, version }` body
+  - Returns: `{ id, name, version, updatedAt }`
+  - Throws ApiError with error codes: `version_mismatch`, `duplicate_team_name`, `validation_error`
+  - Uses `requestWithRefresh` for automatic token refresh
+- **State Management:** `teamsSlice.ts` (Zustand)
+  - Updated Team interface with optional `version?: number` field
+  - `updateTeamName()` action calls API and updates team in state
+- **Testing:**
+  - `TeamNameEditor.test.tsx`: 12 test cases
+    - Rendering with current value and character counter
+    - onChange callback firing with new values
+    - Save button enabled/disabled logic based on name validity
+    - Cancel button click handler
+    - Enter/Escape keyboard shortcuts
+    - Saving state (buttons disabled, "Saving..." indicator)
+    - Client-side truncation to 50 characters
+    - Error message display
+  - Uses vitest and React Testing Library
+  - All tests passing
+
+**Acceptance Criteria Met:**
+- ✅ Pencil icon appears next to team name in TeamDashboard
+- ✅ Clicking pencil opens inline text editor
+- ✅ Character counter shows current/max (0/50)
+- ✅ Save button (green) enabled only for valid names (3-50 chars, different from original)
+- ✅ Cancel button (red) always enabled
+- ✅ Enter key saves (if valid), Escape key cancels
+- ✅ Backend validates name length and uniqueness
+- ✅ Optimistic locking prevents concurrent edit conflicts (version field)
+- ✅ 409 Conflict response on version mismatch with user-friendly UI message
+- ✅ Transactional event logging (team.name_updated) for audit trail
+
+**Files Created/Modified:**
+
+**Backend:**
+- `server/src/services/teams.service.ts` - Added `updateTeamName()` function (46 lines)
+- `server/src/controllers/teams.controller.ts` - Added `updateTeam()` handler and `updateTeamSchema`
+- `server/src/routes/teams.routes.ts` - Added `PATCH /:teamId` route
+- `server/prisma/schema.prisma` - Added `version Int @default(1)` to Team model
+- `server/prisma/migrations/20260123110633_add_team_version_for_optimistic_locking/migration.sql` - Migration file
+
+**Frontend:**
+- `client/src/features/teams/components/TeamNameEditor.tsx` - New component (82 lines)
+- `client/src/features/teams/components/TeamDashboard.tsx` - Updated with inline editing state/handlers
+- `client/src/features/teams/api/teamsApi.ts` - Added `updateTeamName()` function
+- `client/src/features/teams/types/team.types.ts` - Added `version?: number` to Team interface
+- `client/src/features/teams/components/TeamNameEditor.test.tsx` - New test suite (12 tests)
+
+**Documentation:**
+- `docs/04-database.md` - Added version column to Team table documentation
+- `docs/05-backend-api.md` - Added PATCH /api/v1/teams/:teamId endpoint documentation
+- `docs/06-frontend.md` - Added TeamNameEditor component documentation
+- `docs/09-changelog.md` - Story completion entry
+
+**Architecture Decisions:**
+- **Optimistic Locking Pattern:** Version field on Team model allows clients to detect concurrent modifications without pessimistic database locks, improving performance for teams with multiple active editors
+- **Transactional Events:** Event logging happens atomically with data update via `prisma.$transaction()`, ensuring no lost events if write fails and maintaining audit trail consistency
+- **Error Differentiation:** Separate error codes for validation (400), not found (404), and conflict (409) errors enable precise client-side error handling and user messaging
+- **Client-Side Validation:** Character counter and input truncation improve UX by providing immediate feedback before network request
+- **Memoization:** Character count calculation memoized to prevent unnecessary re-renders during rapid user input
+
+---
+
 ### Story 2-3: Add Selected Practices to Team Portfolio
 
 **Status:** ✅ COMPLETE  
@@ -650,6 +784,116 @@ Last Updated: January 22, 2026
 - Better responsiveness across device sizes (3/2/1 column fallback)
 - Enhanced accessibility for keyboard and screen reader users
 - Improved drill-down context without leaving main coverage view
+
+---
+
+### Story 2-1-2: Move Members & Invitations to Dedicated "Members" Page
+
+**Status:** ✅ COMPLETE  
+**Date:** January 23, 2026  
+**Developer:** Nicolas
+
+**What Was Built:**
+
+**Frontend:**
+
+**Components:**
+- `TeamMembersView.tsx` (pages): Main members management page
+  - 3-column layout: Members (2/3) | Invite panel (1/3 sticky sidebar)
+  - Loads members and pending invites on mount
+  - Logs `members_page.viewed` event
+  - Back button to team dashboard
+
+- `MembersList.tsx`: Table of current team members
+  - Columns: Name, Email, Join Date, [Remove] button
+  - Formatted dates: "Jan 1, 2025"
+  - Removal confirmation dialog with member name
+  - Calls `removeMember` API on confirm
+  - Updates members list on success
+  - Shows error toast on failure
+
+- `InvitePanel.tsx`: Email invite form (sticky)
+  - Email input with client-side validation
+  - Required + valid email format checks
+  - [Send Invite] button (disabled until valid)
+  - Shows success/error toast notifications
+  - Auto-clears form on success
+  - Integrates with `useInvitesStore`
+
+- `PendingInvitesList.tsx`: Pending/failed invitations
+  - Table with: Email, Status badge, Sent date, [Retry] button
+  - Status colors: Yellow (Pending), Red (Failed)
+  - Retry button only for failed invites
+  - Updates status on retry
+  - Shows error toast on retry failure
+
+**State Management:**
+- `membersSlice.ts` (Zustand):
+  - State: `members`, `isLoading`, `isRemoving`, `error`
+  - Actions: `fetchMembers`, `removeTeamMember`, `reset`
+  - Error handling with proper messages
+
+- `invitesSlice.ts` (Zustand):
+  - State: `invites`, `isLoading`, `isCreating`, `isResending`, `error`
+  - Actions: `fetchInvites`, `createNewInvite`, `resendInviteEmail`, `reset`
+  - Error handling with proper messages
+
+**API Integration:**
+- Uses existing `membersApi.ts`:
+  - `getMembers(teamId)` → `TeamMemberSummary[]`
+  - `removeMember(teamId, userId)` → `boolean`
+
+- Uses existing `invitesApi.ts`:
+  - `getInvites(teamId)` → `TeamInvite[]`
+  - `createInvite(teamId, email)` → `TeamInvite`
+  - `resendInvite(teamId, inviteId)` → `TeamInvite`
+
+**Routes:**
+- Added `/teams/:teamId/members` route in `App.tsx`
+- Added "Members" button in `TeamDashboard` header
+- Removed `MembersSidebar` from dashboard (was in right column)
+- Updated grid layout: 3fr (practices) | 1fr (coverage) [was 3/1/1 before]
+
+**Testing:**
+- `TeamMembersView.test.tsx`: Page rendering, data loading, member removal
+- `MembersList.test.tsx`: Rendering, remove dialog, confirmation flow, error handling
+- `InvitePanel.test.tsx`: Email validation, form submission, success/error toasts
+- `PendingInvitesList.test.tsx`: Display, status badges, retry logic, empty states
+
+- `membersSlice.test.ts`: Fetch, remove, error handling, state updates
+- `invitesSlice.test.ts`: Fetch, create, resend, error handling, state updates
+
+**All Tests Passing:** ✅ 60+ tests (components + state + integration)
+
+**Documentation Updated:**
+- `docs/06-frontend.md`: Added comprehensive Team Members Management section with component details, state management, API integration, analytics, layout changes, and testing notes
+- Routes table updated with new `/teams/:teamId/members` route
+- `docs/09-changelog.md`: Added Story 2-1-2 entry
+
+**Technical Decisions:**
+- Used sticky sidebar for invite form (better UX for large member lists)
+- 3-column grid for better balance (members get more space than sidebar)
+- Confirmation dialogs for destructive operations (remove member)
+- Real-time list updates (no page refresh needed)
+- Reused existing API and Zustand patterns from Epic 1
+- Email validation via regex (standard pattern `^[^\s@]+@[^\s@]+\.[^\s@]+$`)
+- Toast notifications for user feedback (3-second duration)
+- Organized by member/invite list → easier to navigate and manage
+
+**UX Improvements:**
+- Dedicated page for team management (dashboard less cluttered)
+- Sticky invite panel (always visible while scrolling members)
+- Clear confirmation dialogs (prevent accidental removals)
+- Real-time status updates (pending → accepted or failed → pending after retry)
+- Accessible table layout with proper ARIA labels
+- Keyboard navigation support (Tab, Enter, Space)
+
+**Analytics Events:**
+- `members_page.viewed`: Logged on page load
+
+**Next Steps:**
+- Story 2-1-3: Advanced member permissions/roles
+- Story 2-2: Enhanced search and filtering for large teams
 
 ---
 

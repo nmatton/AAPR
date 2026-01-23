@@ -4,6 +4,7 @@
 export interface Team {
   id: number;
   name: string;
+  version?: number; // Optimistic locking version
   memberCount: number;
   practiceCount: number;
   coverage: number; // 0-100

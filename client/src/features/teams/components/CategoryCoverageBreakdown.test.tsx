@@ -175,8 +175,9 @@ describe('CategoryCoverageBreakdown', () => {
     expect(screen.queryByText('Communication')).not.toBeInTheDocument()
     
     // Test Space key
-    await user.keyboard('{Space}')
-    expect(screen.getByText('Communication')).toBeInTheDocument()
+    valuesButton.focus()
+    await user.keyboard(' ')
+    expect(await screen.findByText('Communication')).toBeInTheDocument()
   })
 
   it('shows covered and gap pillars separately', () => {
