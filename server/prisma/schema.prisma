@@ -247,6 +247,7 @@ model Practice {
   benefits             Json?
   
   /// Associated practices (relationships)
+  /// @deprecated Use PracticeAssociation model instead (relational table)
   associatedPractices  Json?     @map("associated_practices")
   
   /// Is this a global practice (available to all teams)
@@ -280,9 +281,11 @@ model Practice {
   updatedAt            DateTime  @updatedAt @map("updated_at")
   
   // Relationships
-  category         Category         @relation(fields: [categoryId], references: [id])
-  teamPractices    TeamPractice[]
-  practicePillars  PracticePillar[]
+  category             Category             @relation(fields: [categoryId], references: [id])
+  teamPractices        TeamPractice[]
+  practicePillars      PracticePillar[]
+  sourceAssociations   PracticeAssociation[] @relation("source_associations")
+  targetAssociations   PracticeAssociation[] @relation("target_associations")
   
   @@unique([title, categoryId], map: "uq_practices_title_category")
   @@index([categoryId], map: "idx_practices_category")
@@ -291,6 +294,38 @@ model Practice {
   @@index([isGlobal], map: "idx_practices_is_global")
   @@index([method], map: "idx_practices_method")
   @@map("practices")
+}
+
+/// PracticeAssociation entity - relational model for practice relationships
+/// Isolation: Associations are global (linked to global practices)
+/// Replaces: Practice.associatedPractices JSON field (deprecated)
+model PracticeAssociation {
+  /// Auto-incrementing association identifier
+  id                 Int      @id @default(autoincrement())
+  
+  /// Source practice identifier (the practice being described)
+  sourcePracticeId   Int      @map("source_practice_id")
+  
+  /// Target practice identifier (the related practice)
+  targetPracticeId   Int      @map("target_practice_id")
+  
+  /// Association type (Configuration, Equivalence, Dependency, Complementarity, Exclusion)
+  associationType    String   @map("association_type") @db.VarChar(50)
+  
+  /// Association creation timestamp
+  createdAt          DateTime @default(now()) @map("created_at")
+  
+  /// Last update timestamp
+  updatedAt          DateTime @updatedAt @map("updated_at")
+  
+  // Relationships
+  sourcePractice     Practice @relation("source_associations", fields: [sourcePracticeId], references: [id], onDelete: Cascade)
+  targetPractice     Practice @relation("target_associations", fields: [targetPracticeId], references: [id], onDelete: Cascade)
+  
+  @@unique([sourcePracticeId, targetPracticeId, associationType], map: "uq_practice_associations_source_target_type")
+  @@index([sourcePracticeId], map: "idx_practice_associations_source")
+  @@index([targetPracticeId], map: "idx_practice_associations_target")
+  @@map("practice_associations")
 }
 
 /// TeamPractice entity - links teams to practices they use
