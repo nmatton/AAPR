@@ -192,3 +192,30 @@ export const logCatalogSearched = async (params: {
     console.warn('catalog.searched event logging failed', error)
   }
 }
+
+export const logPracticeDetailViewed = async (params: {
+  teamId: number | null
+  practiceId: number
+  timestamp: string
+}): Promise<void> => {
+  // Best-effort client-side event logging
+  try {
+    await fetch(`${API_BASE_URL}/api/v1/events`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Request-Id': generateRequestId()
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        action: 'practice.detail_viewed',
+        teamId: params.teamId,
+        practiceId: params.practiceId,
+        timestamp: params.timestamp
+      })
+    })
+  } catch (error) {
+    console.warn('practice.detail_viewed event logging failed', error)
+  }
+}
+

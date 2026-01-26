@@ -57,8 +57,8 @@ vi.mock('./CoverageSidebar', () => ({
   CoverageSidebar: () => <div>Coverage Sidebar</div>
 }));
 
-vi.mock('./PracticeDetailSidebar', () => ({
-  PracticeDetailSidebar: () => <div />
+vi.mock('../../practices/components/PracticeDetailSidebar', () => ({
+  PracticeDetailSidebar: () => <div data-testid="practice-sidebar" />
 }));
 
 describe('TeamDashboard', () => {

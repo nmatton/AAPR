@@ -66,9 +66,9 @@ export const TeamMembersPanel = ({ teamId }: TeamMembersPanelProps) => {
         prev.map((member) =>
           member.id === inviteId
             ? {
-                ...member,
-                inviteStatus: updated.status
-              }
+              ...member,
+              inviteStatus: updated.status
+            }
             : member
         )
       )
@@ -110,9 +110,8 @@ export const TeamMembersPanel = ({ teamId }: TeamMembersPanelProps) => {
       {toast && (
         <div
           role="status"
-          className={`rounded-md px-4 py-2 text-sm ${
-            toast.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
-          }`}
+          className={`rounded-md px-4 py-2 text-sm ${toast.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
+            }`}
         >
           {toast.message}
         </div>
@@ -128,20 +127,30 @@ export const TeamMembersPanel = ({ teamId }: TeamMembersPanelProps) => {
         {members.map((member) => (
           <li
             key={`${member.inviteStatus}-${member.id}`}
-            className="flex flex-col gap-2 rounded-md border border-gray-200 p-3 sm:flex-row sm:items-center sm:justify-between"
-          >
-            <button
-              type="button"
-              onClick={() => {
+            onClick={() => {
+              if (member.inviteStatus === 'Added') {
+                navigate(`/teams/${teamId}/members/${member.id}`)
+              }
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
                 if (member.inviteStatus === 'Added') {
+                  e.preventDefault()
                   navigate(`/teams/${teamId}/members/${member.id}`)
                 }
-              }}
-              className="text-left"
-            >
-              <p className="text-sm font-medium text-gray-800">{member.name}</p>
+              }
+            }}
+            role={member.inviteStatus === 'Added' ? 'button' : undefined}
+            tabIndex={member.inviteStatus === 'Added' ? 0 : undefined}
+            className={`flex flex-col gap-2 rounded-md border border-gray-200 p-3 sm:flex-row sm:items-center sm:justify-between transition-shadow ${member.inviteStatus === 'Added' ? 'hover:shadow-md cursor-pointer group focus:outline-none focus:ring-2 focus:ring-blue-500' : ''
+              }`}
+          >
+            <div className="text-left">
+              <p className={`text-sm font-medium text-gray-800 ${member.inviteStatus === 'Added' ? 'group-hover:text-blue-700 transition-colors' : ''}`}>
+                {member.name}
+              </p>
               <p className="text-xs text-gray-500">{member.email}</p>
-            </button>
+            </div>
 
             <div className="flex flex-wrap items-center gap-3">
               {member.inviteStatus === 'Pending' ? (
@@ -149,11 +158,11 @@ export const TeamMembersPanel = ({ teamId }: TeamMembersPanelProps) => {
                   className="relative"
                   onMouseEnter={() => setHoveredMemberId(member.id)}
                   onMouseLeave={() => setHoveredMemberId(null)}
+                  onClick={(e) => e.stopPropagation()}
                 >
                   <span
-                    className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                      statusStyles[member.inviteStatus]
-                    }`}
+                    className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusStyles[member.inviteStatus]
+                      }`}
                   >
                     {member.inviteStatus}
                   </span>
@@ -162,7 +171,10 @@ export const TeamMembersPanel = ({ teamId }: TeamMembersPanelProps) => {
                       <p className="mb-2 font-medium">Awaiting signup</p>
                       <button
                         type="button"
-                        onClick={() => handleResend(member.id)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleResend(member.id)
+                        }}
                         className="text-blue-600 hover:text-blue-700"
                       >
                         Resend Invite
@@ -172,9 +184,8 @@ export const TeamMembersPanel = ({ teamId }: TeamMembersPanelProps) => {
                 </div>
               ) : (
                 <span
-                  className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
-                    statusStyles[member.inviteStatus]
-                  }`}
+                  className={`rounded-full px-2.5 py-1 text-xs font-semibold ${statusStyles[member.inviteStatus]
+                    }`}
                 >
                   {member.inviteStatus}
                 </span>
@@ -183,7 +194,10 @@ export const TeamMembersPanel = ({ teamId }: TeamMembersPanelProps) => {
               {member.inviteStatus === 'Failed' && (
                 <button
                   type="button"
-                  onClick={() => handleResend(member.id)}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleResend(member.id)
+                  }}
                   className="text-sm font-medium text-blue-600 hover:text-blue-700"
                 >
                   Retry
@@ -193,8 +207,11 @@ export const TeamMembersPanel = ({ teamId }: TeamMembersPanelProps) => {
               {member.inviteStatus === 'Added' && (
                 <button
                   type="button"
-                  onClick={() => setRemoveTarget(member)}
-                  className="text-sm font-medium text-red-600 hover:text-red-700"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setRemoveTarget(member)
+                  }}
+                  className="relative z-10 text-sm font-medium text-red-600 hover:text-red-700"
                 >
                   Remove
                 </button>

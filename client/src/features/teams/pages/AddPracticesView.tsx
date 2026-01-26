@@ -4,7 +4,7 @@ import { useTeamsStore } from '../state/teamsSlice';
 import { useAddPracticesStore } from '../state/addPracticesSlice';
 import { PracticeCard } from '../../practices/components/PracticeCard';
 import { PillarFilterDropdown } from '../../practices/components/PillarFilterDropdown';
-import { PracticeCatalogDetail } from '../../practices/components/PracticeCatalogDetail';
+import { PracticeDetailSidebar } from '../../practices/components/PracticeDetailSidebar';
 import type { Practice } from '../types/practice.types';
 
 export const AddPracticesView = () => {
@@ -12,18 +12,18 @@ export const AddPracticesView = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const categoryFilter = searchParams.get('category');
-  
+
   const { teams, fetchTeams } = useTeamsStore();
-  const { 
-    practices, 
-    isLoading, 
-    error, 
-    total, 
-    page, 
+  const {
+    practices,
+    isLoading,
+    error,
+    total,
+    page,
     pageSize,
     searchQuery,
     selectedPillars,
-    loadAvailablePractices, 
+    loadAvailablePractices,
     addPractice,
     setSearchQuery,
     togglePillar,
@@ -79,10 +79,10 @@ export const AddPracticesView = () => {
       setIsAddingPracticeId(practice.id);
       await addPractice(numericTeamId, practice.id);
       setSuccessMessage(`"${practice.title}" added to team portfolio`);
-      
+
       // Refresh teams to update coverage stats
       await fetchTeams();
-      
+
       // Clear success message after 3 seconds (store timeout ID for cleanup)
       const timeoutId = window.setTimeout(() => setSuccessMessage(null), 3000);
       setSuccessTimeoutId(timeoutId);
@@ -265,8 +265,8 @@ export const AddPracticesView = () => {
               {categoryFilter ? 'No practices found in this category' : 'All practices already selected'}
             </p>
             <p className="text-gray-500 mb-4">
-              {categoryFilter 
-                ? 'Your team has already added all available practices from this category' 
+              {categoryFilter
+                ? 'Your team has already added all available practices from this category'
                 : 'Your team has already added all available practices'}
             </p>
             <button
@@ -314,13 +314,13 @@ export const AddPracticesView = () => {
           </>
         )}
         {currentDetail && (
-          <PracticeCatalogDetail
-            practice={currentDetail}
+          <PracticeDetailSidebar
+            isOpen={!!currentDetail}
+            practiceId={currentDetail.id}
             onClose={() => setCurrentDetail(null)}
-            actionLabel="Add to team"
-            onAction={() => handleAddPractice(currentDetail)}
-            actionDisabled={isAddingPracticeId === currentDetail.id}
-            actionLoading={isAddingPracticeId === currentDetail.id}
+            teamId={numericTeamId}
+            isPracticeInTeam={false}
+            onAddToTeam={() => handleAddPractice(currentDetail)}
           />
         )}
       </div>

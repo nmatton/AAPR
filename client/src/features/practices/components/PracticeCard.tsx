@@ -85,12 +85,12 @@ export const PracticeCard = ({
           onSelect(practice)
         }
       }}
-      className="w-full text-left p-4 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-blue-500"
+      className="w-full text-left p-4 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer group"
     >
       <div className="flex items-start justify-between gap-3">
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-2">
-            <h3 className="text-lg font-semibold text-gray-900">
+            <h3 className="text-lg font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">
               {renderHighlightedText(practice.title, highlightQuery)}
             </h3>
             <span className={`text-xs px-2 py-1 rounded-full border ${getCategoryClass(practice.categoryId)}`}>

@@ -5,7 +5,7 @@ import { PracticeCard } from '../components/PracticeCard'
 import { PracticeCardSkeleton } from '../components/PracticeCardSkeleton'
 import { PracticeEmptyState } from '../components/PracticeEmptyState'
 import { PracticeErrorState } from '../components/PracticeErrorState'
-import { PracticeCatalogDetail } from '../components/PracticeCatalogDetail'
+import { PracticeDetailSidebar } from '../components/PracticeDetailSidebar'
 import { PillarFilterDropdown } from '../components/PillarFilterDropdown'
 import { CategoryFilter } from '../components/CategoryFilter'
 import { MethodFilter } from '../components/MethodFilter'
@@ -286,9 +286,11 @@ export const PracticeCatalog = () => {
             </div>
 
             {currentDetail && (
-              <PracticeCatalogDetail
-                practice={currentDetail}
+              <PracticeDetailSidebar
+                isOpen={!!currentDetail}
+                practiceId={currentDetail.id}
                 onClose={() => setCurrentDetail(null)}
+                teamId={teamId || undefined}
                 onEdit={canEdit ? () => setPracticeToEdit(currentDetail) : undefined}
               />
             )}

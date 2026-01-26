@@ -2,11 +2,15 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTeamsStore } from '../state/teamsSlice';
 import { useCoverageStore } from '../state/coverageSlice';
+import { useManagePracticesStore } from '../state/managePracticesSlice';
 import { updateTeamName as updateTeamNameApi } from '../api/teamsApi';
 import { TeamPracticesPanel } from './TeamPracticesPanel';
 import { CoverageSidebar } from './CoverageSidebar';
-import { PracticeDetailSidebar } from './PracticeDetailSidebar';
+import { PracticeDetailSidebar } from '../../practices/components/PracticeDetailSidebar';
 import { TeamNameEditor } from './TeamNameEditor';
+import { PracticeEditForm } from './PracticeEditForm';
+import { RemovePracticeModal } from './RemovePracticeModal';
+import type { Practice } from '../../practices/types';
 
 export const TeamDashboard = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -14,8 +18,10 @@ export const TeamDashboard = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const { teams, isLoading, fetchTeams, error } = useTeamsStore();
   const { fetchCoverage } = useCoverageStore();
+  const { removePractice } = useManagePracticesStore();
+
   const openPracticeId = searchParams.get('practiceId') ? Number(searchParams.get('practiceId')) : null;
-  
+
   // Team name editing state
   const [isEditingName, setIsEditingName] = useState(false);
   const [editingValue, setEditingValue] = useState('');
@@ -24,6 +30,11 @@ export const TeamDashboard = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Practice actions state
+  const [practiceToEdit, setPracticeToEdit] = useState<Practice | null>(null);
+  const [practiceToRemove, setPracticeToRemove] = useState<number | null>(null);
+  const [isRemoving, setIsRemoving] = useState(false);
 
   useEffect(() => {
     if (teams.length === 0) {
@@ -35,7 +46,7 @@ export const TeamDashboard = () => {
     const id = Number(teamId);
     return teams.find((team) => team.id === id);
   }, [teamId, teams]);
-  
+
   // Update local state when selected team changes
   useEffect(() => {
     if (selectedTeam) {
@@ -65,7 +76,7 @@ export const TeamDashboard = () => {
       fetchCoverage(selectedTeam.id);
     }
   }, [fetchCoverage, selectedTeam]);
-  
+
   const handleEditStart = useCallback(() => {
     setIsEditingName(true);
     setEditingValue(originalName);
@@ -80,9 +91,9 @@ export const TeamDashboard = () => {
 
   const handleEditSave = useCallback(async () => {
     if (!teamId) return;
-    
+
     const trimmedName = editingValue.trim();
-    
+
     // Basic validation
     if (!trimmedName) {
       setEditError('Team name cannot be empty');
@@ -101,16 +112,16 @@ export const TeamDashboard = () => {
 
     setIsSaving(true);
     setEditError(null);
-    
+
     try {
       const response = await updateTeamNameApi(parseInt(teamId), trimmedName, currentVersion);
-      
+
       // Update local state
       setOriginalName(response.name);
       setCurrentVersion(response.version);
       setIsEditingName(false);
       setToastMessage('Team name updated');
-      
+
       // Refresh team list to update in store
       await fetchTeams();
     } catch (error: any) {
@@ -130,6 +141,44 @@ export const TeamDashboard = () => {
       setIsSaving(false);
     }
   }, [teamId, editingValue, originalName, currentVersion, fetchTeams]);
+
+  // Handle Practice Actions
+  const handleRemoveClick = (practiceId: number) => {
+    setPracticeToRemove(practiceId);
+  };
+
+  const handleRemoveConfirm = async () => {
+    if (!practiceToRemove || !selectedTeam) return;
+    try {
+      setIsRemoving(true);
+      await removePractice(selectedTeam.id, practiceToRemove);
+      setToastMessage('Practice removed from team');
+      setPracticeToRemove(null);
+      setSearchParams({}); // Close sidebar if open
+      refreshCoverage();
+    } catch (err) {
+      console.error('Failed to remove practice', err);
+      setToastMessage('Failed to remove practice');
+    } finally {
+      setIsRemoving(false);
+    }
+  };
+
+  const handleEditClick = (practice: Practice) => {
+    // Need to ensure practice has all detailed fields. 
+    // The sidebar passes a "DetailedPractice", but we need to match what PracticeEditForm expects.
+    // Casting for now as DetailedPractice is superset of Practice
+    setPracticeToEdit(practice);
+  };
+
+  const handlePracticeSaved = async (result: { practiceId?: number; practice?: any }) => {
+    setToastMessage('Practice updated successfully');
+    await refreshCoverage();
+    // Refresh sidebar if open (re-fetching detail handled by sidebar component if we close/reopen or force update, 
+    // but React query/SWR would be better. For now, closing sidebar or just relying on internal update)
+    // Actually, sidebar refetches on open. If we keep it open, we might see old data unless we trigger update.
+    // For simplicity, let's keep it open but maybe we need a way to reload.
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -239,11 +288,42 @@ export const TeamDashboard = () => {
           </div>
         )}
       </div>
+
       {/* Practice detail overlay */}
       <PracticeDetailSidebar
+        isOpen={!!openPracticeId}
         practiceId={openPracticeId}
         onClose={() => setSearchParams({})}
+        teamId={Number(teamId)}
+        isPracticeInTeam={true} // In Dashboard, we are looking at team practices
+        onRemoveFromTeam={(id) => handleRemoveClick(id)}
+        onEdit={(practice) => handleEditClick(practice)}
       />
+
+      {/* Edit Form Modal */}
+      {practiceToEdit && selectedTeam && (
+        <PracticeEditForm
+          teamId={selectedTeam.id}
+          practice={practiceToEdit as any}
+          onClose={() => setPracticeToEdit(null)}
+          onSaved={handlePracticeSaved}
+          onRefreshRequested={async () => {
+            // Return null or implement refresh logic if needed
+            return null;
+          }}
+        />
+      )}
+
+      {/* Remove Confirmation Modal */}
+      {practiceToRemove && selectedTeam && (
+        <RemovePracticeModal
+          practice={{ id: practiceToRemove, title: 'Practice' } as any} // Mock minimal practice object for modal
+          teamId={selectedTeam.id}
+          onConfirm={handleRemoveConfirm}
+          onCancel={() => setPracticeToRemove(null)}
+          isRemoving={isRemoving}
+        />
+      )}
     </div>
   );
 };

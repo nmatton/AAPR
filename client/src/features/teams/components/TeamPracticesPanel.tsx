@@ -147,18 +147,22 @@ export const TeamPracticesPanel = ({ teamId, onPracticeRemoved, onPracticeClick,
           {practices.map((practice) => (
             <li
               key={practice.id}
-              className="rounded-lg border border-gray-200 p-4 shadow-sm"
+              onClick={() => onPracticeClick?.(practice.id)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  onPracticeClick?.(practice.id)
+                }
+              }}
+              role="button"
+              tabIndex={0}
+              className="rounded-lg border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer group focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div>
-                  <button
-                    type="button"
-                    className="text-left"
-                    onClick={() => onPracticeClick?.(practice.id)}
-                    aria-label={`Open details for ${practice.title}`}
-                  >
-                    <h4 className="text-base font-semibold text-gray-800 hover:text-blue-700">{practice.title}</h4>
-                  </button>
+                  <h4 className="text-base font-semibold text-gray-800 group-hover:text-blue-700 transition-colors">
+                    {practice.title}
+                  </h4>
                   <p className="mt-1 text-sm text-gray-600">{practice.goal}</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {practice.pillars.map((pillar) => (
@@ -173,15 +177,21 @@ export const TeamPracticesPanel = ({ teamId, onPracticeRemoved, onPracticeClick,
                   <div className="mt-3 flex gap-2">
                     <button
                       type="button"
-                      onClick={() => onEditClick?.(practice)}
-                      className="rounded-md border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onEditClick?.(practice)
+                      }}
+                      className="relative z-10 rounded-md border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50"
                     >
                       Edit
                     </button>
                     <button
                       type="button"
-                      onClick={() => setRemoveTarget(practice)}
-                      className="rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setRemoveTarget(practice)
+                      }}
+                      className="relative z-10 rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-600 hover:bg-red-50"
                     >
                       Remove
                     </button>

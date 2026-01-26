@@ -5,7 +5,7 @@ import { useAddPracticesStore } from '../state/addPracticesSlice';
 import { useManagePracticesStore } from '../state/managePracticesSlice';
 import { PracticeCard } from '../../practices/components/PracticeCard';
 import { PillarFilterDropdown } from '../../practices/components/PillarFilterDropdown';
-import { PracticeCatalogDetail } from '../../practices/components/PracticeCatalogDetail';
+import { PracticeDetailSidebar } from '../../practices/components/PracticeDetailSidebar';
 import { RemovePracticeModal } from '../components/RemovePracticeModal';
 import { CreatePracticeModal } from '../components/CreatePracticeModal';
 import { PracticeEditForm } from '../components/PracticeEditForm';
@@ -18,15 +18,15 @@ export const ManagePracticesView = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { teams, fetchTeams } = useTeamsStore();
-  const { 
-    practices: availablePractices, 
-    isLoading: isLoadingAvailable, 
-    error: availableError, 
-    total: availableTotal, 
-    page, 
+  const {
+    practices: availablePractices,
+    isLoading: isLoadingAvailable,
+    error: availableError,
+    total: availableTotal,
+    page,
     searchQuery,
     selectedPillars,
-    loadAvailablePractices, 
+    loadAvailablePractices,
     addPractice,
     setSearchQuery,
     togglePillar,
@@ -118,10 +118,10 @@ export const ManagePracticesView = () => {
       setIsAddingPracticeId(practice.id);
       await addPractice(numericTeamId, practice.id);
       showSuccessMessage(`"${practice.title}" added to team portfolio`);
-      
+
       // Refresh teams to update coverage stats
       await fetchTeams();
-      
+
       // If we're on selected tab, refresh that list too
       if (activeTab === 'selected') {
         await loadTeamPractices(numericTeamId);
@@ -145,10 +145,10 @@ export const ManagePracticesView = () => {
       const result = await removePractice(numericTeamId, practiceToRemove.id);
       showSuccessMessage(`"${practiceToRemove.title}" removed from team portfolio`);
       setGapPillarSuggestions(result.gapPillarNames);
-      
+
       // Refresh teams to update coverage stats
       await fetchTeams();
-      
+
       // Close modal
       setPracticeToRemove(null);
     } catch (error) {
@@ -310,21 +310,19 @@ export const ManagePracticesView = () => {
           <nav className="-mb-px flex space-x-8">
             <button
               onClick={() => setActiveTab('available')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === 'available'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'available'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
             >
               Available Practices
             </button>
             <button
               onClick={() => setActiveTab('selected')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
-                activeTab === 'selected'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
+              className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${activeTab === 'selected'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
             >
               Selected Practices ({teamPractices.length})
             </button>
@@ -506,13 +504,14 @@ export const ManagePracticesView = () => {
 
         {/* Practice detail modal */}
         {currentDetail && (
-          <PracticeCatalogDetail
-            practice={currentDetail}
+          <PracticeDetailSidebar
+            isOpen={!!currentDetail}
+            practiceId={currentDetail.id}
             onClose={() => setCurrentDetail(null)}
-            actionLabel={activeTab === 'available' ? 'Add to team' : 'Remove'}
-            onAction={() => activeTab === 'available' ? handleAddPractice(currentDetail) : handleRemoveClick(currentDetail)}
-            actionDisabled={isAddingPracticeId === currentDetail.id}
-            actionLoading={isAddingPracticeId === currentDetail.id}
+            teamId={numericTeamId}
+            isPracticeInTeam={activeTab === 'selected'}
+            onAddToTeam={() => handleAddPractice(currentDetail)}
+            onRemoveFromTeam={() => handleRemoveClick(currentDetail)}
             onEdit={() => handleEditPractice(currentDetail)}
           />
         )}
