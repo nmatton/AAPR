@@ -1,7 +1,7 @@
 # Story 2.1.3: Team Name Inline Editing with Pencil Icon
 
 **Epic:** 2.1 - Team Dashboard & Catalog UX Refinement + Database Normalization  
-**Status:** READY FOR DEVELOPMENT  
+**Status:** done  
 **Sequence:** 3rd story (after 2-1-1: Redesign, 2-1-2: Members Page)  
 **Date Created:** January 23, 2026
 

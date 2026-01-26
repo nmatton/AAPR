@@ -1,6 +1,6 @@
 # Story 2.1.4: Catalog - Create New Practice with Full Editor
 
-Status: review
+Status: done
 
 ## Story
 

@@ -14,45 +14,10 @@ import { useAuthStore } from './features/auth/state/authSlice'
 import { getCurrentUser } from './features/auth/api/authApi'
 import { TeamsList } from './features/teams/components/TeamsList'
 import { PracticeCatalog } from './features/practices/pages/PracticeCatalog'
+import { AuthenticatedLayout } from './components/ui/AuthenticatedLayout'
 
 const TeamsPage = () => {
-  const navigate = useNavigate()
-  const { logout, isLoading } = useAuthStore()
-
-  const handleLogout = async () => {
-    await logout()
-    navigate('/login')
-  }
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-           <h1 className="text-xl font-semibold text-gray-900">AAPR</h1>
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => navigate('/practices')}
-              className="text-sm font-medium text-blue-600 hover:text-blue-800"
-            >
-              Practice Catalog
-            </button>
-            <button
-              type="button"
-              onClick={handleLogout}
-              disabled={isLoading}
-              className="text-sm font-medium text-indigo-600 hover:text-indigo-800"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      </header>
-      <main>
-        <TeamsList />
-      </main>
-    </div>
-  )
+  return <TeamsList />
 }
 
 const AppRoutes = () => {
@@ -114,7 +79,9 @@ const AppRoutes = () => {
         path="/teams"
         element={
           <ProtectedRoute>
+            <AuthenticatedLayout>
               <TeamsPage />
+            </AuthenticatedLayout>
           </ProtectedRoute>
         }
       />
@@ -122,66 +89,82 @@ const AppRoutes = () => {
         path="/practices"
         element={
           <ProtectedRoute>
-            <PracticeCatalog />
+            <AuthenticatedLayout>
+              <PracticeCatalog />
+            </AuthenticatedLayout>
           </ProtectedRoute>
         }
       />
-        <Route
-          path="/teams/create"
-          element={
-            <ProtectedRoute>
+      <Route
+        path="/teams/create"
+        element={
+          <ProtectedRoute>
+            <AuthenticatedLayout>
               <CreateTeamForm />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/teams/:teamId"
-          element={
-            <ProtectedRoute>
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/teams/:teamId"
+        element={
+          <ProtectedRoute>
+            <AuthenticatedLayout>
               <TeamDashboard />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/teams/:teamId/members"
-          element={
-            <ProtectedRoute>
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/teams/:teamId/members"
+        element={
+          <ProtectedRoute>
+            <AuthenticatedLayout>
               <TeamMembersView />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/teams/:teamId/members/:userId"
-          element={
-            <ProtectedRoute>
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/teams/:teamId/members/:userId"
+        element={
+          <ProtectedRoute>
+            <AuthenticatedLayout>
               <MemberDetailView />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/teams/:teamId/practices/add"
-          element={
-            <ProtectedRoute>
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/teams/:teamId/practices/add"
+        element={
+          <ProtectedRoute>
+            <AuthenticatedLayout>
               <AddPracticesView />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/teams/:teamId/practices/manage"
-          element={
-            <ProtectedRoute>
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/teams/:teamId/practices/manage"
+        element={
+          <ProtectedRoute>
+            <AuthenticatedLayout>
               <ManagePracticesView />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/teams/:teamId/coverage"
-          element={
-            <ProtectedRoute>
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/teams/:teamId/coverage"
+        element={
+          <ProtectedRoute>
+            <AuthenticatedLayout>
               <CoverageDetailsView />
-            </ProtectedRoute>
-          }
-        />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
       <Route path="/" element={<Navigate to="/login" replace />} />
     </Routes>
   )

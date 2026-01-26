@@ -71,11 +71,11 @@ development_status:
   2-1-2-move-members-and-invitations-to-dedicated-members-page: done
   2-1-3-team-name-inline-editing-with-pencil-icon: done
   2-1-4-catalog-create-new-practice-with-full-editor: done
-  2-1-5-catalog-duplicate-existing-practice-as-template: review
+  2-1-5-catalog-duplicate-existing-practice-as-template: done
   2-1-6-catalog-advanced-filtering-tag-method-framework-category: done
   2-1-7-catalog-practice-detail-sidebar-with-complete-information: done
   2-1-8-practice-detail-clickable-pillars-with-popover-context: ready-for-dev
-  2-1-9-catalog-and-header-navigation-persistent-aapr-header-on-all-pages: backlog
+  2-1-9-catalog-and-header-navigation-persistent-aapr-header-on-all-pages: done
   2-1-10-database-schema-create-practice-association-table: backlog
   2-1-11-database-migration-migrate-associated-practices-from-json-to-relational: backlog
   2-1-12-database-cleanup-remove-category-id-from-practices-table: backlog

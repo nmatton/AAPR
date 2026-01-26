@@ -1,6 +1,6 @@
 # Story 2.1.5: Catalog - Duplicate Existing Practice as Template
 
-Status: review
+Status: done
 
 ## Story
 
