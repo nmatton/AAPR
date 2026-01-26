@@ -74,7 +74,7 @@ development_status:
   2-1-5-catalog-duplicate-existing-practice-as-template: review
   2-1-6-catalog-advanced-filtering-tag-method-framework-category: done
   2-1-7-catalog-practice-detail-sidebar-with-complete-information: done
-  2-1-8-practice-detail-clickable-pillars-with-popover-context: backlog
+  2-1-8-practice-detail-clickable-pillars-with-popover-context: ready-for-dev
   2-1-9-catalog-and-header-navigation-persistent-aapr-header-on-all-pages: backlog
   2-1-10-database-schema-create-practice-association-table: backlog
   2-1-11-database-migration-migrate-associated-practices-from-json-to-relational: backlog

@@ -7,6 +7,7 @@ import { updateTeamName as updateTeamNameApi } from '../api/teamsApi';
 import { TeamPracticesPanel } from './TeamPracticesPanel';
 import { CoverageSidebar } from './CoverageSidebar';
 import { PracticeDetailSidebar } from '../../practices/components/PracticeDetailSidebar';
+import { fetchPracticeDetail } from '../../practices/api/practices.api';
 import { TeamNameEditor } from './TeamNameEditor';
 import { PracticeEditForm } from './PracticeEditForm';
 import { RemovePracticeModal } from './RemovePracticeModal';
@@ -180,6 +181,11 @@ export const TeamDashboard = () => {
     // For simplicity, let's keep it open but maybe we need a way to reload.
   };
 
+  const handleNavigateToPractice = async (practiceId: number) => {
+    // Update URL to open the new practice
+    setSearchParams({ practiceId: practiceId.toString() });
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-7xl px-4 py-6">
@@ -298,6 +304,7 @@ export const TeamDashboard = () => {
         isPracticeInTeam={true} // In Dashboard, we are looking at team practices
         onRemoveFromTeam={(id) => handleRemoveClick(id)}
         onEdit={(practice) => handleEditClick(practice)}
+        onNavigateToPractice={handleNavigateToPractice}
       />
 
       {/* Edit Form Modal */}

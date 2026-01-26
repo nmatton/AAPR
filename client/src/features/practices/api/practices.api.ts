@@ -219,3 +219,30 @@ export const logPracticeDetailViewed = async (params: {
   }
 }
 
+export const logPillarDetailViewed = async (params: {
+  teamId: number | null
+  practiceId: number
+  pillarId: number
+  timestamp: string
+}): Promise<void> => {
+  try {
+    await fetch(`${API_BASE_URL}/api/v1/events`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Request-Id': generateRequestId()
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        action: 'pillar.detail_viewed',
+        teamId: params.teamId,
+        practiceId: params.practiceId,
+        pillarId: params.pillarId,
+        timestamp: params.timestamp
+      })
+    })
+  } catch (error) {
+    console.warn('pillar.detail_viewed event logging failed', error)
+  }
+}
+

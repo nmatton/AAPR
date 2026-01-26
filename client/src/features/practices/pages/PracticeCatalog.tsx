@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { usePracticesStore } from '../state/practices.slice'
+import { fetchPracticeDetail } from '../api/practices.api'
 import { PracticeCard } from '../components/PracticeCard'
 import { PracticeCardSkeleton } from '../components/PracticeCardSkeleton'
 import { PracticeEmptyState } from '../components/PracticeEmptyState'
@@ -13,14 +14,9 @@ import { TagFilter } from '../components/TagFilter'
 import { ActiveFilters } from '../components/ActiveFilters'
 import { PracticeEditForm } from '../../teams/components/PracticeEditForm'
 import type { Practice } from '../types'
+import { useAuthStore } from '../../auth/state/authSlice'
 
 const PAGE_SIZE = 100
-
-
-
-
-
-import { useAuthStore } from '../../auth/state/authSlice'
 
 export const PracticeCatalog = () => {
   const navigate = useNavigate()
@@ -142,6 +138,28 @@ export const PracticeCatalog = () => {
       window.scrollTo(0, lastScrollPosition.current)
     }
   }, [isLoading])
+
+  const handleNavigateToPractice = async (practiceId: number) => {
+    console.log('[PracticeCatalog] handleNavigateToPractice called with:', practiceId)
+    // Try to find in currently loaded practices first
+    const existing = practices.find(p => p.id === practiceId)
+    if (existing) {
+      console.log('[PracticeCatalog] Found practice in cache, setting as current detail')
+      setCurrentDetail(existing)
+      return
+    }
+
+    // If not found, fetch it
+    console.log('[PracticeCatalog] Practice not in cache, fetching from API')
+    try {
+      const { practice } = await fetchPracticeDetail(practiceId)
+      console.log('[PracticeCatalog] Fetched practice, setting as current detail:', practice.title)
+      setCurrentDetail(practice)
+    } catch (err) {
+      console.error('Failed to navigate to practice', err)
+      setToastMessage('Failed to load practice details. Please try again.')
+    }
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -292,6 +310,7 @@ export const PracticeCatalog = () => {
                 onClose={() => setCurrentDetail(null)}
                 teamId={teamId || undefined}
                 onEdit={canEdit ? () => setPracticeToEdit(currentDetail) : undefined}
+                onNavigateToPractice={handleNavigateToPractice}
               />
             )}
           </div>

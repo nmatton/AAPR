@@ -5,6 +5,7 @@ import { useAddPracticesStore } from '../state/addPracticesSlice';
 import { PracticeCard } from '../../practices/components/PracticeCard';
 import { PillarFilterDropdown } from '../../practices/components/PillarFilterDropdown';
 import { PracticeDetailSidebar } from '../../practices/components/PracticeDetailSidebar';
+import { fetchPracticeDetail } from '../../practices/api/practices.api';
 import type { Practice } from '../types/practice.types';
 
 export const AddPracticesView = () => {
@@ -94,6 +95,23 @@ export const AddPracticesView = () => {
       // Error is handled in the store
     } finally {
       setIsAddingPracticeId(null);
+    }
+  };
+
+  const handleNavigateToPractice = async (practiceId: number) => {
+    // Try to find in currently loaded practices first
+    const existing = practices.find(p => p.id === practiceId)
+    if (existing) {
+      setCurrentDetail(existing)
+      return
+    }
+
+    // If not found, fetch it
+    try {
+      const { practice } = await fetchPracticeDetail(practiceId)
+      setCurrentDetail(practice as Practice)
+    } catch (err) {
+      console.error('Failed to navigate to practice', err)
     }
   };
 
@@ -321,6 +339,7 @@ export const AddPracticesView = () => {
             teamId={numericTeamId}
             isPracticeInTeam={false}
             onAddToTeam={() => handleAddPractice(currentDetail)}
+            onNavigateToPractice={handleNavigateToPractice}
           />
         )}
       </div>

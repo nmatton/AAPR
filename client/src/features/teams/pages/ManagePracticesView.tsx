@@ -6,6 +6,7 @@ import { useManagePracticesStore } from '../state/managePracticesSlice';
 import { PracticeCard } from '../../practices/components/PracticeCard';
 import { PillarFilterDropdown } from '../../practices/components/PillarFilterDropdown';
 import { PracticeDetailSidebar } from '../../practices/components/PracticeDetailSidebar';
+import { fetchPracticeDetail } from '../../practices/api/practices.api';
 import { RemovePracticeModal } from '../components/RemovePracticeModal';
 import { CreatePracticeModal } from '../components/CreatePracticeModal';
 import { PracticeEditForm } from '../components/PracticeEditForm';
@@ -230,6 +231,24 @@ export const ManagePracticesView = () => {
     }
 
     return refreshedPractice;
+  };
+
+  const handleNavigateToPractice = async (practiceId: number) => {
+    // Try to find in currently loaded practices first
+    const allPractices = [...availablePractices, ...teamPractices]
+    const existing = allPractices.find(p => p.id === practiceId)
+    if (existing) {
+      setCurrentDetail(existing)
+      return
+    }
+
+    // If not found, fetch it
+    try {
+      const { practice } = await fetchPracticeDetail(practiceId)
+      setCurrentDetail(practice as Practice)
+    } catch (err) {
+      console.error('Failed to navigate to practice', err)
+    }
   };
 
   return (
@@ -513,6 +532,7 @@ export const ManagePracticesView = () => {
             onAddToTeam={() => handleAddPractice(currentDetail)}
             onRemoveFromTeam={() => handleRemoveClick(currentDetail)}
             onEdit={() => handleEditPractice(currentDetail)}
+            onNavigateToPractice={handleNavigateToPractice}
           />
         )}
 
