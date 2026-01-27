@@ -79,7 +79,7 @@ development_status:
   2-1-10-database-schema-create-practice-association-table: done
   2-1-11-database-migration-migrate-associated-practices-from-json-to-relational: done
   2-1-12-database-cleanup-remove-category-id-from-practices-table: invalid  # Contradicts normalized data model (Architecture Decision 3)
-  epic-2-1-retrospective: optional
+  epic-2-1-retrospective: done
 
   # Epic 3: Big Five Personality Profiling
   epic-3: backlog
