@@ -74,11 +74,11 @@ development_status:
   2-1-5-catalog-duplicate-existing-practice-as-template: done
   2-1-6-catalog-advanced-filtering-tag-method-framework-category: done
   2-1-7-catalog-practice-detail-sidebar-with-complete-information: done
-  2-1-8-practice-detail-clickable-pillars-with-popover-context: ready-for-dev
+  2-1-8-practice-detail-clickable-pillars-with-popover-context: done
   2-1-9-catalog-and-header-navigation-persistent-aapr-header-on-all-pages: done
   2-1-10-database-schema-create-practice-association-table: done
   2-1-11-database-migration-migrate-associated-practices-from-json-to-relational: done
-  2-1-12-database-cleanup-remove-category-id-from-practices-table: backlog
+  2-1-12-database-cleanup-remove-category-id-from-practices-table: invalid  # Contradicts normalized data model (Architecture Decision 3)
   epic-2-1-retrospective: optional
 
   # Epic 3: Big Five Personality Profiling
