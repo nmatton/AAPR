@@ -83,7 +83,7 @@ development_status:
 
   # Epic 3: Big Five Personality Profiling
   epic-3: in-progress
-  3-1-complete-44-item-ipip-neo-questionnaire: ready-for-dev
+  3-1-complete-44-item-ipip-neo-questionnaire: done
   3-2-display-big-five-profile-scores: backlog
   epic-3-retrospective: optional
 
