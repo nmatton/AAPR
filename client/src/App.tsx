@@ -14,6 +14,7 @@ import { useAuthStore } from './features/auth/state/authSlice'
 import { getCurrentUser } from './features/auth/api/authApi'
 import { TeamsList } from './features/teams/components/TeamsList'
 import { PracticeCatalog } from './features/practices/pages/PracticeCatalog'
+import { BigFivePage } from './features/big-five/pages/BigFivePage'
 import { AuthenticatedLayout } from './components/ui/AuthenticatedLayout'
 
 const TeamsPage = () => {
@@ -161,6 +162,16 @@ const AppRoutes = () => {
           <ProtectedRoute>
             <AuthenticatedLayout>
               <CoverageDetailsView />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/big-five"
+        element={
+          <ProtectedRoute>
+            <AuthenticatedLayout>
+              <BigFivePage />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }

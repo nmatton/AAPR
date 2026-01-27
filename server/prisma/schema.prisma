@@ -23,9 +23,11 @@ model User {
   createdAt       DateTime     @default(now()) @map("created_at")
   /// Last update timestamp
   updatedAt       DateTime     @updatedAt @map("updated_at")
-  invitesSent     TeamInvite[] @relation("invites_sent")
-  invitesReceived TeamInvite[] @relation("invites_received")
-  teamMembers     TeamMember[]
+  invitesSent       TeamInvite[]       @relation("invites_sent")
+  invitesReceived   TeamInvite[]       @relation("invites_received")
+  teamMembers       TeamMember[]
+  bigFiveResponses  BigFiveResponse[]
+  bigFiveScore      BigFiveScore?
 
   @@map("users")
 }
@@ -315,4 +317,52 @@ model Event {
   @@index([entityType, entityId], map: "idx_events_entity")
   @@index([eventType], map: "idx_events_type")
   @@map("events")
+}
+
+/// BigFiveResponse entity - stores individual item responses for the 44-item IPIP-NEO questionnaire
+/// Isolation: Linked to user (userId)
+/// Privacy: Raw responses stored for research integrity (NFR6)
+model BigFiveResponse {
+  /// Auto-incrementing response identifier
+  id         Int      @id @default(autoincrement())
+  /// User who completed the questionnaire
+  userId     Int      @map("user_id")
+  /// Item number (1-44)
+  itemNumber Int      @map("item_number")
+  /// Response value (1-5 Likert scale: 1=Disagree strongly, 5=Agree strongly)
+  response   Int
+  /// Response creation timestamp
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, itemNumber], map: "uq_big_five_responses_user_item")
+  @@index([userId], map: "idx_big_five_responses_user")
+  @@map("big_five_responses")
+}
+
+/// BigFiveScore entity - stores calculated Big Five trait scores
+/// Isolation: Linked to user (userId)
+/// Privacy: Aggregated scores for personality traits
+model BigFiveScore {
+  /// Auto-incrementing score identifier
+  id                Int      @id @default(autoincrement())
+  /// User identifier
+  userId            Int      @unique @map("user_id")
+  /// Extraversion score (sum of 8 items, range: 8-40)
+  extraversion      Int
+  /// Agreeableness score (sum of 9 items, range: 9-45)
+  agreeableness     Int
+  /// Conscientiousness score (sum of 9 items, range: 9-45)
+  conscientiousness Int
+  /// Neuroticism score (sum of 8 items, range: 8-40)
+  neuroticism       Int
+  /// Openness score (sum of 10 items, range: 10-50)
+  openness          Int
+  /// Score calculation timestamp
+  createdAt         DateTime @default(now()) @map("created_at")
+  /// Last update timestamp
+  updatedAt         DateTime @updatedAt @map("updated_at")
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("big_five_scores")
 }

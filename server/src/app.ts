@@ -6,6 +6,7 @@ import { randomUUID } from 'crypto'
 import { authRouter } from './routes/auth.routes'
 import { teamsRouter } from './routes/teams.routes'
 import { practicesRouter } from './routes/practices.routes'
+import { bigFiveRouter } from './routes/big-five.routes'
 import { errorHandler } from './middleware/errorHandler'
 
 dotenv.config()
@@ -24,7 +25,7 @@ app.use(cookieParser())
 
 app.use((req, res, next) => {
   const requestId = (req.headers['x-request-id'] as string) || randomUUID()
-  ;(req as typeof req & { id?: string }).id = requestId
+    ; (req as typeof req & { id?: string }).id = requestId
   res.setHeader('x-request-id', requestId)
   next()
 })
@@ -32,6 +33,7 @@ app.use((req, res, next) => {
 app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/teams', teamsRouter)
 app.use('/api/v1/practices', practicesRouter)
+app.use('/api/v1/big-five', bigFiveRouter)
 
 app.get('/api/v1/health', (_req, res) => {
   res.json({
