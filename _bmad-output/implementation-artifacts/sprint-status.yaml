@@ -77,7 +77,7 @@ development_status:
   2-1-8-practice-detail-clickable-pillars-with-popover-context: ready-for-dev
   2-1-9-catalog-and-header-navigation-persistent-aapr-header-on-all-pages: done
   2-1-10-database-schema-create-practice-association-table: done
-  2-1-11-database-migration-migrate-associated-practices-from-json-to-relational: backlog
+  2-1-11-database-migration-migrate-associated-practices-from-json-to-relational: done
   2-1-12-database-cleanup-remove-category-id-from-practices-table: backlog
   epic-2-1-retrospective: optional
 

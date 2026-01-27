@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,29 +11,22 @@ datasource db {
 /// Privacy: User emails/names are NOT anonymized in research exports
 model User {
   /// Auto-incrementing user identifier
-  id        Int      @id @default(autoincrement())
-  
+  id              Int          @id @default(autoincrement())
   /// User's display name (3-50 characters)
-  name      String   @db.VarChar(100)
-  
+  name            String       @db.VarChar(100)
   /// Unique email address for authentication
-  email     String   @unique @db.VarChar(255)
-  
+  email           String       @unique @db.VarChar(255)
   /// Bcrypt-hashed password (NEVER stored as plain text)
   /// IMPORTANT: Bcrypt always produces 60-character hashes
-  password  String   @db.Char(60)
-  
+  password        String       @db.Char(60)
   /// User creation timestamp
-  createdAt DateTime @default(now()) @map("created_at")
-  
+  createdAt       DateTime     @default(now()) @map("created_at")
   /// Last update timestamp
-  updatedAt DateTime @updatedAt @map("updated_at")
-  
-  // Relationships
-  teamMembers    TeamMember[]
-  invitesSent    TeamInvite[] @relation("invites_sent")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+  invitesSent     TeamInvite[] @relation("invites_sent")
   invitesReceived TeamInvite[] @relation("invites_received")
-  
+  teamMembers     TeamMember[]
+
   @@map("users")
 }
 
@@ -45,25 +35,19 @@ model User {
 /// Privacy: Team names are not anonymized in research exports
 model Team {
   /// Auto-incrementing team identifier
-  id           Int            @id @default(autoincrement())
-  
+  id            Int            @id @default(autoincrement())
   /// Team name (3-100 characters, unique across platform)
-  name         String         @unique @db.VarChar(100)
-  
-  /// Optimistic locking version (incremented on each update)
-  version      Int            @default(1)
-  
+  name          String         @unique @db.VarChar(100)
   /// Team creation timestamp
-  createdAt    DateTime       @default(now()) @map("created_at")
-  
+  createdAt     DateTime       @default(now()) @map("created_at")
   /// Last update timestamp
-  updatedAt    DateTime       @updatedAt @map("updated_at")
-  
-  // Relationships
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  /// Optimistic locking version (incremented on each update)
+  version       Int            @default(1)
+  teamInvites   TeamInvite[]
   teamMembers   TeamMember[]
   teamPractices TeamPractice[]
-  teamInvites   TeamInvite[]
-  
+
   @@index([name], map: "idx_teams_name")
   @@map("teams")
 }
@@ -73,23 +57,17 @@ model Team {
 model TeamMember {
   /// Auto-incrementing member identifier
   id       Int      @id @default(autoincrement())
-  
   /// Team identifier
   teamId   Int      @map("team_id")
-  
   /// User identifier
   userId   Int      @map("user_id")
-  
   /// Member role (owner, member)
   role     String   @default("member") @db.VarChar(20)
-  
   /// Membership creation timestamp
   joinedAt DateTime @default(now()) @map("joined_at")
-  
-  // Relationships
   team     Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+
   @@unique([teamId, userId])
   @@index([teamId], map: "idx_team_members_team")
   @@index([userId], map: "idx_team_members_user")
@@ -100,39 +78,28 @@ model TeamMember {
 /// Isolation: Queries must filter by teamId
 model TeamInvite {
   /// Auto-incrementing invite identifier
-  id            Int      @id @default(autoincrement())
-
+  id            Int       @id @default(autoincrement())
   /// Team identifier
-  teamId        Int      @map("team_id")
-
+  teamId        Int       @map("team_id")
   /// Email address of invitee
-  email         String   @db.VarChar(255)
-
+  email         String    @db.VarChar(255)
   /// Invite status (Pending, Added, Failed)
-  status        String   @db.VarChar(20)
-
+  status        String    @db.VarChar(20)
   /// User who sent the invite
-  invitedBy     Int      @map("invited_by")
-
+  invitedBy     Int       @map("invited_by")
   /// Existing user invited (if any)
-  invitedUserId Int?     @map("invited_user_id")
-
+  invitedUserId Int?      @map("invited_user_id")
   /// Invite creation timestamp
-  createdAt     DateTime @default(now()) @map("created_at")
-
+  createdAt     DateTime  @default(now()) @map("created_at")
   /// Invite update timestamp
-  updatedAt     DateTime @updatedAt @map("updated_at")
-
+  updatedAt     DateTime  @updatedAt @map("updated_at")
   /// Last email sent timestamp
   lastSentAt    DateTime? @map("last_sent_at")
-
   /// Last email error message (if any)
-  errorMessage  String?  @map("error_message") @db.Text
-
-  // Relationships
-  team          Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  invitedByUser User     @relation("invites_sent", fields: [invitedBy], references: [id], onDelete: Cascade)
-  invitedUser   User?    @relation("invites_received", fields: [invitedUserId], references: [id], onDelete: SetNull)
+  errorMessage  String?   @map("error_message")
+  invitedByUser User      @relation("invites_sent", fields: [invitedBy], references: [id], onDelete: Cascade)
+  invitedUser   User?     @relation("invites_received", fields: [invitedUserId], references: [id])
+  team          Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
 
   @@unique([teamId, email], map: "uq_team_invites_team_email")
   @@index([teamId], map: "idx_team_invites_team")
@@ -144,27 +111,20 @@ model TeamInvite {
 /// Isolation: Categories are global reference data
 model Category {
   /// Category identifier (VARCHAR, not auto-increment)
-  id          String   @id @db.VarChar(50)
-  
+  id           String     @id @db.VarChar(50)
   /// Category name
-  name        String   @unique @db.VarChar(255)
-  
+  name         String     @unique @db.VarChar(255)
   /// Category description
-  description String?  @db.Text
-  
+  description  String?
   /// Display order for UI presentation
-  displayOrder Int    @map("display_order")
-  
+  displayOrder Int        @map("display_order")
   /// Category creation timestamp
-  createdAt   DateTime @default(now()) @map("created_at")
-  
+  createdAt    DateTime   @default(now()) @map("created_at")
   /// Last update timestamp
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  
-  // Relationships
-  pillars     Pillar[]
-  practices   Practice[]
-  
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+  pillars      Pillar[]
+  practices    Practice[]
+
   @@map("categories")
 }
 
@@ -172,27 +132,20 @@ model Category {
 /// Isolation: Pillars are global reference data
 model Pillar {
   /// Auto-incrementing pillar identifier
-  id          Int      @id @default(autoincrement())
-  
+  id              Int              @id @default(autoincrement())
   /// Pillar name (unique)
-  name        String   @db.VarChar(255)
-  
+  name            String           @db.VarChar(255)
   /// Category this pillar belongs to
-  categoryId  String   @map("category_id") @db.VarChar(50)
-  
-  /// Pillar description
-  description String?  @db.Text
-  
+  categoryId      String           @map("category_id") @db.VarChar(50)
   /// Pillar creation timestamp
-  createdAt   DateTime @default(now()) @map("created_at")
-  
+  createdAt       DateTime         @default(now()) @map("created_at")
+  /// Pillar description
+  description     String?
   /// Last update timestamp
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  
-  // Relationships
+  updatedAt       DateTime         @updatedAt @map("updated_at")
   category        Category         @relation(fields: [categoryId], references: [id])
   practicePillars PracticePillar[]
-  
+
   @@unique([name, categoryId], map: "uq_pillars_name_category")
   @@index([categoryId], map: "idx_pillars_category")
   @@map("pillars")
@@ -202,91 +155,64 @@ model Pillar {
 /// Isolation: Practices are global (isGlobal=true) or team-specific
 model Practice {
   /// Auto-incrementing practice identifier
-  id                   Int       @id @default(autoincrement())
-  
+  id                  Int                   @id @default(autoincrement())
   /// Practice title (2-100 characters)
-  title                String    @db.VarChar(100)
-  
+  title               String                @db.VarChar(100)
   /// Practice goal/objective (1-500 chars)
-  goal                 String    @db.VarChar(500)
-  
-  /// Full practice description (optional, max 10,000 chars)
-  description          String?   @db.Text
-  
-  /// Practice category (FK to categories)
-  categoryId           String    @map("category_id") @db.VarChar(50)
-  
-  /// Framework/method (Scrum, XP, Kanban, etc.)
-  method               String?   @db.VarChar(50)
-  
-  /// Behavioral tags (Visual/Tactile, Async-Ready, etc.)
-  tags                 Json?
-  
-  /// Structured activities (sequence, name, description)
-  activities           Json?
-  
-  /// Roles involved (role, responsibility/RACI)
-  roles                Json?
-  
-  /// Work products/artifacts created
-  workProducts         Json?     @map("work_products")
-  
-  /// Completion criteria / Definition of Done
-  completionCriteria   String?   @map("completion_criteria") @db.Text
-  
-  /// Success metrics
-  metrics              Json?
-  
-  /// Resource guidelines (links, guides)
-  guidelines           Json?
-  
-  /// Common pitfalls to avoid
-  pitfalls             Json?
-  
-  /// Practice benefits
-  benefits             Json?
-  
-  /// Associated practices (relationships)
-  /// @deprecated Use PracticeAssociation model instead (relational table)
-  associatedPractices  Json?     @map("associated_practices")
-  
+  goal                String                @db.VarChar(500)
   /// Is this a global practice (available to all teams)
-  isGlobal             Boolean   @default(true) @map("is_global")
-  
-  /// When practice was imported
-  importedAt           DateTime? @map("imported_at")
-  
-  /// Source file name
-  sourceFile           String?   @map("source_file") @db.VarChar(255)
-  
-  /// JSON checksum (SHA256) for idempotency
-  jsonChecksum         String?   @map("json_checksum") @db.VarChar(64)
-  
-  /// Practice version number
-  practiceVersion      Int       @default(1) @map("practice_version")
-  
-  /// Who imported this practice
-  importedBy           String?   @map("imported_by") @db.VarChar(100)
-  
-  /// Git SHA of source at import time
-  sourceGitSha         String?   @map("source_git_sha") @db.VarChar(40)
-  
-  /// Raw JSON for debugging and provenance
-  rawJson              Json?     @map("raw_json")
-  
+  isGlobal            Boolean               @default(true) @map("is_global")
   /// Practice creation timestamp
-  createdAt            DateTime  @default(now()) @map("created_at")
-  
+  createdAt           DateTime              @default(now()) @map("created_at")
+  /// Structured activities (sequence, name, description)
+  activities          Json?
+  /// Associated practices (relationships)
+  /// @deprecated Use PracticeAssociation model instead (relational table). Will be removed in Story 2.1.12.
+  associatedPractices Json?                 @map("associated_practices")
+  /// Practice benefits
+  benefits            Json?
+  /// Practice category (FK to categories)
+  categoryId          String                @map("category_id") @db.VarChar(50)
+  /// Completion criteria / Definition of Done
+  completionCriteria  String?               @map("completion_criteria")
+  /// Full practice description (optional, max 10,000 chars)
+  description         String?
+  /// Resource guidelines (links, guides)
+  guidelines          Json?
+  /// When practice was imported
+  importedAt          DateTime?             @map("imported_at")
+  /// Who imported this practice
+  importedBy          String?               @map("imported_by") @db.VarChar(100)
+  /// JSON checksum (SHA256) for idempotency
+  jsonChecksum        String?               @map("json_checksum") @db.VarChar(64)
+  /// Framework/method (Scrum, XP, Kanban, etc.)
+  method              String?               @db.VarChar(50)
+  /// Success metrics
+  metrics             Json?
+  /// Common pitfalls to avoid
+  pitfalls            Json?
+  /// Practice version number
+  practiceVersion     Int                   @default(1) @map("practice_version")
+  /// Raw JSON for debugging and provenance
+  rawJson             Json?                 @map("raw_json")
+  /// Roles involved (role, responsibility/RACI)
+  roles               Json?
+  /// Source file name
+  sourceFile          String?               @map("source_file") @db.VarChar(255)
+  /// Git SHA of source at import time
+  sourceGitSha        String?               @map("source_git_sha") @db.VarChar(40)
+  /// Behavioral tags (Visual/Tactile, Async-Ready, etc.)
+  tags                Json?
   /// Last update timestamp
-  updatedAt            DateTime  @updatedAt @map("updated_at")
-  
-  // Relationships
-  category             Category             @relation(fields: [categoryId], references: [id])
-  teamPractices        TeamPractice[]
-  practicePillars      PracticePillar[]
-  sourceAssociations   PracticeAssociation[] @relation("source_associations")
-  targetAssociations   PracticeAssociation[] @relation("target_associations")
-  
+  updatedAt           DateTime              @updatedAt @map("updated_at")
+  /// Work products/artifacts created
+  workProducts        Json?                 @map("work_products")
+  sourceAssociations  PracticeAssociation[] @relation("source_associations")
+  targetAssociations  PracticeAssociation[] @relation("target_associations")
+  practicePillars     PracticePillar[]
+  category            Category              @relation(fields: [categoryId], references: [id])
+  teamPractices       TeamPractice[]
+
   @@unique([title, categoryId], map: "uq_practices_title_category")
   @@index([categoryId], map: "idx_practices_category")
   @@index([title], map: "idx_practices_title")
@@ -301,27 +227,20 @@ model Practice {
 /// Replaces: Practice.associatedPractices JSON field (deprecated)
 model PracticeAssociation {
   /// Auto-incrementing association identifier
-  id                 Int      @id @default(autoincrement())
-  
+  id               Int      @id @default(autoincrement())
   /// Source practice identifier (the practice being described)
-  sourcePracticeId   Int      @map("source_practice_id")
-  
+  sourcePracticeId Int      @map("source_practice_id")
   /// Target practice identifier (the related practice)
-  targetPracticeId   Int      @map("target_practice_id")
-  
+  targetPracticeId Int      @map("target_practice_id")
   /// Association type (Configuration, Equivalence, Dependency, Complementarity, Exclusion)
-  associationType    String   @map("association_type") @db.VarChar(50)
-  
+  associationType  String   @map("association_type") @db.VarChar(50)
   /// Association creation timestamp
-  createdAt          DateTime @default(now()) @map("created_at")
-  
+  createdAt        DateTime @default(now()) @map("created_at")
   /// Last update timestamp
-  updatedAt          DateTime @updatedAt @map("updated_at")
-  
-  // Relationships
-  sourcePractice     Practice @relation("source_associations", fields: [sourcePracticeId], references: [id], onDelete: Cascade)
-  targetPractice     Practice @relation("target_associations", fields: [targetPracticeId], references: [id], onDelete: Cascade)
-  
+  updatedAt        DateTime @updatedAt @map("updated_at")
+  sourcePractice   Practice @relation("source_associations", fields: [sourcePracticeId], references: [id], onDelete: Cascade)
+  targetPractice   Practice @relation("target_associations", fields: [targetPracticeId], references: [id], onDelete: Cascade)
+
   @@unique([sourcePracticeId, targetPracticeId, associationType], map: "uq_practice_associations_source_target_type")
   @@index([sourcePracticeId], map: "idx_practice_associations_source")
   @@index([targetPracticeId], map: "idx_practice_associations_target")
@@ -333,20 +252,15 @@ model PracticeAssociation {
 model TeamPractice {
   /// Auto-incrementing identifier
   id         Int      @id @default(autoincrement())
-  
   /// Team identifier
   teamId     Int      @map("team_id")
-  
   /// Practice identifier
   practiceId Int      @map("practice_id")
-  
   /// When practice was added to team
   addedAt    DateTime @default(now()) @map("added_at")
-  
-  // Relationships
-  team       Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
   practice   Practice @relation(fields: [practiceId], references: [id], onDelete: Cascade)
-  
+  team       Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+
   @@unique([teamId, practiceId])
   @@index([teamId], map: "idx_team_practices_team")
   @@index([practiceId], map: "idx_team_practices_practice")
@@ -358,17 +272,13 @@ model TeamPractice {
 model PracticePillar {
   /// Practice identifier
   practiceId Int      @map("practice_id")
-  
   /// Pillar identifier
   pillarId   Int      @map("pillar_id")
-  
   /// When relationship was created
   createdAt  DateTime @default(now()) @map("created_at")
-  
-  // Relationships
-  practice   Practice @relation(fields: [practiceId], references: [id], onDelete: Cascade)
   pillar     Pillar   @relation(fields: [pillarId], references: [id], onDelete: Cascade)
-  
+  practice   Practice @relation(fields: [practiceId], references: [id], onDelete: Cascade)
+
   @@id([practiceId, pillarId])
   @@index([practiceId], map: "idx_practice_pillars_practice")
   @@index([pillarId], map: "idx_practice_pillars_pillar")
@@ -382,34 +292,25 @@ model PracticePillar {
 model Event {
   /// Auto-incrementing event identifier
   id            BigInt   @id @default(autoincrement())
-  
   /// Event classification (e.g., 'user.registered', 'issue.created')
   eventType     String   @map("event_type") @db.VarChar(50)
-  
   /// User who triggered the event (NULL for system events)
   actorId       Int?     @map("actor_id")
-  
   /// Team context for the event (NULL for user-level events)
   teamId        Int?     @map("team_id")
-  
   /// Type of entity affected (e.g., 'user', 'issue', 'practice')
   entityType    String?  @map("entity_type") @db.VarChar(50)
-  
   /// Identifier of the affected entity
   entityId      Int?     @map("entity_id")
-  
   /// Action performed (e.g., 'created', 'updated', 'deleted')
   action        String?  @db.VarChar(50)
-  
   /// JSON payload with event-specific data
   payload       Json?
-  
   /// Schema version for payload structure evolution
   schemaVersion String   @default("v1") @map("schema_version") @db.VarChar(10)
-  
   /// Event creation timestamp (immutable)
   createdAt     DateTime @default(now()) @map("created_at")
-  
+
   @@index([teamId, eventType], map: "idx_events_team_type")
   @@index([entityType, entityId], map: "idx_events_entity")
   @@index([eventType], map: "idx_events_type")
