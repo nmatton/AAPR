@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { Questionnaire } from '../components/Questionnaire'
 import * as bigFiveApi from '../api/bigFiveApi'
+import { ProfileView } from '../components/ProfileView'
 import type { BigFiveScores } from '../api/bigFiveApi'
 
 export const BigFivePage = () => {
-    const navigate = useNavigate()
     const [isLoading, setIsLoading] = useState(true)
     const [hasCompleted, setHasCompleted] = useState(false)
     const [scores, setScores] = useState<BigFiveScores | null>(null)
@@ -23,9 +22,8 @@ export const BigFivePage = () => {
                 setHasCompleted(true)
                 setScores(response.scores)
             }
-        } catch (err: any) {
+        } catch (err) {
             console.error('Failed to load scores:', err)
-            // Don't show error for missing scores - just means not completed yet
         } finally {
             setIsLoading(false)
         }
@@ -48,8 +46,9 @@ export const BigFivePage = () => {
             setScores(result.scores)
             setHasCompleted(true)
             setShowQuestionnaire(false)
-        } catch (err: any) {
-            throw new Error(err.message || 'Failed to submit questionnaire')
+        } catch (err) {
+            const message = err instanceof Error ? err.message : 'Failed to submit questionnaire';
+            throw new Error(message)
         }
     }
 
@@ -79,76 +78,12 @@ export const BigFivePage = () => {
     }
 
     if (hasCompleted && scores) {
-        return (
-            <div className="max-w-4xl mx-auto p-6">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                        Your Big Five Personality Profile
-                    </h1>
-                    <p className="text-gray-600">
-                        Completed on {new Date(scores.createdAt).toLocaleDateString()}
-                    </p>
-                </div>
-
-                {/* Scores display */}
-                <div className="space-y-4 mb-8">
-                    <ScoreBar
-                        label="Extraversion"
-                        score={scores.extraversion}
-                        min={8}
-                        max={40}
-                        description="Sociability, assertiveness, and enthusiasm"
-                    />
-                    <ScoreBar
-                        label="Agreeableness"
-                        score={scores.agreeableness}
-                        min={9}
-                        max={45}
-                        description="Compassion, cooperation, and trust"
-                    />
-                    <ScoreBar
-                        label="Conscientiousness"
-                        score={scores.conscientiousness}
-                        min={9}
-                        max={45}
-                        description="Organization, responsibility, and self-discipline"
-                    />
-                    <ScoreBar
-                        label="Neuroticism"
-                        score={scores.neuroticism}
-                        min={8}
-                        max={40}
-                        description="Emotional stability and stress management"
-                    />
-                    <ScoreBar
-                        label="Openness"
-                        score={scores.openness}
-                        min={10}
-                        max={50}
-                        description="Curiosity, creativity, and openness to new experiences"
-                    />
-                </div>
-
-                <div className="flex gap-4">
-                    <button
-                        onClick={handleRetake}
-                        className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
-                    >
-                        Retake Questionnaire
-                    </button>
-                    <button
-                        onClick={() => navigate('/teams')}
-                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                    >
-                        Continue to Teams
-                    </button>
-                </div>
-            </div>
-        )
+        return <ProfileView scores={scores} onRetake={handleRetake} />
     }
 
     return (
         <div className="max-w-2xl mx-auto p-6">
+            {/* ... keeping intro content ... */}
             <div className="text-center mb-8">
                 <h1 className="text-3xl font-bold text-gray-900 mb-4">
                     Big Five Personality Assessment
@@ -204,39 +139,6 @@ export const BigFivePage = () => {
             >
                 Start Questionnaire
             </button>
-        </div>
-    )
-}
-
-interface ScoreBarProps {
-    label: string
-    score: number
-    min: number
-    max: number
-    description: string
-}
-
-const ScoreBar = ({ label, score, min, max, description }: ScoreBarProps) => {
-    const percentage = ((score - min) / (max - min)) * 100
-
-    return (
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex justify-between items-center mb-2">
-                <div>
-                    <h3 className="font-semibold text-gray-900">{label}</h3>
-                    <p className="text-sm text-gray-600">{description}</p>
-                </div>
-                <span className="text-2xl font-bold text-blue-600">
-                    {score}
-                    <span className="text-sm text-gray-500">/{max}</span>
-                </span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
-                <div
-                    className="bg-blue-600 h-3 rounded-full transition-all duration-500"
-                    style={{ width: `${percentage}%` }}
-                />
-            </div>
         </div>
     )
 }
