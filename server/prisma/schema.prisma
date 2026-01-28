@@ -28,6 +28,7 @@ model User {
   teamMembers       TeamMember[]
   bigFiveResponses  BigFiveResponse[]
   bigFiveScore      BigFiveScore?
+  createdIssues     Issue[]
 
   @@map("users")
 }
@@ -49,6 +50,7 @@ model Team {
   teamInvites   TeamInvite[]
   teamMembers   TeamMember[]
   teamPractices TeamPractice[]
+  issues        Issue[]
 
   @@index([name], map: "idx_teams_name")
   @@map("teams")
@@ -214,6 +216,7 @@ model Practice {
   practicePillars     PracticePillar[]
   category            Category              @relation(fields: [categoryId], references: [id])
   teamPractices       TeamPractice[]
+  issueAssociations   IssuePractice[]
 
   @@unique([title, categoryId], map: "uq_practices_title_category")
   @@index([categoryId], map: "idx_practices_category")
@@ -365,4 +368,66 @@ model BigFiveScore {
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("big_five_scores")
+}
+
+/// Priority level for issues
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+/// Status of an issue
+enum IssueStatus {
+  OPEN
+  IN_DISCUSSION
+  RESOLVED
+}
+
+/// Issue entity - represents a problem or discussion point raised by a team member
+/// Isolation: strict team isolation (team_id)
+model Issue {
+  /// Auto-incrementing issue identifier
+  id          Int      @id @default(autoincrement())
+  /// Issue title (min 5 chars)
+  title       String   @db.VarChar(255)
+  /// Detailed description (markdown supported)
+  description String   @db.Text
+  /// Priority level
+  priority    Priority
+  /// Current status
+  status      IssueStatus @default(OPEN)
+  /// Team context
+  teamId      Int      @map("team_id")
+  /// Creator of the issue
+  createdBy   Int      @map("created_by")
+  /// Creation timestamp
+  createdAt   DateTime @default(now()) @map("created_at")
+  /// Last update timestamp
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  /// Optimistic locking version
+  version     Int      @default(1)
+  
+  team           Team            @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdByUser  User            @relation(fields: [createdBy], references: [id])
+  linkedPractices IssuePractice[]
+
+  @@index([teamId], map: "idx_issues_team")
+  @@index([status], map: "idx_issues_status")
+  @@map("issues")
+}
+
+/// IssuePractice entity - links issues to related practices
+/// Isolation: implicitly linked via issue_id -> team_id
+model IssuePractice {
+  issueId    Int @map("issue_id")
+  practiceId Int @map("practice_id")
+
+  issue    Issue    @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  practice Practice @relation(fields: [practiceId], references: [id], onDelete: Cascade)
+
+  @@id([issueId, practiceId])
+  @@index([issueId], map: "idx_issue_practices_issue")
+  @@index([practiceId], map: "idx_issue_practices_practice")
+  @@map("issue_practices")
 }

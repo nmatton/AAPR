@@ -31,7 +31,7 @@ describe('invites.service resendInvite', () => {
   })
 
   it('updates lastSentAt and status from Failed to Pending', async () => {
-    ;(invitesRepository.findInviteById as jest.MockedFunction<typeof invitesRepository.findInviteById>).mockResolvedValue({
+    ; (invitesRepository.findInviteById as jest.MockedFunction<typeof invitesRepository.findInviteById>).mockResolvedValue({
       id: inviteId,
       teamId,
       email: 'pending@example.com',
@@ -44,25 +44,26 @@ describe('invites.service resendInvite', () => {
       errorMessage: 'smtp error'
     })
 
-    ;(prisma.team.findUnique as jest.MockedFunction<typeof prisma.team.findUnique>).mockResolvedValue({
-      id: teamId,
-      name: 'Team One',
-      createdAt: new Date(),
-      updatedAt: new Date()
-    })
-    ;(mailer.sendInviteEmail as jest.MockedFunction<typeof mailer.sendInviteEmail>).mockResolvedValue(undefined)
-    ;(invitesRepository.updateInvite as jest.MockedFunction<typeof invitesRepository.updateInvite>).mockResolvedValue({
-      id: inviteId,
-      teamId,
-      email: 'pending@example.com',
-      status: 'Pending',
-      invitedBy,
-      invitedUserId: null,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      lastSentAt: new Date(),
-      errorMessage: null
-    })
+      ; (prisma.team.findUnique as jest.MockedFunction<typeof prisma.team.findUnique>).mockResolvedValue({
+        id: teamId,
+        name: 'Team One',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        version: 1
+      })
+      ; (mailer.sendInviteEmail as jest.MockedFunction<typeof mailer.sendInviteEmail>).mockResolvedValue(undefined)
+      ; (invitesRepository.updateInvite as jest.MockedFunction<typeof invitesRepository.updateInvite>).mockResolvedValue({
+        id: inviteId,
+        teamId,
+        email: 'pending@example.com',
+        status: 'Pending',
+        invitedBy,
+        invitedUserId: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        lastSentAt: new Date(),
+        errorMessage: null
+      })
 
     await resendInvite(teamId, inviteId, invitedBy)
 

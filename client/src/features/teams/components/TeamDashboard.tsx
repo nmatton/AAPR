@@ -12,6 +12,9 @@ import { TeamNameEditor } from './TeamNameEditor';
 import { PracticeEditForm } from './PracticeEditForm';
 import { RemovePracticeModal } from './RemovePracticeModal';
 import type { Practice } from '../../practices/types';
+import { fetchTeamPractices } from '../api/teamPracticesApi';
+import { createIssue } from '../../issues/api/issuesApi';
+import { IssueSubmissionModal } from '../../issues/components/IssueSubmissionModal';
 
 export const TeamDashboard = () => {
   const { teamId } = useParams<{ teamId: string }>();
@@ -35,7 +38,18 @@ export const TeamDashboard = () => {
   // Practice actions state
   const [practiceToEdit, setPracticeToEdit] = useState<Practice | null>(null);
   const [practiceToRemove, setPracticeToRemove] = useState<number | null>(null);
+
   const [isRemoving, setIsRemoving] = useState(false);
+
+  // Issue Modal state
+  const [isIssueModalOpen, setIsIssueModalOpen] = useState(false);
+  const [modalPractices, setModalPractices] = useState<Practice[]>([]);
+
+  useEffect(() => {
+    if (isIssueModalOpen && teamId) {
+      fetchTeamPractices(Number(teamId)).then(res => setModalPractices(res.items)).catch(console.error);
+    }
+  }, [isIssueModalOpen, teamId]);
 
   useEffect(() => {
     if (teams.length === 0) {
@@ -224,76 +238,83 @@ export const TeamDashboard = () => {
               >
                 Add Practices
               </button>
+              {/* New Issue Button */}
+              <button
+                onClick={() => setIsIssueModalOpen(true)}
+                className="ml-2 rounded-lg bg-green-600 px-4 py-2 text-white hover:bg-green-700"
+              >
+                New Issue
+              </button>
             </div>
           )}
         </div>
-
-        {isLoading && (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <p className="text-gray-500">Loading team dashboard...</p>
-          </div>
-        )}
-
-        {!isLoading && error && (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <p className="text-red-600">{error}</p>
-          </div>
-        )}
-
-        {!isLoading && !error && !selectedTeam && (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <p className="text-gray-500">Team not found.</p>
-          </div>
-        )}
-
-        {!isLoading && !error && selectedTeam && (
-          <div>
-            <div className="mb-4">
-              {isEditingName ? (
-                <div>
-                  <TeamNameEditor
-                    value={editingValue}
-                    onChange={setEditingValue}
-                    onSave={handleEditSave}
-                    onCancel={handleEditCancel}
-                    isSaving={isSaving}
-                  />
-                  {editError && (
-                    <p className="mt-2 text-sm text-red-600">{editError}</p>
-                  )}
-                </div>
-              ) : (
-                <div className="flex items-center gap-2">
-                  <h2 className="text-2xl font-bold text-gray-800">{originalName}</h2>
-                  <button
-                    onClick={handleEditStart}
-                    className="text-gray-500 hover:text-gray-700 transition"
-                    title="Edit team name"
-                    aria-label="Edit team name"
-                  >
-                    ✏️
-                  </button>
-                </div>
-              )}
-            </div>
-            <div className="grid grid-cols-[3fr_1fr] gap-4">
-              {/* Center column (75%) - practice list */}
-              <div>
-                <TeamPracticesPanel
-                  teamId={selectedTeam.id}
-                  onPracticeRemoved={refreshCoverage}
-                  onPracticeClick={(id) => setSearchParams({ practiceId: id.toString() })}
-                  onEditClick={() => navigate(`/teams/${selectedTeam.id}/practices/manage`)}
-                />
-              </div>
-              {/* Right sidebar (25%) - coverage */}
-              <div>
-                <CoverageSidebar teamId={selectedTeam.id} />
-              </div>
-            </div>
-          </div>
-        )}
       </div>
+
+      {isLoading && (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <p className="text-gray-500">Loading team dashboard...</p>
+        </div>
+      )}
+
+      {!isLoading && error && (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <p className="text-red-600">{error}</p>
+        </div>
+      )}
+
+      {!isLoading && !error && !selectedTeam && (
+        <div className="flex flex-col items-center justify-center py-12 text-center">
+          <p className="text-gray-500">Team not found.</p>
+        </div>
+      )}
+
+      {!isLoading && !error && selectedTeam && (
+        <div>
+          <div className="mb-4">
+            {isEditingName ? (
+              <div>
+                <TeamNameEditor
+                  value={editingValue}
+                  onChange={setEditingValue}
+                  onSave={handleEditSave}
+                  onCancel={handleEditCancel}
+                  isSaving={isSaving}
+                />
+                {editError && (
+                  <p className="mt-2 text-sm text-red-600">{editError}</p>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <h2 className="text-2xl font-bold text-gray-800">{originalName}</h2>
+                <button
+                  onClick={handleEditStart}
+                  className="text-gray-500 hover:text-gray-700 transition"
+                  title="Edit team name"
+                  aria-label="Edit team name"
+                >
+                  ✏️
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="grid grid-cols-[3fr_1fr] gap-4">
+            {/* Center column (75%) - practice list */}
+            <div>
+              <TeamPracticesPanel
+                teamId={selectedTeam.id}
+                onPracticeRemoved={refreshCoverage}
+                onPracticeClick={(id) => setSearchParams({ practiceId: id.toString() })}
+                onEditClick={() => navigate(`/teams/${selectedTeam.id}/practices/manage`)}
+              />
+            </div>
+            {/* Right sidebar (25%) - coverage */}
+            <div>
+              <CoverageSidebar teamId={selectedTeam.id} />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Practice detail overlay */}
       <PracticeDetailSidebar
@@ -308,29 +329,54 @@ export const TeamDashboard = () => {
       />
 
       {/* Edit Form Modal */}
-      {practiceToEdit && selectedTeam && (
-        <PracticeEditForm
-          teamId={selectedTeam.id}
-          practice={practiceToEdit as any}
-          onClose={() => setPracticeToEdit(null)}
-          onSaved={handlePracticeSaved}
-          onRefreshRequested={async () => {
-            // Return null or implement refresh logic if needed
-            return null;
-          }}
-        />
-      )}
+      {
+        practiceToEdit && selectedTeam && (
+          <PracticeEditForm
+            teamId={selectedTeam.id}
+            practice={practiceToEdit as any}
+            onClose={() => setPracticeToEdit(null)}
+            onSaved={handlePracticeSaved}
+            onRefreshRequested={async () => {
+              // Return null or implement refresh logic if needed
+              return null;
+            }}
+          />
+        )
+      }
 
       {/* Remove Confirmation Modal */}
-      {practiceToRemove && selectedTeam && (
-        <RemovePracticeModal
-          practice={{ id: practiceToRemove, title: 'Practice' } as any} // Mock minimal practice object for modal
-          teamId={selectedTeam.id}
-          onConfirm={handleRemoveConfirm}
-          onCancel={() => setPracticeToRemove(null)}
-          isRemoving={isRemoving}
-        />
-      )}
-    </div>
+      {
+        practiceToRemove && selectedTeam && (
+          <RemovePracticeModal
+            practice={{ id: practiceToRemove, title: 'Practice' } as any} // Mock minimal practice object for modal
+            teamId={selectedTeam.id}
+            onConfirm={handleRemoveConfirm}
+            onCancel={() => setPracticeToRemove(null)}
+            isRemoving={isRemoving}
+          />
+        )
+      }
+
+      {/* Issue Submission Modal */}
+      {
+        selectedTeam && (
+          <IssueSubmissionModal
+            isOpen={isIssueModalOpen}
+            onClose={() => setIsIssueModalOpen(false)}
+            teamId={selectedTeam.id}
+            practices={modalPractices}
+            onSubmit={async (data) => {
+              try {
+                await createIssue(selectedTeam.id, data);
+                setToastMessage('Issue created successfully');
+              } catch (e) {
+                console.error(e);
+                setToastMessage('Failed to create issue');
+              }
+            }}
+          />
+        )
+      }
+    </div >
   );
 };

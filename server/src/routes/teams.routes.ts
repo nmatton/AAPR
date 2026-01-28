@@ -4,8 +4,15 @@ import * as invitesController from '../controllers/invites.controller';
 import * as membersController from '../controllers/members.controller';
 import { requireAuth } from '../middleware/requireAuth';
 import { validateTeamMembership } from '../middleware/validateTeamMembership';
+import { issuesRouter } from './issues.routes';
 
 export const teamsRouter = Router();
+
+/**
+ * Mount issues router
+ * POST /api/v1/teams/:teamId/issues
+ */
+teamsRouter.use('/:teamId/issues', requireAuth, validateTeamMembership, issuesRouter);
 
 /**
  * GET /api/v1/teams
