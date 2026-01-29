@@ -51,3 +51,29 @@ export const getIssue = async (req: Request, res: Response, next: NextFunction) 
     }
 };
 
+
+export const createComment = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { issueId } = req.params;
+        const { content } = req.body;
+        const userId = (req as AuthenticatedRequest).user?.userId;
+
+        if (!issueId || isNaN(Number(issueId))) {
+            throw new AppError('validation_error', 'Invalid issue ID', {}, 400);
+        }
+
+        if (!userId) {
+            throw new AppError('unauthorized', 'User not authenticated', {}, 401);
+        }
+
+        const comment = await issueService.addComment(
+            Number(issueId),
+            userId,
+            content
+        );
+
+        res.status(201).json(comment);
+    } catch (error) {
+        next(error);
+    }
+};

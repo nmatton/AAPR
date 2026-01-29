@@ -17,4 +17,12 @@ issuesRouter.post('/', issuesController.createIssue);
  * GET /api/v1/teams/:teamId/issues/:issueId
  * Get issue details with history
  */
+
 issuesRouter.get('/:issueId', issuesController.getIssue);
+
+/**
+ * POST /api/v1/teams/:teamId/issues/:issueId/comments
+ * Add a comment to an issue
+ */
+issuesRouter.post('/:issueId/comments', issuesController.createComment);
+

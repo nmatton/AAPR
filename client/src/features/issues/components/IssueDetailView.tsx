@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getIssueDetails, IssueDetails } from '../api/issuesApi';
+import { getIssueDetails, IssueDetails, createComment } from '../api/issuesApi';
 import { IssueTimeline } from './IssueTimeline';
+import { CommentList } from './CommentList';
+import { CommentForm } from './CommentForm';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 import { formatDistanceToNow } from 'date-fns';
@@ -12,6 +14,7 @@ export const IssueDetailView = () => {
     const [details, setDetails] = useState<IssueDetails | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [submittingComment, setSubmittingComment] = useState(false);
 
     useEffect(() => {
         const fetchDetails = async () => {
@@ -36,6 +39,25 @@ export const IssueDetailView = () => {
 
         fetchDetails();
     }, [teamId, issueId]);
+
+    const handleCommentSubmit = async (content: string) => {
+        if (!teamId || !issueId || !details) return;
+
+        try {
+            setSubmittingComment(true);
+            await createComment(Number(teamId), Number(issueId), content);
+
+            // Refresh details to show new comment
+            // In a real app we might append confidently, but refresh ensures consistency
+            const updatedData = await getIssueDetails(Number(teamId), Number(issueId));
+            setDetails(updatedData);
+        } catch (err) {
+            console.error('Failed to post comment', err);
+            // Could show a toast here
+        } finally {
+            setSubmittingComment(false);
+        }
+    };
 
     if (loading) {
         return (
@@ -139,9 +161,29 @@ export const IssueDetailView = () => {
                 )}
             </div>
 
-            {/* Timeline */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <IssueTimeline events={history} />
+            {/* Timeline & Comments Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Timeline - Left/Top on mobile, Left on Desktop */}
+                <div className="lg:col-span-1 space-y-6">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <IssueTimeline events={details.history} />
+                    </div>
+                </div>
+
+                {/* Discussion - Main Content Area */}
+                <div className="lg:col-span-2 space-y-6">
+                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-8">
+                        <CommentList comments={details.comments || []} />
+
+                        <div className="pt-6 border-t border-gray-100">
+                            <CommentForm
+                                issueId={Number(issueId)}
+                                onSubmit={handleCommentSubmit}
+                                isSubmitting={submittingComment}
+                            />
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );

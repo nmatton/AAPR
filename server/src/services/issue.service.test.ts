@@ -13,6 +13,7 @@ jest.mock('../lib/prisma', () => ({
         $transaction: jest.fn((callback: any) => callback(prisma)),
         issue: {
             create: jest.fn(),
+            findUnique: jest.fn(),
         },
         issuePractice: {
             create: jest.fn(),
@@ -22,6 +23,9 @@ jest.mock('../lib/prisma', () => ({
         },
         teamPractice: {
             findFirst: jest.fn(),
+        },
+        teamMember: {
+            findUnique: jest.fn(),
         }
     },
 }));
@@ -37,6 +41,11 @@ jest.mock('../repositories/issue.repository', () => ({
 
 jest.mock('../repositories/event.repository', () => ({
     findByEntity: jest.fn(),
+}));
+
+jest.mock('../repositories/comment.repository', () => ({
+    create: jest.fn(),
+    findByIssueId: jest.fn(),
 }));
 
 describe('IssueService', () => {
@@ -116,6 +125,40 @@ describe('IssueService', () => {
         });
     });
 
+    describe('addComment', () => {
+        const mockIssue = { id: 100, teamId: 1 };
+
+        it('should create comment and log event if user is member', async () => {
+            // Setup
+            (prisma.issue.findUnique as jest.Mock<any>).mockResolvedValue(mockIssue);
+            (prisma.teamMember.findUnique as jest.Mock<any>).mockResolvedValue({ id: 1 }); // Is member
+
+            const commentRepository = require('../repositories/comment.repository');
+            commentRepository.create.mockResolvedValue({ id: 999, content: 'Test comment' });
+
+            await import('./issue.service').then(m => m.addComment(100, 5, 'My comment'));
+
+            expect(prisma.issue.findUnique).toHaveBeenCalledWith({ where: { id: 100 } });
+            expect(prisma.teamMember.findUnique).toHaveBeenCalled();
+            expect(commentRepository.create).toHaveBeenCalledWith(
+                expect.objectContaining({ content: 'My comment', issueId: 100, authorId: 5 }),
+                expect.anything()
+            );
+            expect(eventService.logEvent).toHaveBeenCalledWith(
+                expect.objectContaining({ eventType: 'issue.comment_added' }),
+                expect.anything()
+            );
+        });
+
+        it('should throw forbidden if user is not team member', async () => {
+            (prisma.issue.findUnique as jest.Mock<any>).mockResolvedValue(mockIssue);
+            (prisma.teamMember.findUnique as jest.Mock<any>).mockResolvedValue(null); // Not member
+
+            await expect(import('./issue.service').then(m => m.addComment(100, 5, 'Failed')))
+                .rejects.toThrow('You do not have permission');
+        });
+    });
+
 
 
     describe('getIssueDetails', () => {
@@ -148,6 +191,11 @@ describe('IssueService', () => {
             (prisma as any).user = { findMany: jest.fn() };
             ((prisma as any).user.findMany as jest.Mock<any>).mockResolvedValue(mockUsers);
 
+            const commentRepository = require('../repositories/comment.repository');
+            commentRepository.findByIssueId.mockResolvedValue([
+                { id: 50, content: 'Hello', createdAt: new Date(), authorId: 1, author: { name: 'Alice' } }
+            ]);
+
             const result = await import('./issue.service').then(m => m.getIssueDetails(teamId, issueId));
 
             expect(issueRepository.findById).toHaveBeenCalledWith(issueId, teamId);
@@ -159,6 +207,8 @@ describe('IssueService', () => {
             }));
             expect(result.history).toHaveLength(1);
             expect(result.history[0].actor).toEqual({ id: 1, name: 'Alice' });
+            expect(result.comments).toHaveLength(1);
+            expect(result.comments[0].content).toBe('Hello');
         });
 
         it('should throw 404 if issue not found', async () => {

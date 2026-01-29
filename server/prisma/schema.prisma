@@ -29,6 +29,7 @@ model User {
   bigFiveResponses  BigFiveResponse[]
   bigFiveScore      BigFiveScore?
   createdIssues     Issue[]
+  comments          Comment[]
 
   @@map("users")
 }
@@ -411,10 +412,35 @@ model Issue {
   team           Team            @relation(fields: [teamId], references: [id], onDelete: Cascade)
   createdByUser  User            @relation(fields: [createdBy], references: [id])
   linkedPractices IssuePractice[]
+  comments       Comment[]
 
   @@index([teamId], map: "idx_issues_team")
   @@index([status], map: "idx_issues_status")
   @@map("issues")
+}
+
+/// Comment entity - discussions on issues
+/// Isolation: implicitly linked via issue_id -> team_id
+model Comment {
+  /// Auto-incrementing comment identifier
+  id        Int      @id @default(autoincrement())
+  /// Comment content (markdown supported)
+  content   String   @db.Text
+  /// Issue identifier
+  issueId   Int      @map("issue_id")
+  /// Author identifier
+  authorId  Int      @map("author_id")
+  /// Creation timestamp
+  createdAt DateTime @default(now()) @map("created_at")
+  /// Last update timestamp
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  issue  Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  author User  @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([issueId], map: "idx_comments_issue")
+  @@index([authorId], map: "idx_comments_author")
+  @@map("comments")
 }
 
 /// IssuePractice entity - links issues to related practices

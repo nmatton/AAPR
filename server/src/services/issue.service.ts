@@ -5,6 +5,7 @@ import * as eventService from './events.service';
 import { Priority } from '@prisma/client';
 import * as issueRepository from '../repositories/issue.repository';
 import * as eventRepository from '../repositories/event.repository';
+import * as commentRepository from '../repositories/comment.repository';
 
 export interface IssueInput {
     title: string;
@@ -84,6 +85,58 @@ export const createIssue = async (input: IssueInput) => {
     });
 };
 
+export const addComment = async (issueId: number, userId: number, content: string) => {
+    // Validation
+    if (!content || content.trim().length === 0) {
+        throw new AppError('validation_error', 'Content is required', { field: 'content' }, 400);
+    }
+
+    // Ensure issue exists and user has access (via team)
+    const issue = await prisma.issue.findUnique({ where: { id: issueId } });
+    if (!issue) {
+        throw new AppError('not_found', 'Issue not found', { issueId }, 404);
+    }
+
+    // Check if user belongs to the team of the issue
+    const membership = await prisma.teamMember.findUnique({
+        where: {
+            teamId_userId: {
+                teamId: issue.teamId,
+                userId: userId
+            }
+        }
+    });
+
+    if (!membership) {
+        throw new AppError('forbidden', 'You do not have permission to comment on this issue', { issueId, userId }, 403);
+    }
+
+    return await prisma.$transaction(async (tx) => {
+        // Create Comment
+        const comment = await commentRepository.create({
+            content,
+            issueId,
+            authorId: userId
+        }, tx);
+
+        // Log Event
+        await eventService.logEvent({
+            eventType: 'issue.comment_added',
+            teamId: issue.teamId,
+            actorId: userId,
+            entityType: 'issue',
+            entityId: issueId,
+            action: 'updated',
+            payload: {
+                commentId: comment.id,
+                contentSnippet: content.substring(0, 50) + (content.length > 50 ? '...' : '')
+            }
+        }, tx);
+
+        return comment;
+    });
+};
+
 export const getIssueDetails = async (teamId: number, issueId: number) => {
     // 1. Fetch Issue
     const issue = await issueRepository.findById(issueId, teamId);
@@ -102,7 +155,10 @@ export const getIssueDetails = async (teamId: number, issueId: number) => {
     });
     const userMap = new Map(users.map(u => [u.id, u]));
 
-    // 4. Map Response
+    // 4. Fetch Comments
+    const comments = await commentRepository.findByIssueId(issueId);
+
+    // 5. Map Response
     return {
         issue: {
             id: issue.id,
@@ -120,6 +176,15 @@ export const getIssueDetails = async (teamId: number, issueId: number) => {
                 title: lp.practice.title,
             })),
         },
+        comments: comments.map(c => ({
+            id: c.id,
+            content: c.content,
+            createdAt: c.createdAt,
+            author: {
+                id: c.authorId,
+                name: c.author.name
+            }
+        })),
         history: events.map(event => ({
             id: Number(event.id), // BigInt to Number
             eventType: event.eventType,
