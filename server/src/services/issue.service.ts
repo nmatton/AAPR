@@ -3,6 +3,8 @@ import { prisma } from '../lib/prisma';
 import { AppError } from './auth.service';
 import * as eventService from './events.service';
 import { Priority } from '@prisma/client';
+import * as issueRepository from '../repositories/issue.repository';
+import * as eventRepository from '../repositories/event.repository';
 
 export interface IssueInput {
     title: string;
@@ -80,4 +82,51 @@ export const createIssue = async (input: IssueInput) => {
 
         return issue;
     });
+};
+
+export const getIssueDetails = async (teamId: number, issueId: number) => {
+    // 1. Fetch Issue
+    const issue = await issueRepository.findById(issueId, teamId);
+    if (!issue) {
+        throw new AppError('not_found', 'Issue not found', { issueId, teamId }, 404);
+    }
+
+    // 2. Fetch History Events
+    const events = await eventRepository.findByEntity(teamId, 'issue', issueId);
+
+    // 3. Resolve Actors for Events
+    const actorIds = [...new Set(events.filter(e => e.actorId).map(e => e.actorId as number))];
+    const users = await prisma.user.findMany({
+        where: { id: { in: actorIds } },
+        select: { id: true, name: true }
+    });
+    const userMap = new Map(users.map(u => [u.id, u]));
+
+    // 4. Map Response
+    return {
+        issue: {
+            id: issue.id,
+            title: issue.title,
+            description: issue.description,
+            priority: issue.priority,
+            status: issue.status,
+            createdAt: issue.createdAt,
+            author: {
+                id: issue.createdByUser.id,
+                name: issue.createdByUser.name,
+            },
+            practices: issue.linkedPractices.map(lp => ({
+                id: lp.practice.id,
+                title: lp.practice.title,
+            })),
+        },
+        history: events.map(event => ({
+            id: Number(event.id), // BigInt to Number
+            eventType: event.eventType,
+            action: event.action,
+            actor: event.actorId ? userMap.get(event.actorId) : null,
+            createdAt: event.createdAt,
+            payload: event.payload,
+        })),
+    };
 };

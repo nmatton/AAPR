@@ -90,7 +90,7 @@ development_status:
   # Epic 4: Issue Submission & Discussion
   epic-4: in-progress
   4-1-submit-practice-linked-issue-with-description: done
-  4-2-view-issue-detail-with-full-history: ready-for-dev
+  4-2-view-issue-detail-with-full-history: done
   4-3-comment-in-issue-thread: backlog
   4-4-detect-and-handle-concurrent-edits-optimistic-locking: backlog
   epic-4-retrospective: optional

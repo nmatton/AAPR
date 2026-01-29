@@ -1,6 +1,6 @@
 # Story 4.2: View Issue Detail with Full History
 
-**Status:** ready-for-dev
+**Status:** done
 
 ## User Story
 
@@ -115,23 +115,23 @@ so that **I can understand the context, current status, and evolution of the dis
 
 ## Tasks / Subtasks
 
-- [ ] **Data Access Layer (Repositories)**
-    - [ ] Create `server/src/repositories/issue.repository.ts` with `findById`
-    - [ ] Create `server/src/repositories/event.repository.ts` with `findByEntity`
-    - [ ] Create `server/src/repositories/__tests__/issue.repository.test.ts` (TDD)
+- [x] **Data Access Layer (Repositories)**
+    - [x] Create `server/src/repositories/issue.repository.ts` with `findById`
+    - [x] Create `server/src/repositories/event.repository.ts` with `findByEntity`
+    - [x] Create `server/src/repositories/__tests__/issue.repository.test.ts` (TDD)
 
-- [ ] **Backend Service & API**
-    - [ ] Update `issue.service.ts`: Add `getIssueDetails` using new repositories
-    - [ ] Update `issues.controller.ts`: Add `getIssue` handler
-    - [ ] Update `issues.routes.ts`: Add GET route
-    - [ ] Test API endpoint manually or via integration test
+- [x] **Backend Service & API**
+    - [x] Update `issue.service.ts`: Add `getIssueDetails` using new repositories
+    - [x] Update `issues.controller.ts`: Add `getIssue` handler
+    - [x] Update `issues.routes.ts`: Add GET route
+    - [x] Test API endpoint manually or via integration test
 
-- [ ] **Frontend Components**
-    - [ ] Create `IssueTimeline` component
-    - [ ] Create `IssueDetailView` page component
-    - [ ] Add route to `App.tsx` or feature router
-    - [ ] Implement `issues.api.ts` fetch function
+- [x] **Frontend Components**
+    - [x] Create `IssueTimeline` component
+    - [x] Create `IssueDetailView` page component
+    - [x] Add route for detail view
+    - [x] Implement `issues.api.ts` fetch function
 
-- [ ] **Verification**
-    - [ ] Verify formatting of Markdown description
-    - [ ] Verify Team Isolation (try accessing another team's issue ID)
+- [x] **Verification**
+    - [x] Verify formatting of Markdown description (Fixed: installed `@tailwindcss/typography`)
+    - [x] Verify Team Isolation (verified via `issue.repository.test.ts` test case: "should return null if issue exists but belongs to another team")

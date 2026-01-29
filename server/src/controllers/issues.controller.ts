@@ -32,3 +32,22 @@ export const createIssue = async (req: Request, res: Response, next: NextFunctio
         next(error);
     }
 };
+
+export const getIssue = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { teamId, issueId } = req.params;
+
+        if (!teamId || isNaN(Number(teamId))) {
+            throw new AppError('validation_error', 'Invalid team ID', {}, 400);
+        }
+        if (!issueId || isNaN(Number(issueId))) {
+            throw new AppError('validation_error', 'Invalid issue ID', {}, 400);
+        }
+
+        const details = await issueService.getIssueDetails(Number(teamId), Number(issueId));
+        res.json(details);
+    } catch (error) {
+        next(error);
+    }
+};
+

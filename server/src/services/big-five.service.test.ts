@@ -4,8 +4,8 @@ import { describe, it, expect, beforeEach, jest } from '@jest/globals'
 import * as bigFiveService from './big-five.service'
 import { prisma } from '../lib/prisma'
 
-// Create a mock object that satisfies the structure we need
-const mockPrismaClient = {
+// Define mock structure factory for hoisting
+const createMockPrisma = () => ({
     bigFiveResponse: {
         createMany: jest.fn(),
         findMany: jest.fn(),
@@ -15,17 +15,36 @@ const mockPrismaClient = {
         upsert: jest.fn(),
         findUnique: jest.fn()
     },
-    $transaction: jest.fn()
-}
+    $transaction: jest.fn((callback: any) => callback(createMockPrisma()))
+});
 
-    // Implement $transaction to call the callback with the mock client
-    ; (mockPrismaClient.$transaction as jest.Mock).mockImplementation((callback: any) => {
-        return callback(mockPrismaClient)
-    })
+// Since we cannot use out-of-scope variables in jest.mock, and simple variables might work if prefixed with 'mock',
+// but complex objects often fail. The safest way is to define it inline or use jest.mocked pattern properly.
+// Given the existing structure, we will define the mock implementation inline.
 
-jest.mock('../lib/prisma', () => ({
-    prisma: mockPrismaClient
-}))
+jest.mock('../lib/prisma', () => {
+    const mockClient = {
+        bigFiveResponse: {
+            createMany: jest.fn(),
+            findMany: jest.fn(),
+            deleteMany: jest.fn()
+        },
+        bigFiveScore: {
+            upsert: jest.fn(),
+            findUnique: jest.fn()
+        },
+        $transaction: jest.fn()
+    };
+
+    // Implement transaction to call callback immediately
+    (mockClient.$transaction as jest.Mock).mockImplementation((callback: any) => {
+        return callback(mockClient);
+    });
+
+    return {
+        prisma: mockClient
+    };
+});
 
 // Use this for type-safe(ish) access in tests
 const prismaMock = prisma as any
