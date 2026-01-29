@@ -46,6 +46,8 @@ export const getIssueDetails = async (teamId: number, issueId: number): Promise<
     return apiClient(`/api/v1/teams/${teamId}/issues/${issueId}`);
 };
 
+
+
 export const createComment = async (teamId: number, issueId: number, content: string) => {
     return apiClient(`/api/v1/teams/${teamId}/issues/${issueId}/comments`, {
         method: 'POST',

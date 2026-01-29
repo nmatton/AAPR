@@ -92,7 +92,8 @@ development_status:
   4-1-submit-practice-linked-issue-with-description: done
   4-2-view-issue-detail-with-full-history: done
   4-3-comment-in-issue-thread: done
-  4-4-detect-and-handle-concurrent-edits-optimistic-locking: backlog
+  4-4-detect-and-handle-concurrent-edits-optimistic-locking: done # Feature removed per strategic decision (issues are immutable)
+  4-5-issue-management-dashboard: backlog
   epic-4-retrospective: optional
 
   # Epic 5: Adaptation Decision & Tracking

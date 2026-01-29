@@ -87,7 +87,7 @@ export const IssueDetailView = () => {
         );
     }
 
-    const { issue, history } = details;
+    const { issue } = details;
 
     const priorityColors = {
         LOW: 'bg-gray-100 text-gray-800',
@@ -113,13 +113,12 @@ export const IssueDetailView = () => {
                 </button>
             </div>
 
-            {/* Issue Details */}
+            {/* Issue Header */}
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
-                {/* Title and Badges */}
-                <div className="space-y-2">
-                    <h1 className="text-3xl font-bold text-gray-900">{issue.title}</h1>
+                <div className="flex justify-between items-start">
+                    <h1 className="text-2xl font-bold text-gray-900">{issue.title}</h1>
                     <div className="flex gap-2">
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${priorityColors[issue.priority as keyof typeof priorityColors]}`}>
+                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${priorityColors[issue.priority as keyof typeof priorityColors] || 'bg-gray-100 text-gray-800'}`}>
                             {issue.priority}
                         </span>
                         <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[issue.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'}`}>

@@ -160,62 +160,62 @@ describe('IssueService', () => {
     });
 
 
+});
+describe('getIssueDetails', () => {
+    const teamId = 1;
+    const issueId = 100;
 
-    describe('getIssueDetails', () => {
-        const teamId = 1;
-        const issueId = 100;
+    it('should return issue details and history', async () => {
+        const mockIssue = {
+            id: issueId,
+            title: 'Test Issue',
+            priority: 'HIGH',
+            status: 'OPEN',
+            teamId: teamId,
+            createdByUser: { id: 1, name: 'Alice' },
+            linkedPractices: [
+                { practice: { id: 10, title: 'Practice A' } }
+            ],
+        };
+        const mockEvents = [
+            { id: 1, eventType: 'issue.created', actorId: 1, createdAt: new Date() }
+        ];
+        const mockUsers = [
+            { id: 1, name: 'Alice' }
+        ];
 
-        it('should return issue details and history', async () => {
-            const mockIssue = {
-                id: issueId,
-                title: 'Test Issue',
-                priority: 'HIGH',
-                status: 'OPEN',
-                teamId: teamId,
-                createdByUser: { id: 1, name: 'Alice' },
-                linkedPractices: [
-                    { practice: { id: 10, title: 'Practice A' } }
-                ],
-            };
-            const mockEvents = [
-                { id: 1, eventType: 'issue.created', actorId: 1, createdAt: new Date() }
-            ];
-            const mockUsers = [
-                { id: 1, name: 'Alice' }
-            ];
+        (issueRepository.findById as jest.Mock<any>).mockResolvedValue(mockIssue);
+        (eventRepository.findByEntity as jest.Mock<any>).mockResolvedValue(mockEvents);
 
-            (issueRepository.findById as jest.Mock<any>).mockResolvedValue(mockIssue);
-            (eventRepository.findByEntity as jest.Mock<any>).mockResolvedValue(mockEvents);
+        // Mock prisma.user.findMany
+        (prisma as any).user = { findMany: jest.fn() };
+        ((prisma as any).user.findMany as jest.Mock<any>).mockResolvedValue(mockUsers);
 
-            // Mock prisma.user.findMany
-            (prisma as any).user = { findMany: jest.fn() };
-            ((prisma as any).user.findMany as jest.Mock<any>).mockResolvedValue(mockUsers);
+        const commentRepository = require('../repositories/comment.repository');
+        commentRepository.findByIssueId.mockResolvedValue([
+            { id: 50, content: 'Hello', createdAt: new Date(), authorId: 1, author: { name: 'Alice' } }
+        ]);
 
-            const commentRepository = require('../repositories/comment.repository');
-            commentRepository.findByIssueId.mockResolvedValue([
-                { id: 50, content: 'Hello', createdAt: new Date(), authorId: 1, author: { name: 'Alice' } }
-            ]);
+        const result = await import('./issue.service').then(m => m.getIssueDetails(teamId, issueId));
 
-            const result = await import('./issue.service').then(m => m.getIssueDetails(teamId, issueId));
+        expect(issueRepository.findById).toHaveBeenCalledWith(issueId, teamId);
+        expect(eventRepository.findByEntity).toHaveBeenCalledWith(teamId, 'issue', issueId);
+        expect(result.issue).toEqual(expect.objectContaining({
+            id: issueId,
+            author: { id: 1, name: 'Alice' },
+            practices: [{ id: 10, title: 'Practice A' }]
+        }));
+        expect(result.history).toHaveLength(1);
+        expect(result.history[0].actor).toEqual({ id: 1, name: 'Alice' });
+        expect(result.comments).toHaveLength(1);
+        expect(result.comments[0].content).toBe('Hello');
+    });
 
-            expect(issueRepository.findById).toHaveBeenCalledWith(issueId, teamId);
-            expect(eventRepository.findByEntity).toHaveBeenCalledWith(teamId, 'issue', issueId);
-            expect(result.issue).toEqual(expect.objectContaining({
-                id: issueId,
-                author: { id: 1, name: 'Alice' },
-                practices: [{ id: 10, title: 'Practice A' }]
-            }));
-            expect(result.history).toHaveLength(1);
-            expect(result.history[0].actor).toEqual({ id: 1, name: 'Alice' });
-            expect(result.comments).toHaveLength(1);
-            expect(result.comments[0].content).toBe('Hello');
-        });
+    it('should throw 404 if issue not found', async () => {
+        (issueRepository.findById as jest.Mock<any>).mockResolvedValue(null);
 
-        it('should throw 404 if issue not found', async () => {
-            (issueRepository.findById as jest.Mock<any>).mockResolvedValue(null);
-
-            await expect(import('./issue.service').then(m => m.getIssueDetails(teamId, 999)))
-                .rejects.toThrow('Issue not found');
-        });
+        await expect(import('./issue.service').then(m => m.getIssueDetails(teamId, 999)))
+            .rejects.toThrow('Issue not found');
     });
 });
+

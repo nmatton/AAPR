@@ -52,6 +52,8 @@ export const getIssue = async (req: Request, res: Response, next: NextFunction) 
 };
 
 
+
+
 export const createComment = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { issueId } = req.params;
