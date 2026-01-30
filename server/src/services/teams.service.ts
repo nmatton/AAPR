@@ -1,6 +1,8 @@
 import * as teamsRepository from '../repositories/teams.repository';
 import * as practiceRepository from '../repositories/practice.repository';
+import * as issueRepository from '../repositories/issue.repository';
 import * as coverageService from './coverage.service';
+
 import type { TeamWithStats, TeamPracticeWithPillars } from '../repositories/teams.repository';
 import { prisma } from '../lib/prisma';
 import { AppError } from './auth.service';
@@ -169,7 +171,7 @@ export const calculateTeamCoverage = async (teamId: number): Promise<number> => 
       uniquePillarIds.add(pp.pillar.id);
     });
   });
-  
+
   const coverage = Math.round((uniquePillarIds.size / TOTAL_PILLARS) * 100);
   return coverage;
 };
@@ -183,7 +185,7 @@ export const calculateTeamCoverage = async (teamId: number): Promise<number> => 
  */
 export const getUserTeams = async (userId: number): Promise<TeamDto[]> => {
   const teams = await teamsRepository.findTeamsByUserId(userId);
-  
+
   // Calculate coverage for each team
   const teamsWithCoverage = teams.map((team: TeamWithStats) => {
     const uniquePillarIds = new Set<number>();
@@ -206,7 +208,7 @@ export const getUserTeams = async (userId: number): Promise<TeamDto[]> => {
       createdAt: team.createdAt.toISOString(),
     };
   });
-  
+
   return teamsWithCoverage;
 };
 
@@ -423,7 +425,12 @@ export const getTeamPractices = async (teamId: number): Promise<PracticeDto[]> =
     );
   }
 
-  const teamPractices = await teamsRepository.getTeamPracticesWithPillars(teamId);
+  const [teamPractices, issueCounts] = await Promise.all([
+    teamsRepository.getTeamPracticesWithPillars(teamId),
+    issueRepository.countIssuesByPractice(teamId)
+  ]);
+
+  const countMap = new Map(issueCounts.map(c => [c.practiceId, c._count.issueId]));
 
   return teamPractices.map((tp) => ({
     id: tp.practice.id,
@@ -440,6 +447,7 @@ export const getTeamPractices = async (teamId: number): Promise<PracticeDto[]> =
     isGlobal: tp.practice.isGlobal,
     practiceVersion: tp.practice.practiceVersion,
     usedByTeamsCount: tp.practice._count?.teamPractices ?? 0,
+    issueCount: countMap.get(tp.practice.id) ?? 0,
     pillars: tp.practice.practicePillars.map((pp) => ({
       id: pp.pillar.id,
       name: pp.pillar.name,
@@ -448,6 +456,7 @@ export const getTeamPractices = async (teamId: number): Promise<PracticeDto[]> =
     }))
   }));
 };
+
 
 /**
  * Result of adding a practice to team
@@ -537,7 +546,7 @@ export const addPracticeToTeam = async (
   const practice = await prisma.practice.findUnique({
     where: { id: practiceId }
   });
-  
+
   if (!practice) {
     throw new AppError(
       'invalid_practice_id',

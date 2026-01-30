@@ -7,12 +7,26 @@ export interface CreateIssueDto {
     practiceIds?: number[];
 }
 
+
 export const createIssue = async (teamId: number, data: CreateIssueDto) => {
     return apiClient(`/api/v1/teams/${teamId}/issues`, {
         method: 'POST',
         body: JSON.stringify(data),
     });
 };
+
+export interface UpdateIssueDto {
+    status?: 'OPEN' | 'IN_DISCUSSION' | 'RESOLVED';
+    priority?: 'LOW' | 'MEDIUM' | 'HIGH';
+}
+
+export const updateIssue = async (teamId: number, issueId: number, data: UpdateIssueDto) => {
+    return apiClient(`/api/v1/teams/${teamId}/issues/${issueId}`, {
+        method: 'PATCH',
+        body: JSON.stringify(data),
+    });
+};
+
 
 export interface IssueDetails {
     issue: {
@@ -56,5 +70,52 @@ export const createComment = async (teamId: number, issueId: number, content: st
         },
         body: JSON.stringify({ content }),
     });
+};
+
+
+export interface IssueFilters {
+    status?: string;
+    practiceId?: number;
+    authorId?: number;
+    sortBy?: 'createdAt' | 'comments';
+    sortDir?: 'asc' | 'desc';
+}
+
+export interface IssueSummary {
+    id: number;
+    title: string;
+    description: string;
+    status: string;
+    createdAt: string;
+    priority: 'LOW' | 'MEDIUM' | 'HIGH';
+    author: { id: number; name: string };
+    practices: { id: number; title: string }[];
+    _count: { comments: number };
+}
+
+export const getIssues = async (teamId: number, filters?: IssueFilters): Promise<IssueSummary[]> => {
+    const params = new URLSearchParams();
+    if (filters) {
+        if (filters.status && filters.status !== 'ALL') params.append('status', filters.status);
+        if (filters.practiceId) params.append('practiceId', filters.practiceId.toString());
+        if (filters.authorId) params.append('authorId', filters.authorId.toString());
+        if (filters.sortBy) params.append('sortBy', filters.sortBy);
+        if (filters.sortDir) params.append('sortDir', filters.sortDir);
+    }
+    const queryString = params.toString() ? `?${params.toString()}` : '';
+    return apiClient(`/api/v1/teams/${teamId}/issues${queryString}`);
+};
+
+export interface IssueStats {
+    total: number;
+    byStatus: {
+        open: number;
+        in_progress: number;
+        done: number;
+    };
+}
+
+export const getIssueStats = async (teamId: number): Promise<IssueStats> => {
+    return apiClient(`/api/v1/teams/${teamId}/issues/stats`);
 };
 

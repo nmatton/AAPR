@@ -1,98 +1,96 @@
 
-import { findById } from './issue.repository';
+import { findAll } from './issue.repository';
 import { prisma } from '../lib/prisma';
-import { Priority, IssueStatus } from '@prisma/client';
+import { IssueStatus } from '@prisma/client';
 
-// Mock prisma
+// Mock prisma client
 jest.mock('../lib/prisma', () => ({
     prisma: {
         issue: {
-            findUnique: jest.fn(),
+            findMany: jest.fn(),
+            count: jest.fn(),
         },
     },
 }));
 
 describe('Issue Repository', () => {
-    beforeEach(() => {
-        jest.clearAllMocks();
-    });
+    describe('findAll', () => {
+        const mockTeamId = 1;
 
-    describe('findById', () => {
-        const mockIssue = {
-            id: 1,
-            title: 'Test Issue',
-            description: 'Description',
-            priority: Priority.HIGH,
-            status: IssueStatus.OPEN,
-            teamId: 1,
-            createdBy: 1,
-            createdAt: new Date(),
-            updatedAt: new Date(),
-            version: 1,
-            createdByUser: {
-                id: 1,
-                name: 'Alice',
-                email: 'alice@example.com',
-            },
-            linkedPractices: [
-                {
-                    practice: {
-                        id: 10,
-                        title: 'Test Practice',
-                    },
-                },
-            ],
-        };
+        beforeEach(() => {
+            jest.clearAllMocks();
+        });
 
-        it('should return issue with linked practices if found in team', async () => {
-            (prisma.issue.findUnique as jest.Mock).mockResolvedValue(mockIssue);
+        it('should find all issues for a team with default sorting', async () => {
+            const mockIssues = [{ id: 1, title: 'Test Issue' }];
+            (prisma.issue.findMany as jest.Mock).mockResolvedValue(mockIssues);
 
-            const result = await findById(1, 1);
+            const result = await findAll({ teamId: mockTeamId });
 
-            expect(prisma.issue.findUnique).toHaveBeenCalledWith({
-                where: { id: 1, teamId: 1 },
-                include: {
-                    createdByUser: {
-                        select: {
-                            id: true,
-                            name: true,
-                        },
-                    },
-                    linkedPractices: {
-                        include: {
-                            practice: {
-                                select: {
-                                    id: true,
-                                    title: true,
-                                },
-                            },
-                        },
-                    },
-                },
+            expect(prisma.issue.findMany).toHaveBeenCalledWith({
+                where: { teamId: mockTeamId },
+                include: expect.any(Object),
+                orderBy: { createdAt: 'desc' }, // Default sort
             });
-            expect(result).toEqual(mockIssue);
+            expect(result).toEqual(mockIssues);
         });
 
-        it('should return null if issue does not exist', async () => {
-            (prisma.issue.findUnique as jest.Mock).mockResolvedValue(null);
+        it('should filter by status', async () => {
+            const status: IssueStatus = 'OPEN';
+            await findAll({ teamId: mockTeamId, status });
 
-            const result = await findById(999, 1);
-
-            expect(prisma.issue.findUnique).toHaveBeenCalledWith(expect.objectContaining({
-                where: { id: 999, teamId: 1 },
+            expect(prisma.issue.findMany).toHaveBeenCalledWith(expect.objectContaining({
+                where: expect.objectContaining({
+                    teamId: mockTeamId,
+                    status: status,
+                }),
             }));
-            expect(result).toBeNull();
         });
 
-        it('should return null if issue exists but belongs to another team', async () => {
-            (prisma.issue.findUnique as jest.Mock).mockResolvedValue(null);
+        it('should filter by practiceId', async () => {
+            const practiceId = 101;
+            await findAll({ teamId: mockTeamId, practiceId });
 
-            const result = await findById(1, 2);
-
-            expect(prisma.issue.findUnique).toHaveBeenCalledWith(expect.objectContaining({
-                where: { id: 1, teamId: 2 },
+            expect(prisma.issue.findMany).toHaveBeenCalledWith(expect.objectContaining({
+                where: expect.objectContaining({
+                    teamId: mockTeamId,
+                    linkedPractices: {
+                        some: { practiceId: practiceId }
+                    }
+                }),
             }));
-            expect(result).toBeNull();
+        });
+
+        it('should filter by authorId', async () => {
+            const authorId = 55;
+            await findAll({ teamId: mockTeamId, authorId });
+
+            expect(prisma.issue.findMany).toHaveBeenCalledWith(expect.objectContaining({
+                where: expect.objectContaining({
+                    teamId: mockTeamId,
+                    createdBy: authorId,
+                }),
+            }));
+        });
+
+        it('should sort by createdAt ASC', async () => {
+            await findAll({ teamId: mockTeamId, sortBy: 'createdAt', sortDir: 'asc' });
+
+            expect(prisma.issue.findMany).toHaveBeenCalledWith(expect.objectContaining({
+                orderBy: { createdAt: 'asc' },
+            }));
+        });
+
+        it('should sort by comment count DESC', async () => {
+            await findAll({ teamId: mockTeamId, sortBy: 'comments', sortDir: 'desc' });
+
+            expect(prisma.issue.findMany).toHaveBeenCalledWith(expect.objectContaining({
+                orderBy: {
+                    comments: {
+                        _count: 'desc'
+                    }
+                }
+            }));
         });
     });
 });

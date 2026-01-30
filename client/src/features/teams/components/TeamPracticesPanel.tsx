@@ -173,6 +173,12 @@ export const TeamPracticesPanel = ({ teamId, onPracticeRemoved, onPracticeClick,
                         {pillar.name}
                       </span>
                     ))}
+                    {practice.issueCount !== undefined && practice.issueCount > 0 && (
+                      <span className="rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700">
+                        {practice.issueCount} Issues
+                      </span>
+                    )}
+
                   </div>
                   <div className="mt-3 flex gap-2">
                     <button

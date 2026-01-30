@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useIssues } from '../../issues/hooks/useIssues';
 import { SidebarPanel } from '../../../components/ui/SidebarPanel';
+
 import { fetchPracticeDetail, logPracticeDetailViewed } from '../api/practices.api';
 import { PillarContextPopover } from './PillarContextPopover';
 import type { Practice, Pillar } from '../types';
@@ -39,7 +42,10 @@ export const PracticeDetailSidebar: React.FC<PracticeDetailSidebarProps> = ({
     onEdit,
     onNavigateToPractice
 }) => {
+    const navigate = useNavigate();
+    const { data: linkedIssues } = useIssues(teamId || 0, { practiceId: practiceId || undefined });
     const [practice, setPractice] = useState<DetailedPractice | null>(null);
+
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [activePillar, setActivePillar] = useState<Pillar | null>(null);
@@ -264,6 +270,36 @@ export const PracticeDetailSidebar: React.FC<PracticeDetailSidebarProps> = ({
                             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Work Products</h3>
                             {renderList(practice.workProducts)}
                         </div>
+
+                        {/* Linked Issues */}
+                        {teamId && linkedIssues && linkedIssues.length > 0 && (
+                            <div className="mt-6 pt-4 border-t border-gray-100">
+                                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Linked Issues</h3>
+                                <ul className="space-y-2">
+                                    {linkedIssues.map(issue => (
+                                        <li
+                                            key={issue.id}
+                                            className="bg-white border border-gray-200 rounded-md p-2 hover:bg-gray-50 cursor-pointer transition-colors"
+                                            onClick={() => {
+                                                onClose();
+                                                setTimeout(() => {
+                                                    navigate(`/teams/${teamId}/issues/${issue.id}`);
+                                                }, 100);
+                                            }}
+                                        >
+                                            <div className="font-medium text-gray-900 text-sm truncate">{issue.title}</div>
+                                            <div className="flex justify-between items-center mt-1 text-xs">
+                                                <span className={`px-2 py-0.5 rounded-full ${issue.status === 'OPEN' ? 'bg-blue-100 text-blue-800' : issue.status === 'IN_DISCUSSION' ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800'}`}>
+                                                    {issue.status.replace('_', ' ')}
+                                                </span>
+                                                <span className="text-gray-500">#{issue.id}</span>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+
 
                     </div>
                 ) : null}

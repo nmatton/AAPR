@@ -17,6 +17,7 @@ import { PracticeCatalog } from './features/practices/pages/PracticeCatalog'
 import { BigFivePage } from './features/big-five/pages/BigFivePage'
 import { AuthenticatedLayout } from './components/ui/AuthenticatedLayout'
 import { IssueDetailView } from './features/issues/components/IssueDetailView'
+import { IssuesDashboard } from './features/issues/pages/IssuesDashboard'
 
 const TeamsPage = () => {
   return <TeamsList />
@@ -173,6 +174,16 @@ const AppRoutes = () => {
           <ProtectedRoute>
             <AuthenticatedLayout>
               <BigFivePage />
+            </AuthenticatedLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/teams/:teamId/issues"
+        element={
+          <ProtectedRoute>
+            <AuthenticatedLayout>
+              <IssuesDashboard />
             </AuthenticatedLayout>
           </ProtectedRoute>
         }

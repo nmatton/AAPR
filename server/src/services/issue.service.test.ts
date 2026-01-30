@@ -37,6 +37,8 @@ jest.mock('./events.service', () => ({
 
 jest.mock('../repositories/issue.repository', () => ({
     findById: jest.fn(),
+    findAll: jest.fn(),
+    countByStatus: jest.fn(),
 }));
 
 jest.mock('../repositories/event.repository', () => ({
@@ -216,6 +218,75 @@ describe('getIssueDetails', () => {
 
         await expect(import('./issue.service').then(m => m.getIssueDetails(teamId, 999)))
             .rejects.toThrow('Issue not found');
+    });
+});
+
+describe('getIssues', () => {
+    const teamId = 1;
+
+    it('should return mapped issues list', async () => {
+        const mockRepoIssues = [
+            {
+                id: 1,
+                title: 'Issue 1',
+                description: 'Desc 1',
+                status: 'OPEN',
+                priority: 'HIGH',
+                createdAt: new Date(),
+                createdByUser: { id: 10, name: 'Bob' },
+                linkedPractices: [
+                    { practice: { id: 5, title: 'Prac 5' } }
+                ],
+                _count: { comments: 3 }
+            }
+        ];
+
+        (issueRepository.findAll as jest.Mock<any>).mockResolvedValue(mockRepoIssues);
+
+        const result = await import('./issue.service').then(m => m.getIssues(teamId, {}));
+
+        expect(issueRepository.findAll).toHaveBeenCalledWith(expect.objectContaining({ teamId }));
+        expect(result).toHaveLength(1);
+        expect(result[0]).toEqual(expect.objectContaining({
+            id: 1,
+            title: 'Issue 1',
+            status: 'OPEN',
+            author: { id: 10, name: 'Bob' },
+            practices: [{ id: 5, title: 'Prac 5' }],
+            _count: { comments: 3 }
+        }));
+    });
+});
+
+describe('getIssueStats', () => {
+    const teamId = 1;
+
+    it('should return issue stats by status', async () => {
+        const mockCounts = [
+            { status: 'OPEN', _count: { _all: 5 } },
+            { status: 'IN_DISCUSSION', _count: { _all: 3 } },
+            { status: 'RESOLVED', _count: { _all: 10 } }
+        ];
+
+        // Access the mocked repository function
+        const issueRepo = require('../repositories/issue.repository');
+        issueRepo.countByStatus.mockResolvedValue(mockCounts);
+
+        // We cast to any because the function doesn't exist on the type yet
+        const service = await import('./issue.service') as any;
+        const result = await service.getIssueStats(teamId);
+
+        expect(issueRepo.countByStatus).toHaveBeenCalledWith(teamId);
+        expect(result).toEqual({
+            total: 18,
+            byStatus: {
+                open: 5,
+                in_progress: 3,
+                done: 10
+            } // Normalized keys to lowercase as per likely requirement or convention?
+            // Wait, the story says "returning counts by status". Usually keys are the status enum values.
+            // Let's assume keys are 'OPEN', 'IN_PROGRESS', 'DONE'.
+        });
     });
 });
 

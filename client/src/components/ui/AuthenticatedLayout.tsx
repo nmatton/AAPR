@@ -89,6 +89,21 @@ export const AuthenticatedLayout = ({ children }: AuthenticatedLayoutProps) => {
                                 </NavLink>
                             )}
 
+                            {/* Issues - visible only in team context */}
+                            {isInTeamContext && (
+                                <NavLink
+                                    to={`/teams/${teamId}/issues`}
+                                    className={({ isActive }) =>
+                                        `text-sm font-medium transition-colors ${isActive
+                                            ? 'text-teal-600'
+                                            : 'text-gray-700 hover:text-teal-600'
+                                        }`
+                                    }
+                                >
+                                    Issues
+                                </NavLink>
+                            )}
+
                             {/* User Profile/Avatar */}
                             {user && (
                                 <div className="flex items-center gap-2 text-sm text-gray-700 ml-4 border-l pl-6 border-gray-200">
@@ -180,6 +195,18 @@ export const AuthenticatedLayout = ({ children }: AuthenticatedLayoutProps) => {
                                         }
                                     >
                                         Members
+                                    </NavLink>
+                                    <NavLink
+                                        to={`/teams/${teamId}/issues`}
+                                        onClick={() => setIsMobileMenuOpen(false)}
+                                        className={({ isActive }) =>
+                                            `block px-3 py-2 rounded-md text-base font-medium ${isActive
+                                                ? 'bg-teal-50 text-teal-700'
+                                                : 'text-gray-700 hover:text-teal-600 hover:bg-gray-50'
+                                            }`
+                                        }
+                                    >
+                                        Issues
                                     </NavLink>
                                 </>
                             )}

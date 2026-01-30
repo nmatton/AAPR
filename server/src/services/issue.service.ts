@@ -16,6 +16,12 @@ export interface IssueInput {
     practiceIds?: number[];
 }
 
+export interface UpdateIssueInput {
+    status?: 'OPEN' | 'IN_PROGRESS' | 'DONE';
+    priority?: 'LOW' | 'MEDIUM' | 'HIGH';
+}
+
+
 export const createIssue = async (input: IssueInput) => {
     const { title, description, priority, teamId, createdBy, practiceIds } = input;
 
@@ -137,6 +143,59 @@ export const addComment = async (issueId: number, userId: number, content: strin
     });
 };
 
+export const updateIssue = async (teamId: number, issueId: number, userId: number, updates: UpdateIssueInput) => {
+    // 1. Check if issue exists
+    const issue = await issueRepository.findById(issueId, teamId);
+    if (!issue) {
+        throw new AppError('not_found', 'Issue not found', { issueId, teamId }, 404);
+    }
+
+    // 2. Perform Update
+    let dataToUpdate: any = {};
+    if (updates.status) dataToUpdate.status = updates.status;
+    if (updates.priority) dataToUpdate.priority = updates.priority;
+
+    if (Object.keys(dataToUpdate).length === 0) {
+        return issue;
+    }
+
+    const updatedIssue = await issueRepository.update(issueId, teamId, dataToUpdate);
+
+    // 3. Log Events
+    if (updates.status && updates.status !== issue.status) {
+        await eventService.logEvent({
+            eventType: 'issue.status_changed',
+            teamId,
+            actorId: userId,
+            entityType: 'issue',
+            entityId: issueId,
+            action: 'updated',
+            payload: {
+                oldStatus: issue.status,
+                newStatus: updates.status
+            }
+        });
+    }
+
+    if (updates.priority && updates.priority !== issue.priority) {
+        await eventService.logEvent({
+            eventType: 'issue.priority_changed',
+            teamId,
+            actorId: userId,
+            entityType: 'issue',
+            entityId: issueId,
+            action: 'updated',
+            payload: {
+                oldPriority: issue.priority,
+                newPriority: updates.priority
+            }
+        });
+    }
+
+    return updatedIssue;
+};
+
+
 
 
 export const getIssueDetails = async (teamId: number, issueId: number) => {
@@ -197,3 +256,56 @@ export const getIssueDetails = async (teamId: number, issueId: number) => {
         })),
     };
 };
+
+export const getIssues = async (teamId: number, options: Omit<issueRepository.FindIssuesOptions, 'teamId'>) => {
+    const issues = await issueRepository.findAll({
+        teamId,
+        ...options
+    });
+
+    return issues.map(issue => ({
+        id: issue.id,
+        title: issue.title,
+        description: issue.description,
+        status: issue.status,
+        priority: issue.priority,
+        createdAt: issue.createdAt,
+        author: {
+            id: issue.createdByUser.id,
+            name: issue.createdByUser.name,
+        },
+        practices: issue.linkedPractices.map(lp => ({
+            id: lp.practice.id,
+            title: lp.practice.title,
+        })),
+        _count: {
+            comments: issue._count.comments
+        }
+    }));
+};
+
+export const getIssueStats = async (teamId: number) => {
+    const statusCounts = await issueRepository.countByStatus(teamId);
+
+    const total = statusCounts.reduce((acc, curr) => acc + curr._count._all, 0);
+
+    const byStatus = {
+        open: 0,
+        in_progress: 0,
+        done: 0
+    };
+
+    statusCounts.forEach(stat => {
+        let key: keyof typeof byStatus | null = null;
+        if (stat.status === 'OPEN') key = 'open';
+        else if (stat.status === 'IN_DISCUSSION') key = 'in_progress';
+        else if (stat.status === 'RESOLVED') key = 'done';
+
+        if (key) {
+            byStatus[key] = stat._count._all;
+        }
+    });
+
+    return { total, byStatus };
+};
+

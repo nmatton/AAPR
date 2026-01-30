@@ -1702,7 +1702,103 @@ So that we don't lose work and can safely merge changes.
   **When** a conflict occurs
   **Then** my local draft is preserved in localStorage (can't be lost)
 
+
 ---
+
+#### Story 4.5: Issue Management Dashboard
+
+As a team member,
+I want to view all submitted issues in a centralized dashboard with filtering and sorting,
+So that I can manage the team's backlog of impediments and identify key areas for adaptation.
+
+**Acceptance Criteria:**
+
+- **Given** I'm on the global navigation
+  **When** I click [Issues]
+  **Then** I'm taken to the Issues Dashboard for my current team
+
+- **Given** I'm on the Issues Dashboard
+  **When** the page loads
+  **Then** I see a list of all issues submitted by my team
+  **And** each row/card shows: Practice Name, Description (preview), Status, Author, Created Date, Comment Count
+
+- **Given** I'm viewing the list
+  **When** I click on an issue
+  **Then** I'm navigated to the Issue Detail view (Story 4.2)
+
+- **Given** I want to find specific issues
+  **When** I use the filters
+  **Then** I can filter by:
+    - Status (Submitted, Discussed, Adaptation in Progress, Evaluated)
+    - Practice (dropdown of team practices)
+    - Author (dropdown of members)
+
+- **Given** I want to see most active discussions
+  **When** I change the sort order
+  **Then** I can sort by: Date (Newest/Oldest), Comments (Most/Least)
+
+- **Given** I'm on the Issues Dashboard
+  **When** I click [+ Submit Issue]
+  **Then** the Issue Submission modal/page opens (Story 4.1)
+
+- **Given** the list is empty (no issues)
+  **When** I view the page
+  **Then** I see an empty state with a prompt to "Submit your first issue"
+
+- **Given** I'm viewing the dashboard
+  **When** data is loaded
+  **Then** an event is logged: `{ action: "issues_dashboard.viewed", teamId, timestamp }`
+
+---
+
+
+---
+
+#### Story 4.6: Issue Dashboard & Detail Refinements
+
+As a **team member**,
+I want to **have a polished and consistent experience when managing issues**,
+So that **I can navigate smoothly, quickly view statuses, and access related practices without dead ends**.
+
+**Acceptance Criteria:**
+
+- **Given** I'm on the Team Dashboard
+  **When** I view the Overview/Stats section
+  **Then** I see an "Issues" card below (or next to) the Coverage card
+  **And** it shows the total number of issues
+  **And** it displays a mini-bar chart showing distribution by status (Open, In Progress, Done, etc.)
+
+- **Given** I'm on the "All Issues" page
+  **When** I see the header action "Submit Issue" (or empty state link)
+  **Then** clicking it opens the standard "New Issue" modal (same behavior as Dashboard button)
+  **And** I am NOT redirected to a broken page
+
+- **Given** I'm viewing an Issue Detail
+  **When** I see the Priority and Status badges
+  **Then** they are clickable
+  **And** clicking them allows me to quickly change the value (via dropdown or popover)
+
+- **Given** I'm viewing an Issue Detail
+  **When** I click "Back to issues"
+  **Then** I am returned to the "All Issues" list
+  **And** NOT strictly to the Team Dashboard
+
+- **Given** I'm viewing an Issue Detail
+  **When** I click the "Linked Practice" link
+  **Then** the underlying Practice is opened in the sidebar (same behavior as Dashboard practice list)
+  **And** the context remains the current page (or dashboard with sidebar open)
+
+- **Given** I'm on the Team Dashboard Practice List
+  **When** I view the list of practices
+  **Then** each practice row shows a count of linked issues
+
+- **Given** I open a Practice in the sidebar (from Dashboard or Issue Detail)
+  **When** the sidebar opens
+  **Then** I see a list of "Linked Issues" at the bottom of the sidebar
+  **And** clicking an issue in this list navigates to that Issue's Detail view
+
+---
+
 
 ### Epic 5: Adaptation Decision & Tracking
 

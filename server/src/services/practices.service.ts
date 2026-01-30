@@ -23,7 +23,9 @@ export interface PracticeDto {
   isGlobal: boolean;
   practiceVersion: number;
   usedByTeamsCount: number;
+  issueCount?: number;
   pillars: PracticePillarDto[];
+
 }
 
 export interface PracticesResponse {

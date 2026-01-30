@@ -9,6 +9,8 @@ import { CoverageSidebar } from './CoverageSidebar';
 import { PracticeDetailSidebar } from '../../practices/components/PracticeDetailSidebar';
 import { fetchPracticeDetail } from '../../practices/api/practices.api';
 import { TeamNameEditor } from './TeamNameEditor';
+import { TeamIssueStatsCard } from './TeamIssueStatsCard';
+
 import { PracticeEditForm } from './PracticeEditForm';
 import { RemovePracticeModal } from './RemovePracticeModal';
 import type { Practice } from '../../practices/types';
@@ -311,6 +313,7 @@ export const TeamDashboard = () => {
             {/* Right sidebar (25%) - coverage */}
             <div>
               <CoverageSidebar teamId={selectedTeam.id} />
+              <TeamIssueStatsCard teamId={selectedTeam.id} />
             </div>
           </div>
         </div>

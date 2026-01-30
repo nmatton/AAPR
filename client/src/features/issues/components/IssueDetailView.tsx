@@ -1,20 +1,27 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { getIssueDetails, IssueDetails, createComment } from '../api/issuesApi';
 import { IssueTimeline } from './IssueTimeline';
 import { CommentList } from './CommentList';
 import { CommentForm } from './CommentForm';
+import { PracticeDetailSidebar } from '../../practices/components/PracticeDetailSidebar';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 import { formatDistanceToNow } from 'date-fns';
+import { updateIssue } from '../api/issuesApi';
+import { StatusSelect, IssueStatus } from './StatusSelect';
+import { PrioritySelect, PriorityLevel } from './PrioritySelect';
 
 export const IssueDetailView = () => {
     const { teamId, issueId } = useParams<{ teamId: string; issueId: string }>();
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [details, setDetails] = useState<IssueDetails | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [submittingComment, setSubmittingComment] = useState(false);
+
+    const openPracticeId = searchParams.get('practiceId') ? Number(searchParams.get('practiceId')) : null;
 
     useEffect(() => {
         const fetchDetails = async () => {
@@ -59,6 +66,31 @@ export const IssueDetailView = () => {
         }
     };
 
+    const handleStatusChange = async (newStatus: IssueStatus) => {
+        if (!teamId || !issueId || !details) return;
+        try {
+            setDetails(prev => prev ? { ...prev, issue: { ...prev.issue, status: newStatus } } : null);
+            await updateIssue(Number(teamId), Number(issueId), { status: newStatus });
+        } catch (error) {
+            console.error('Failed to update status', error);
+            // Revert by fetching fresh data
+            const data = await getIssueDetails(Number(teamId), Number(issueId));
+            setDetails(data);
+        }
+    };
+
+    const handlePriorityChange = async (newPriority: PriorityLevel) => {
+        if (!teamId || !issueId || !details) return;
+        try {
+            setDetails(prev => prev ? { ...prev, issue: { ...prev.issue, priority: newPriority } } : null);
+            await updateIssue(Number(teamId), Number(issueId), { priority: newPriority });
+        } catch (error) {
+            console.error('Failed to update priority', error);
+            const data = await getIssueDetails(Number(teamId), Number(issueId));
+            setDetails(data);
+        }
+    };
+
     if (loading) {
         return (
             <div className="p-6" data-testid="loading-skeleton">
@@ -89,24 +121,14 @@ export const IssueDetailView = () => {
 
     const { issue } = details;
 
-    const priorityColors = {
-        LOW: 'bg-gray-100 text-gray-800',
-        MEDIUM: 'bg-yellow-100 text-yellow-800',
-        HIGH: 'bg-red-100 text-red-800',
-    };
 
-    const statusColors = {
-        OPEN: 'bg-green-100 text-green-800',
-        IN_DISCUSSION: 'bg-blue-100 text-blue-800',
-        RESOLVED: 'bg-gray-100 text-gray-800',
-    };
 
     return (
         <div className="max-w-4xl mx-auto p-6 space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">
                 <button
-                    onClick={() => navigate(`/teams/${teamId}`)}
+                    onClick={() => navigate(`/teams/${teamId}/issues`)}
                     className="text-blue-600 hover:text-blue-800"
                 >
                     ← Back to Issues
@@ -118,12 +140,14 @@ export const IssueDetailView = () => {
                 <div className="flex justify-between items-start">
                     <h1 className="text-2xl font-bold text-gray-900">{issue.title}</h1>
                     <div className="flex gap-2">
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${priorityColors[issue.priority as keyof typeof priorityColors] || 'bg-gray-100 text-gray-800'}`}>
-                            {issue.priority}
-                        </span>
-                        <span className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[issue.status as keyof typeof statusColors] || 'bg-gray-100 text-gray-800'}`}>
-                            {issue.status.replace('_', ' ')}
-                        </span>
+                        <PrioritySelect
+                            value={issue.priority as PriorityLevel}
+                            onChange={handlePriorityChange}
+                        />
+                        <StatusSelect
+                            value={issue.status as IssueStatus}
+                            onChange={handleStatusChange}
+                        />
                     </div>
                 </div>
 
@@ -150,7 +174,7 @@ export const IssueDetailView = () => {
                                 <span
                                     key={practice.id}
                                     className="px-3 py-1 bg-blue-50 text-blue-700 rounded-md text-sm cursor-pointer hover:bg-blue-100"
-                                    onClick={() => navigate(`/teams/${teamId}/practices/${practice.id}`)}
+                                    onClick={() => setSearchParams({ practiceId: practice.id.toString() })}
                                 >
                                     {practice.title}
                                 </span>
@@ -184,6 +208,15 @@ export const IssueDetailView = () => {
                     </div>
                 </div>
             </div>
+
+            <PracticeDetailSidebar
+                isOpen={!!openPracticeId}
+                practiceId={openPracticeId}
+                onClose={() => setSearchParams({})}
+                teamId={Number(teamId)}
+                isPracticeInTeam={true} // Likely true since we are in team context
+            />
         </div>
     );
 };
+

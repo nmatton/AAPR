@@ -20,7 +20,9 @@ export interface Practice {
   isGlobal?: boolean
   practiceVersion?: number
   usedByTeamsCount?: number
+  issueCount?: number
   pillars: Pillar[]
+
 }
 
 export interface PracticesResponse {
