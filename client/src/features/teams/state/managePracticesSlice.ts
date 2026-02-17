@@ -110,14 +110,17 @@ export const useManagePracticesStore = create<ManagePracticesState>((set, get) =
     try {
       const result = await editPracticeForTeam(teamId, practiceId, payload)
 
-      if (result.practice) {
+      // If practiceId is returned and different from original, it's a new practice (saveAsCopy)
+      if (result.practiceId && result.practiceId !== practiceId) {
+        // New practice created, reload the full list
+        await get().loadTeamPractices(teamId)
+      } else if (result.practice) {
+        // Existing practice updated, update it in place
         const { teamPractices } = get()
         const updatedPractices = teamPractices.map((practice) =>
           practice.id === result.practice!.id ? result.practice! : practice
         )
         set({ teamPractices: updatedPractices })
-      } else if (result.practiceId) {
-        await get().loadTeamPractices(teamId)
       }
 
       set({ isUpdating: false })

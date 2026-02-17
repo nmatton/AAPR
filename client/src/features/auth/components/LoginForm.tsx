@@ -126,11 +126,10 @@ export const LoginForm: React.FC = () => {
                 type="email"
                 autoComplete="email"
                 required
-                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
-                  touched.email && errors.email
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${touched.email && errors.email
                     ? 'border-red-300 text-red-900'
                     : 'border-gray-300 text-gray-900'
-                } placeholder-gray-500 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
+                  } placeholder-gray-500 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
                 placeholder="Email address"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -152,11 +151,10 @@ export const LoginForm: React.FC = () => {
                 type="password"
                 autoComplete="current-password"
                 required
-                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
-                  touched.password && errors.password
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${touched.password && errors.password
                     ? 'border-red-300 text-red-900'
                     : 'border-gray-300 text-gray-900'
-                } placeholder-gray-500 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
+                  } placeholder-gray-500 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -173,11 +171,10 @@ export const LoginForm: React.FC = () => {
             <button
               type="submit"
               disabled={isLoading || !isFormValid()}
-              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${
-                isLoading || !isFormValid()
+              className={`group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white ${isLoading || !isFormValid()
                   ? 'bg-indigo-400 cursor-not-allowed'
                   : 'bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500'
-              }`}
+                }`}
             >
               {isLoading ? (
                 <span className="flex items-center gap-2">
@@ -188,6 +185,20 @@ export const LoginForm: React.FC = () => {
                 'Sign in'
               )}
             </button>
+          </div>
+
+          <div className="text-sm text-center">
+            <span className="text-gray-500">Don't have an account? </span>
+            <a
+              href="/signup"
+              className="font-medium text-indigo-600 hover:text-indigo-500"
+              onClick={(e) => {
+                e.preventDefault()
+                navigate('/signup')
+              }}
+            >
+              Register here
+            </a>
           </div>
         </form>
       </div>

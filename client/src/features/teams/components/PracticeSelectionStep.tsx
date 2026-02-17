@@ -5,7 +5,7 @@ import type { Practice } from '../types/practice.types';
 interface PracticeSelectionStepProps {
   onBack: () => void;
   onSubmit: (practiceIds: number[]) => void;
-  onCreate: () => void;
+  onCreate: (practiceIds: number[]) => void;
   isCreating: boolean;
   selectedPracticeIds: number[];
 }
@@ -81,7 +81,7 @@ export const PracticeSelectionStep = ({
 
   const handleCreate = () => {
     onSubmit(selectedIds);
-    onCreate();
+    onCreate(selectedIds);
   };
 
   if (isLoading) {
@@ -196,7 +196,7 @@ export const PracticeSelectionStep = ({
         <button
           type="button"
           onClick={handleCreate}
-          disabled={selectedIds.length === 0 || isCreating}
+          disabled={isCreating}
           className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center"
         >
           {isCreating ? (

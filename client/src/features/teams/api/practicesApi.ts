@@ -66,7 +66,23 @@ const requestWithRefresh = async <T>(
   return data as T;
 };
 
-export const getPractices = async (page = 1, pageSize = 20) => {
-  const data = await requestWithRefresh<PracticesResponse>(`/api/v1/practices?page=${page}&pageSize=${pageSize}`);
-  return data.items;
+export const getPractices = async () => {
+  const pageSize = 100; // Server maximum
+  let allPractices: any[] = [];
+  let page = 1;
+  let total = 0;
+
+  // Load first page to get total count
+  const firstPage = await requestWithRefresh<PracticesResponse>(`/api/v1/practices?page=${page}&pageSize=${pageSize}`);
+  allPractices = firstPage.items;
+  total = firstPage.total;
+
+  // Load remaining pages if needed
+  while (allPractices.length < total) {
+    page++;
+    const nextPage = await requestWithRefresh<PracticesResponse>(`/api/v1/practices?page=${page}&pageSize=${pageSize}`);
+    allPractices = [...allPractices, ...nextPage.items];
+  }
+
+  return allPractices;
 };

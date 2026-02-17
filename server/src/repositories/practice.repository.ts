@@ -288,6 +288,65 @@ export async function validateCategoryId(categoryId: string): Promise<boolean> {
 }
 
 /**
+ * Generate a unique title for a practice by appending a suffix if needed
+ * @param baseTitle - Base title to start from
+ * @param categoryId - Category ID
+ * @param tx - Optional Prisma transaction client
+ * @returns A unique title that doesn't conflict with existing practices
+ */
+export async function generateUniquePracticeTitle(
+  baseTitle: string,
+  categoryId: string,
+  tx?: Prisma.TransactionClient
+): Promise<string> {
+  const client = tx ?? prisma;
+  
+  // Check if base title is already unique
+  const existingPractice = await client.practice.findUnique({
+    where: {
+      title_categoryId: {
+        title: baseTitle,
+        categoryId
+      }
+    },
+    select: { id: true }
+  });
+
+  if (!existingPractice) {
+    return baseTitle;
+  }
+
+  // Try appending " (Team)" first
+  let candidateTitle = `${baseTitle} (Team)`;
+  let counter = 2;
+  
+  while (true) {
+    const exists = await client.practice.findUnique({
+      where: {
+        title_categoryId: {
+          title: candidateTitle,
+          categoryId
+        }
+      },
+      select: { id: true }
+    });
+
+    if (!exists) {
+      return candidateTitle;
+    }
+
+    // Try with a counter
+    candidateTitle = `${baseTitle} (Team ${counter})`;
+    counter++;
+    
+    // Safety limit to prevent infinite loop
+    if (counter > 100) {
+      throw new Error('Unable to generate unique practice title');
+    }
+  }
+}
+
+/**
  * Create a new practice (team-specific or global)
  * @param data - Practice data
  * @param tx - Optional Prisma transaction client

@@ -1090,9 +1090,16 @@ export const editPracticeForTeam = async (
 
   if (saveAsCopy) {
     const createdPractice = await prisma.$transaction(async (tx) => {
+      // Generate a unique title to avoid constraint violations
+      const uniqueTitle = await practiceRepository.generateUniquePracticeTitle(
+        title,
+        categoryId,
+        tx
+      );
+
       const newPractice = await practiceRepository.createPractice(
         {
-          title,
+          title: uniqueTitle,
           goal,
           description: existingPractice.description ?? undefined,
           category: { connect: { id: categoryId } },
@@ -1132,6 +1139,10 @@ export const editPracticeForTeam = async (
           practiceId: newPractice.id
         }
       })
+
+      // Remove the original global practice from the team's portfolio
+      // This ensures we replace the global practice with the team-specific copy
+      await teamsRepository.removePracticeFromTeam(teamId, practiceId, tx)
 
       const eventPayload: Prisma.InputJsonObject = {
         teamId,

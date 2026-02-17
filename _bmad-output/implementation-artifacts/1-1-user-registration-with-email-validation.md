@@ -165,7 +165,7 @@
   ```
 
 ### Task 5: Frontend - Signup Form Component (AC1-AC4)
-- [x] Create `features/auth/components/SignupForm.tsx`:
+- [x] Create `features/auth/components/.tsx`:
   - Form fields: name (text), email (email), password (password)
   - Real-time validation (on blur): email format, password length
   - Submit button disabled until all validations pass

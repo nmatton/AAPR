@@ -81,4 +81,12 @@ describe('LoginForm', () => {
     expect(passwordInput).toHaveValue('password123')
     expect(loginMock).toHaveBeenCalledWith('user@example.com', 'password123')
   })
+
+  it('renders a link to the signup page', () => {
+    renderLoginForm()
+
+    const registerLink = screen.getByRole('link', { name: /register here/i })
+    expect(registerLink).toBeInTheDocument()
+    expect(registerLink).toHaveAttribute('href', '/signup')
+  })
 })

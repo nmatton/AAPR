@@ -207,11 +207,11 @@ export const ManagePracticesView = () => {
   const handlePracticeSaved = async (result: { practiceId?: number; practice?: Practice }) => {
     showSuccessMessage('Practice updated successfully');
     await fetchTeams();
-    if (activeTab === 'selected') {
-      await loadTeamPractices(numericTeamId);
-    } else {
-      await loadAvailablePractices(numericTeamId);
-    }
+    // Always refresh both lists because:
+    // - If saved as copy, new practice appears in team list
+    // - Original practice may have changed in available list
+    await loadTeamPractices(numericTeamId);
+    await loadAvailablePractices(numericTeamId);
     if (result.practice) {
       setCurrentDetail(result.practice);
     }

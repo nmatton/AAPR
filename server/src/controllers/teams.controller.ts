@@ -23,7 +23,6 @@ const createTeamSchema = z.object({
     .max(100, 'Team name must be less than 100 characters')
     .regex(/^[a-zA-Z0-9\s\-]+$/, 'Team name can only contain letters, numbers, spaces, and hyphens'),
   practiceIds: z.array(z.number().int().positive())
-    .min(1, 'At least one practice must be selected')
 });
 
 /**

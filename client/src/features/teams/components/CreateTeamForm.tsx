@@ -21,9 +21,9 @@ export const CreateTeamForm = () => {
     setSelectedPracticeIds(practiceIds);
   };
   
-  const handleCreateTeam = async () => {
+  const handleCreateTeam = async (practiceIds: number[]) => {
     try {
-      const team = await createTeam(teamName, selectedPracticeIds);
+      const team = await createTeam(teamName, practiceIds);
       navigate(`/teams/${team.id}`);
     } catch (error) {
       // Error handled by state; component displays error message
