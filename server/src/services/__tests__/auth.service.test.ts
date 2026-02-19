@@ -34,7 +34,7 @@ describe('Auth Service', () => {
 
     it('should create user with bcrypt-hashed password (10+ rounds)', async () => {
       // Mock: no existing user
-      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
+      ; (prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
 
       // Mock transaction to return new user
       const mockUser = {
@@ -44,28 +44,31 @@ describe('Auth Service', () => {
         createdAt: new Date()
       }
 
-      ;(prisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
-        return callback({
-          user: {
-            create: jest.fn().mockResolvedValue(mockUser)
-          },
-          event: {
-            create: jest.fn().mockResolvedValue({})
-          },
-          teamInvite: {
-            findMany: jest.fn().mockResolvedValue([]),
-            update: jest.fn()
-          },
-          teamMember: {
-            create: jest.fn()
-          }
+        ; (prisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
+          return callback({
+            user: {
+              create: jest.fn().mockResolvedValue(mockUser)
+            },
+            event: {
+              create: jest.fn().mockResolvedValue({})
+            },
+            teamInvite: {
+              findMany: jest.fn().mockResolvedValue([]),
+              update: jest.fn()
+            },
+            teamMember: {
+              create: jest.fn()
+            }
+          })
         })
-      })
 
       const result = await registerUser(validUserDto)
 
       // Verify user returned without password
-      expect(result).toEqual(mockUser)
+      expect(result).toEqual({
+        ...mockUser,
+        hasCompletedBigFive: false
+      })
       expect(result).not.toHaveProperty('password')
 
       // Verify transaction was called (atomic operation)
@@ -74,7 +77,7 @@ describe('Auth Service', () => {
 
     it('should throw AppError with code email_exists for duplicate email', async () => {
       // Mock: existing user found
-      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({
+      ; (prisma.user.findUnique as jest.Mock).mockResolvedValue({
         id: 999,
         email: validUserDto.email
       })
@@ -91,7 +94,7 @@ describe('Auth Service', () => {
     })
 
     it('should hash password with bcrypt before storing', async () => {
-      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
+      ; (prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
 
       const mockUser = {
         id: 1,
@@ -102,26 +105,26 @@ describe('Auth Service', () => {
 
       let capturedHashedPassword = ''
 
-      ;(prisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
-        return callback({
-          user: {
-            create: jest.fn().mockImplementation(async ({ data }) => {
-              capturedHashedPassword = data.password
-              return mockUser
-            })
-          },
-          event: {
-            create: jest.fn().mockResolvedValue({})
-          },
-          teamInvite: {
-            findMany: jest.fn().mockResolvedValue([]),
-            update: jest.fn()
-          },
-          teamMember: {
-            create: jest.fn()
-          }
+        ; (prisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
+          return callback({
+            user: {
+              create: jest.fn().mockImplementation(async ({ data }) => {
+                capturedHashedPassword = data.password
+                return mockUser
+              })
+            },
+            event: {
+              create: jest.fn().mockResolvedValue({})
+            },
+            teamInvite: {
+              findMany: jest.fn().mockResolvedValue([]),
+              update: jest.fn()
+            },
+            teamMember: {
+              create: jest.fn()
+            }
+          })
         })
-      })
 
       await registerUser(validUserDto)
 
@@ -138,7 +141,7 @@ describe('Auth Service', () => {
     })
 
     it('should log event in same transaction as user creation', async () => {
-      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
+      ; (prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
 
       const mockUser = {
         id: 1,
@@ -149,23 +152,23 @@ describe('Auth Service', () => {
 
       const mockEventCreate = jest.fn().mockResolvedValue({})
 
-      ;(prisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
-        return callback({
-          user: {
-            create: jest.fn().mockResolvedValue(mockUser)
-          },
-          event: {
-            create: mockEventCreate
-          },
-          teamInvite: {
-            findMany: jest.fn().mockResolvedValue([]),
-            update: jest.fn()
-          },
-          teamMember: {
-            create: jest.fn()
-          }
+        ; (prisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
+          return callback({
+            user: {
+              create: jest.fn().mockResolvedValue(mockUser)
+            },
+            event: {
+              create: mockEventCreate
+            },
+            teamInvite: {
+              findMany: jest.fn().mockResolvedValue([]),
+              update: jest.fn()
+            },
+            teamMember: {
+              create: jest.fn()
+            }
+          })
         })
-      })
 
       await registerUser(validUserDto)
 
@@ -189,7 +192,7 @@ describe('Auth Service', () => {
     })
 
     it('should auto-resolve pending invites on signup', async () => {
-      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
+      ; (prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
 
       const mockUser = {
         id: 77,
@@ -209,23 +212,23 @@ describe('Auth Service', () => {
       const mockTeamMemberCreate = jest.fn().mockResolvedValue({ id: 901 })
       const mockInviteUpdate = jest.fn().mockResolvedValue({})
 
-      ;(prisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
-        return callback({
-          user: {
-            create: jest.fn().mockResolvedValue(mockUser)
-          },
-          event: {
-            create: mockEventCreate
-          },
-          teamInvite: {
-            findMany: jest.fn().mockResolvedValue([pendingInvite]),
-            update: mockInviteUpdate
-          },
-          teamMember: {
-            create: mockTeamMemberCreate
-          }
+        ; (prisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
+          return callback({
+            user: {
+              create: jest.fn().mockResolvedValue(mockUser)
+            },
+            event: {
+              create: mockEventCreate
+            },
+            teamInvite: {
+              findMany: jest.fn().mockResolvedValue([pendingInvite]),
+              update: mockInviteUpdate
+            },
+            teamMember: {
+              create: mockTeamMemberCreate
+            }
+          })
         })
-      })
 
       await registerUser(validUserDto)
 
@@ -309,7 +312,7 @@ describe('Auth Service', () => {
     }
 
     it('should return user without password when credentials are valid', async () => {
-      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(userRecord)
+      ; (prisma.user.findUnique as jest.Mock).mockResolvedValue(userRecord)
       const compareSpy = jest.spyOn(bcrypt, 'compare') as jest.MockedFunction<typeof bcrypt.compare>
       compareSpy.mockImplementation(async () => true)
 
@@ -318,14 +321,15 @@ describe('Auth Service', () => {
       expect(result).toMatchObject({
         id: userRecord.id,
         name: userRecord.name,
-        email: userRecord.email
+        email: userRecord.email,
+        hasCompletedBigFive: false
       })
       expect(result).not.toHaveProperty('password')
       expect(bcrypt.compare).toHaveBeenCalledWith('valid-password', userRecord.password)
     })
 
     it('should throw invalid_credentials when password is incorrect', async () => {
-      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(userRecord)
+      ; (prisma.user.findUnique as jest.Mock).mockResolvedValue(userRecord)
       const compareSpy = jest.spyOn(bcrypt, 'compare') as jest.MockedFunction<typeof bcrypt.compare>
       compareSpy.mockImplementation(async () => false)
 
@@ -336,7 +340,7 @@ describe('Auth Service', () => {
     })
 
     it('should throw invalid_credentials when user does not exist', async () => {
-      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
+      ; (prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
 
       await expect(verifyCredentials('missing@example.com', 'any-password', '127.0.0.1')).rejects.toMatchObject({
         code: 'invalid_credentials',
@@ -345,7 +349,7 @@ describe('Auth Service', () => {
     })
 
     it('should log login success event with IP address', async () => {
-      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(userRecord)
+      ; (prisma.user.findUnique as jest.Mock).mockResolvedValue(userRecord)
       const compareSpy = jest.spyOn(bcrypt, 'compare') as jest.MockedFunction<typeof bcrypt.compare>
       compareSpy.mockImplementation(async () => true)
 

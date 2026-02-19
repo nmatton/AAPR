@@ -3,8 +3,10 @@ import { Questionnaire } from '../components/Questionnaire'
 import * as bigFiveApi from '../api/bigFiveApi'
 import { ProfileView } from '../components/ProfileView'
 import type { BigFiveScores } from '../api/bigFiveApi'
+import { useAuthStore } from '../../auth/state/authSlice'
 
 export const BigFivePage = () => {
+    const { refreshSession } = useAuthStore()
     const [isLoading, setIsLoading] = useState(true)
     const [hasCompleted, setHasCompleted] = useState(false)
     const [scores, setScores] = useState<BigFiveScores | null>(null)
@@ -21,6 +23,12 @@ export const BigFivePage = () => {
             if (response.completed && response.scores) {
                 setHasCompleted(true)
                 setScores(response.scores)
+
+                // Ensure auth store is in sync (in case user completed it but store is stale)
+                const currentUser = useAuthStore.getState().user
+                if (currentUser && !currentUser.hasCompletedBigFive) {
+                    await refreshSession()
+                }
             }
         } catch (err) {
             console.error('Failed to load scores:', err)
@@ -43,6 +51,7 @@ export const BigFivePage = () => {
             }))
 
             const result = await bigFiveApi.submitQuestionnaire(responsesArray)
+            await refreshSession() // Refresh user state to update hasCompletedBigFive
             setScores(result.scores)
             setHasCompleted(true)
             setShowQuestionnaire(false)

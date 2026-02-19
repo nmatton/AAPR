@@ -15,13 +15,13 @@ const getClientIpAddress = (req: Request): string => {
     const clientIp = forwardedFor.split(',')[0].trim()
     return clientIp
   }
-  
+
   // Normalize IPv6 localhost to 127.0.0.1 for consistency
   const remoteAddress = req.socket.remoteAddress || 'unknown'
   if (remoteAddress === '::1' || remoteAddress === '::ffff:127.0.0.1') {
     return '127.0.0.1'
   }
-  
+
   return remoteAddress
 }
 
@@ -50,7 +50,7 @@ export const registerUser = async (
 
     // Set HTTP-only secure cookies for token storage (XSS prevention)
     const isProduction = process.env.NODE_ENV === 'production'
-    
+
     res.cookie('accessToken', tokens.accessToken, {
       httpOnly: true,
       secure: isProduction, // HTTPS only in production
@@ -71,7 +71,8 @@ export const registerUser = async (
         id: user.id,
         name: user.name,
         email: user.email,
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
+        hasCompletedBigFive: user.hasCompletedBigFive
       },
       message: 'Registration successful'
     })
@@ -153,7 +154,8 @@ export const loginUser = async (
         id: user.id,
         name: user.name,
         email: user.email,
-        createdAt: user.createdAt
+        createdAt: user.createdAt,
+        hasCompletedBigFive: user.hasCompletedBigFive
       },
       message: 'Login successful'
     })
@@ -219,6 +221,7 @@ export const getCurrentUser = async (
       name: user.name,
       email: user.email,
       createdAt: user.createdAt,
+      hasCompletedBigFive: user.hasCompletedBigFive,
       requestId: res.getHeader('x-request-id')
     })
   } catch (error) {

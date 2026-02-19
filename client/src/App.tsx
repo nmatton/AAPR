@@ -16,6 +16,7 @@ import { TeamsList } from './features/teams/components/TeamsList'
 import { PracticeCatalog } from './features/practices/pages/PracticeCatalog'
 import { BigFivePage } from './features/big-five/pages/BigFivePage'
 import { AuthenticatedLayout } from './components/ui/AuthenticatedLayout'
+import { PersonalityGuard } from './components/ui/PersonalityGuard'
 import { IssueDetailView } from './features/issues/components/IssueDetailView'
 import { IssuesDashboard } from './features/issues/pages/IssuesDashboard'
 
@@ -40,7 +41,8 @@ const AppRoutes = () => {
           id: user.id,
           name: user.name,
           email: user.email,
-          createdAt: user.createdAt
+          createdAt: user.createdAt,
+          hasCompletedBigFive: user.hasCompletedBigFive
         })
       } catch (error) {
         reset()
@@ -82,9 +84,11 @@ const AppRoutes = () => {
         path="/teams"
         element={
           <ProtectedRoute>
-            <AuthenticatedLayout>
-              <TeamsPage />
-            </AuthenticatedLayout>
+            <PersonalityGuard>
+              <AuthenticatedLayout>
+                <TeamsPage />
+              </AuthenticatedLayout>
+            </PersonalityGuard>
           </ProtectedRoute>
         }
       />
@@ -102,9 +106,11 @@ const AppRoutes = () => {
         path="/teams/create"
         element={
           <ProtectedRoute>
-            <AuthenticatedLayout>
-              <CreateTeamForm />
-            </AuthenticatedLayout>
+            <PersonalityGuard>
+              <AuthenticatedLayout>
+                <CreateTeamForm />
+              </AuthenticatedLayout>
+            </PersonalityGuard>
           </ProtectedRoute>
         }
       />
@@ -112,9 +118,11 @@ const AppRoutes = () => {
         path="/teams/:teamId"
         element={
           <ProtectedRoute>
-            <AuthenticatedLayout>
-              <TeamDashboard />
-            </AuthenticatedLayout>
+            <PersonalityGuard>
+              <AuthenticatedLayout>
+                <TeamDashboard />
+              </AuthenticatedLayout>
+            </PersonalityGuard>
           </ProtectedRoute>
         }
       />
@@ -122,9 +130,11 @@ const AppRoutes = () => {
         path="/teams/:teamId/members"
         element={
           <ProtectedRoute>
-            <AuthenticatedLayout>
-              <TeamMembersView />
-            </AuthenticatedLayout>
+            <PersonalityGuard>
+              <AuthenticatedLayout>
+                <TeamMembersView />
+              </AuthenticatedLayout>
+            </PersonalityGuard>
           </ProtectedRoute>
         }
       />
@@ -132,9 +142,11 @@ const AppRoutes = () => {
         path="/teams/:teamId/members/:userId"
         element={
           <ProtectedRoute>
-            <AuthenticatedLayout>
-              <MemberDetailView />
-            </AuthenticatedLayout>
+            <PersonalityGuard>
+              <AuthenticatedLayout>
+                <MemberDetailView />
+              </AuthenticatedLayout>
+            </PersonalityGuard>
           </ProtectedRoute>
         }
       />
@@ -142,9 +154,11 @@ const AppRoutes = () => {
         path="/teams/:teamId/practices/add"
         element={
           <ProtectedRoute>
-            <AuthenticatedLayout>
-              <AddPracticesView />
-            </AuthenticatedLayout>
+            <PersonalityGuard>
+              <AuthenticatedLayout>
+                <AddPracticesView />
+              </AuthenticatedLayout>
+            </PersonalityGuard>
           </ProtectedRoute>
         }
       />
@@ -152,9 +166,11 @@ const AppRoutes = () => {
         path="/teams/:teamId/practices/manage"
         element={
           <ProtectedRoute>
-            <AuthenticatedLayout>
-              <ManagePracticesView />
-            </AuthenticatedLayout>
+            <PersonalityGuard>
+              <AuthenticatedLayout>
+                <ManagePracticesView />
+              </AuthenticatedLayout>
+            </PersonalityGuard>
           </ProtectedRoute>
         }
       />
@@ -162,9 +178,11 @@ const AppRoutes = () => {
         path="/teams/:teamId/coverage"
         element={
           <ProtectedRoute>
-            <AuthenticatedLayout>
-              <CoverageDetailsView />
-            </AuthenticatedLayout>
+            <PersonalityGuard>
+              <AuthenticatedLayout>
+                <CoverageDetailsView />
+              </AuthenticatedLayout>
+            </PersonalityGuard>
           </ProtectedRoute>
         }
       />
@@ -182,9 +200,11 @@ const AppRoutes = () => {
         path="/teams/:teamId/issues"
         element={
           <ProtectedRoute>
-            <AuthenticatedLayout>
-              <IssuesDashboard />
-            </AuthenticatedLayout>
+            <PersonalityGuard>
+              <AuthenticatedLayout>
+                <IssuesDashboard />
+              </AuthenticatedLayout>
+            </PersonalityGuard>
           </ProtectedRoute>
         }
       />
@@ -192,9 +212,11 @@ const AppRoutes = () => {
         path="/teams/:teamId/issues/:issueId"
         element={
           <ProtectedRoute>
-            <AuthenticatedLayout>
-              <IssueDetailView />
-            </AuthenticatedLayout>
+            <PersonalityGuard>
+              <AuthenticatedLayout>
+                <IssueDetailView />
+              </AuthenticatedLayout>
+            </PersonalityGuard>
           </ProtectedRoute>
         }
       />

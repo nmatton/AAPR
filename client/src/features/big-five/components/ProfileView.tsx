@@ -14,7 +14,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ scores, onRetake }) =>
         <div className="container mx-auto px-4 max-w-6xl">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-100">My Personality Profile</h1>
+                    <h1 className="text-3xl font-bold text-gray-700">My Personality Profile</h1>
                     <p className="text-gray-400 mt-1">
                         Completed on: {new Date(scores.createdAt).toLocaleDateString(undefined, {
                             year: 'numeric', month: 'long', day: 'numeric'
@@ -34,14 +34,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({ scores, onRetake }) =>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Radar Chart Section */}
-                <div className="lg:col-span-1 bg-gray-800/50 rounded-xl p-6 border border-gray-700 shadow-lg flex flex-col items-center justify-center">
+                <div className="lg:col-span-1 bg-gray-200/50 rounded-xl p-6 border border-gray-700 shadow-lg flex flex-col items-center justify-center">
                     <h2 className="text-xl font-semibold text-gray-200 mb-6 self-start">Visualization</h2>
                     <ProfileRadarChart scores={scores} />
                 </div>
 
                 {/* Breakdown Section */}
                 <div className="lg:col-span-2">
-                    <h2 className="text-xl font-semibold text-gray-200 mb-6">Trait Dimensions</h2>
+                    <h2 className="text-xl font-semibold text-gray-700 mb-6">Trait Dimensions</h2>
                     <TraitScoreList scores={scores} />
                 </div>
             </div>

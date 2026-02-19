@@ -1,0 +1,30 @@
+{
+  "name": "bmad_version",
+  "version": "1.0.0",
+  "description": "Research-grade web application for systematic identification and resolution of agile practice friction points through personality-informed collective decision-making.",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "install:all": "cd client && npm install && cd ../server && npm install",
+    "dev:client": "cd client && npm run dev",
+    "dev:server": "cd server && npm run dev",
+    "dev": "concurrently -c \"cyan.bold,magenta.bold\" -n \"CLIENT,SERVER\" \"npm run dev:client\" \"npm run dev:server\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nmatton/AAPR.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/nmatton/AAPR/issues"
+  },
+  "homepage": "https://github.com/nmatton/AAPR#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}

@@ -35,6 +35,7 @@ interface UserResponse {
   name: string
   email: string
   createdAt: Date
+  hasCompletedBigFive: boolean
 }
 
 /**
@@ -140,7 +141,10 @@ export const registerUser = async (dto: RegisterUserDto): Promise<UserResponse> 
     // Auto-resolve pending invites for this email
     await autoResolveInvitesOnSignup(newUser.id, newUser.email, tx)
 
-    return newUser
+    return {
+      ...newUser,
+      hasCompletedBigFive: false // New users haven't completed survey
+    }
   })
 
   return user
@@ -204,7 +208,12 @@ export const verifyCredentials = async (
       name: true,
       email: true,
       password: true,
-      createdAt: true
+      createdAt: true,
+      bigFiveScore: {
+        select: {
+          id: true
+        }
+      }
     }
   })
 
@@ -249,7 +258,8 @@ export const verifyCredentials = async (
     id: user.id,
     name: user.name,
     email: user.email,
-    createdAt: user.createdAt
+    createdAt: user.createdAt,
+    hasCompletedBigFive: !!user.bigFiveScore
   }
 }
 
@@ -291,7 +301,12 @@ export const getUserById = async (userId: number): Promise<UserResponse> => {
       id: true,
       name: true,
       email: true,
-      createdAt: true
+      createdAt: true,
+      bigFiveScore: {
+        select: {
+          id: true
+        }
+      }
     }
   })
 
@@ -299,5 +314,8 @@ export const getUserById = async (userId: number): Promise<UserResponse> => {
     throw new AppError('user_not_found', 'User not found', {}, 404)
   }
 
-  return user
+  return {
+    ...user,
+    hasCompletedBigFive: !!user.bigFiveScore
+  }
 }

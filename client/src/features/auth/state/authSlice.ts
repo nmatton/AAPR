@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { User, loginUser, logoutUser, refreshAccessToken } from '../api/authApi'
+import { User, loginUser, logoutUser, refreshAccessToken, getCurrentUser } from '../api/authApi'
 
 /**
  * Authentication state
@@ -79,7 +79,13 @@ export const useAuthStore = create<AuthState & AuthActions>()(
       refreshSession: async () => {
         try {
           await refreshAccessToken()
-          set({ lastRefreshTime: Date.now() })
+          const user = await getCurrentUser()
+          set({
+            user,
+            isAuthenticated: true,
+            lastRefreshTime: Date.now(),
+            error: null
+          })
         } catch (error) {
           // If refresh fails, reset auth state and throw for caller to handle
           set(initialState)
