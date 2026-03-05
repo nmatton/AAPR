@@ -1,0 +1,255 @@
+{
+  "metadata": {
+    "title": "Replace Agile Pillars Taxonomy (L1/L2) in Database and PracticeGoal Mapping",
+    "slug": "replace-agile-pillars-taxonomy-db-practicegoal-mapping",
+    "created": "2026-03-05T14:47:20.6826024+01:00",
+    "status": "ready-for-dev",
+    "version": 1,
+    "stepsCompleted": [1, 2, 3, 4],
+    "exported": "2026-03-05"
+  },
+  "summary": {
+    "objective": "Replace 5-category/19-pillar taxonomy with 4-category/14-pillar framework from docs/raw_practices/agile_pillars.md",
+    "strategy": "Stable slug IDs, complete reset migration, strict validation update",
+    "scope": "Seed script, validation enum, import mappings, test fixtures, frontend category maps, documentation",
+    "taskCount": 14,
+    "acceptanceCriteriaCount": 8,
+    "filesModified": 13
+  },
+  "tech_stack": [
+    "Node.js 18+",
+    "TypeScript (strict)",
+    "Express 4.18+",
+    "Prisma 7.x",
+    "PostgreSQL 14+",
+    "Zod",
+    "Jest",
+    "React 18.2",
+    "Vitest"
+  ],
+  "files_to_modify": [
+    "docs/raw_practices/agile_pillars.md",
+    "server/src/scripts/seed-categories-pillars.ts",
+    "server/src/schemas/practice.schema.ts",
+    "server/src/services/practice-import.service.ts",
+    "server/src/services/coverage.service.test.ts",
+    "server/src/routes/__tests__/practices.routes.test.ts",
+    "server/src/services/practices.service.test.ts",
+    "client/src/features/practices/components/CategoryFilter.tsx",
+    "client/src/features/practices/components/PillarFilterDropdown.tsx",
+    "client/src/features/practices/components/PracticeCard.tsx",
+    "docs/04-database.md",
+    "docs/05-backend-api.md",
+    "docs/06-frontend.md"
+  ],
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Define stable slug taxonomy from source of truth",
+      "file": "docs/raw_practices/agile_pillars.md",
+      "type": "definition",
+      "priority": "critical"
+    },
+    {
+      "id": 2,
+      "title": "Replace category and pillar seed data with new taxonomy",
+      "file": "server/src/scripts/seed-categories-pillars.ts",
+      "type": "backend-data",
+      "priority": "critical",
+      "dependencies": [1]
+    },
+    {
+      "id": 3,
+      "title": "Implement safe DB transition strategy for FK-coupled taxonomy IDs",
+      "file": "server/src/scripts/seed-categories-pillars.ts",
+      "type": "backend-data",
+      "priority": "critical",
+      "dependencies": [2]
+    },
+    {
+      "id": 4,
+      "title": "Update strict PracticeGoal validation to the new goals",
+      "file": "server/src/schemas/practice.schema.ts",
+      "type": "backend-validation",
+      "priority": "critical",
+      "dependencies": [1]
+    },
+    {
+      "id": 5,
+      "title": "Align practice import mappings with new category slugs",
+      "file": "server/src/services/practice-import.service.ts",
+      "type": "backend-service",
+      "priority": "high",
+      "dependencies": [2, 4]
+    },
+    {
+      "id": 6,
+      "title": "Update backend tests tied to old taxonomy IDs/names",
+      "file": "server/src/services/coverage.service.test.ts",
+      "type": "backend-tests",
+      "priority": "high",
+      "dependencies": [2, 4]
+    },
+    {
+      "id": 7,
+      "title": "Update additional backend tests using legacy category fixtures",
+      "file": "server/src/routes/__tests__/practices.routes.test.ts",
+      "type": "backend-tests",
+      "priority": "high",
+      "dependencies": [2, 4]
+    },
+    {
+      "id": 8,
+      "title": "Update service-level practice tests with new taxonomy fixtures",
+      "file": "server/src/services/practices.service.test.ts",
+      "type": "backend-tests",
+      "priority": "high",
+      "dependencies": [2, 4]
+    },
+    {
+      "id": 9,
+      "title": "Synchronize frontend category key maps with new slugs",
+      "file": "client/src/features/practices/components/CategoryFilter.tsx",
+      "type": "frontend",
+      "priority": "high",
+      "dependencies": [2]
+    },
+    {
+      "id": 10,
+      "title": "Update pillar/category visual mapping for new category keys",
+      "file": "client/src/features/practices/components/PillarFilterDropdown.tsx",
+      "type": "frontend",
+      "priority": "high",
+      "dependencies": [2]
+    },
+    {
+      "id": 11,
+      "title": "Update practice card badge mapping for new taxonomy keys",
+      "file": "client/src/features/practices/components/PracticeCard.tsx",
+      "type": "frontend",
+      "priority": "high",
+      "dependencies": [2]
+    },
+    {
+      "id": 12,
+      "title": "Update technical documentation to reflect new taxonomy",
+      "file": "docs/04-database.md",
+      "type": "documentation",
+      "priority": "medium",
+      "dependencies": [1, 2]
+    },
+    {
+      "id": 13,
+      "title": "Update backend API docs for taxonomy values",
+      "file": "docs/05-backend-api.md",
+      "type": "documentation",
+      "priority": "medium",
+      "dependencies": [1, 4]
+    },
+    {
+      "id": 14,
+      "title": "Update frontend docs for filters and coverage categories",
+      "file": "docs/06-frontend.md",
+      "type": "documentation",
+      "priority": "medium",
+      "dependencies": [1, 9, 10]
+    }
+  ],
+  "acceptance_criteria": [
+    {
+      "id": 1,
+      "statement": "Given the updated seed script and an empty taxonomy state, when taxonomy seeding runs, then exactly 4 categories and 14 pillars matching docs/raw_practices/agile_pillars.md are persisted with stable slug IDs.",
+      "category": "seed-validation"
+    },
+    {
+      "id": 2,
+      "statement": "Given pre-existing legacy taxonomy data, when the controlled reset/reseed sequence executes, then no FK constraint error occurs and the database ends in a consistent state containing only the new taxonomy reference data.",
+      "category": "database-safety"
+    },
+    {
+      "id": 3,
+      "statement": "Given a practice payload containing any legacy practice_goal value, when validation runs, then import is rejected with a validation error on practice_goal.",
+      "category": "validation"
+    },
+    {
+      "id": 4,
+      "statement": "Given a practice payload containing only new taxonomy goals, when import runs, then all goals map to valid pillar IDs and corresponding practice_pillars links are created.",
+      "category": "import-integration"
+    },
+    {
+      "id": 5,
+      "statement": "Given coverage endpoints are called after taxonomy replacement, when coverage is computed, then percentage and covered/gap logic remain unchanged and are based on the new category/pillar values.",
+      "category": "coverage-preservation"
+    },
+    {
+      "id": 6,
+      "statement": "Given backend unit/route tests are executed, when taxonomy fixtures are updated, then tests pass without changing business logic beyond taxonomy naming/ID updates.",
+      "category": "test-suites"
+    },
+    {
+      "id": 7,
+      "statement": "Given frontend catalog/filters render categories and pillars, when category IDs switch to new slugs, then category filters, color badges, and grouping continue to work with no runtime errors.",
+      "category": "frontend-regression"
+    },
+    {
+      "id": 8,
+      "statement": "Given project docs are consulted, when reading DB/API/frontend taxonomy sections, then they reflect 4 categories, 14 pillars, and slug-based IDs consistently.",
+      "category": "documentation-sync"
+    }
+  ],
+  "risks": [
+    {
+      "severity": "critical",
+      "description": "FK constraint violations if category IDs replaced without controlled cleanup",
+      "mitigation": "Task 3: Implement controlled reset/reseed sequence (delete practice_pillars, then update categories/pillars)"
+    },
+    {
+      "severity": "critical",
+      "description": "Strict validation will intentionally reject old practice_goal values",
+      "mitigation": "Design feature, not bug. Future practices_reference.json refresh/reimport acknowledged out-of-scope."
+    },
+    {
+      "severity": "high",
+      "description": "Frontend hardcoded category-key maps not synchronized with new slugs",
+      "mitigation": "Tasks 9-11: Update CategoryFilter, PillarFilterDropdown, PracticeCard components"
+    },
+    {
+      "severity": "high",
+      "description": "Test fixtures in 5+ files hardcoded with legacy category IDs and pillar names",
+      "mitigation": "Tasks 6-8: Update backend test fixtures while preserving assertion logic"
+    }
+  ],
+  "dependencies": {
+    "source_of_truth": "docs/raw_practices/agile_pillars.md",
+    "prisma_models": "server/prisma/schema.prisma",
+    "seed_pipeline": "server/src/scripts/seed-all.ts",
+    "future_work": "Refreshed docs/raw_practices/practices_reference.json aligned to new goals"
+  },
+  "testing_scope": {
+    "unit_tests": [
+      "server/src/services/coverage.service.test.ts",
+      "server/src/services/practices.service.test.ts",
+      "server/src/routes/__tests__/practices.routes.test.ts"
+    ],
+    "integration_validation": [
+      "Seed workflow count verification (4 categories, 14 pillars)",
+      "Import validation with legacy and new goal payloads",
+      "FK constraint verification post-transition",
+      "Coverage endpoint response structure preservation"
+    ],
+    "manual_verification": [
+      "Practices catalog UI with category filters",
+      "Badge colors and pillar grouping",
+      "No runtime errors in filter/coverage components"
+    ]
+  },
+  "export_info": {
+    "format": "Markdown + JSON",
+    "archive_location": "_bmad-output/exports/",
+    "files": [
+      "tech-spec-replace-agile-pillars-taxonomy-db-practicegoal-mapping.md",
+      "tech-spec-replace-agile-pillars-taxonomy-metadata.json"
+    ],
+    "usage": "Use Markdown for stakeholder review, JSON for programmatic workflows and versioning"
+  }
+}

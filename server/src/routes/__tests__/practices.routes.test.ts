@@ -37,10 +37,10 @@ describe('GET /api/v1/practices', () => {
           id: 1,
           title: 'Daily Standup',
           goal: 'Synchronize team daily',
-          categoryId: 'FEEDBACK_APPRENTISSAGE',
-          categoryName: 'FEEDBACK & APPRENTISSAGE',
+          categoryId: 'PROCESS_EXECUTION',
+          categoryName: 'Process & Execution',
           pillars: [
-            { id: 1, name: 'Communication', category: 'FEEDBACK & APPRENTISSAGE', description: 'Alignment' }
+            { id: 1, name: 'Work Transparency & Synchronization', category: 'Process & Execution', description: 'Alignment' }
           ]
         }
       ],
@@ -105,8 +105,8 @@ describe('GET /api/v1/practices', () => {
           id: 1,
           title: 'Daily Standup',
           goal: 'Synchronize team daily',
-          categoryId: 'FEEDBACK_APPRENTISSAGE',
-          categoryName: 'FEEDBACK & APPRENTISSAGE',
+          categoryId: 'PROCESS_EXECUTION',
+          categoryName: 'Process & Execution',
           pillars: []
         }
       ],
@@ -136,9 +136,9 @@ describe('GET /api/v1/practices', () => {
           id: 1,
           title: 'Daily Standup',
           goal: 'Synchronize team daily',
-          categoryId: 'FEEDBACK_APPRENTISSAGE',
-          categoryName: 'FEEDBACK & APPRENTISSAGE',
-          pillars: [{ id: 5, name: 'Communication', category: 'VALEURS HUMAINES' }]
+          categoryId: 'PROCESS_EXECUTION',
+          categoryName: 'Process & Execution',
+          pillars: [{ id: 5, name: 'Work Transparency & Synchronization', category: 'Process & Execution' }]
         }
       ],
       page: 1,
@@ -167,17 +167,17 @@ describe('GET /api/v1/practices', () => {
           id: 1,
           title: 'Daily Standup',
           goal: 'Synchronize team daily',
-          categoryId: 'FEEDBACK_APPRENTISSAGE',
-          categoryName: 'FEEDBACK & APPRENTISSAGE',
-          pillars: [{ id: 5, name: 'Communication', category: 'VALEURS HUMAINES' }]
+          categoryId: 'PROCESS_EXECUTION',
+          categoryName: 'Process & Execution',
+          pillars: [{ id: 5, name: 'Work Transparency & Synchronization', category: 'Process & Execution' }]
         },
         {
           id: 2,
           title: 'Retrospective',
           goal: 'Reflect and improve',
-          categoryId: 'FEEDBACK_APPRENTISSAGE',
-          categoryName: 'FEEDBACK & APPRENTISSAGE',
-          pillars: [{ id: 8, name: 'Feedback', category: 'FEEDBACK & APPRENTISSAGE' }]
+          categoryId: 'PROCESS_EXECUTION',
+          categoryName: 'Process & Execution',
+          pillars: [{ id: 8, name: 'Inspection & Adaptation', category: 'Process & Execution' }]
         }
       ],
       page: 1,
@@ -206,9 +206,9 @@ describe('GET /api/v1/practices', () => {
           id: 1,
           title: 'Daily Standup',
           goal: 'Synchronize team daily',
-          categoryId: 'FEEDBACK_APPRENTISSAGE',
-          categoryName: 'FEEDBACK & APPRENTISSAGE',
-          pillars: [{ id: 5, name: 'Communication', category: 'VALEURS HUMAINES' }]
+          categoryId: 'PROCESS_EXECUTION',
+          categoryName: 'Process & Execution',
+          pillars: [{ id: 5, name: 'Work Transparency & Synchronization', category: 'Process & Execution' }]
         }
       ],
       page: 1,

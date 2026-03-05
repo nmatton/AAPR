@@ -2,11 +2,10 @@
 import { usePracticesStore } from '../state/practices.slice'
 
 const CATEGORIES = [
-    { id: 'VALEURS_HUMAINES', label: 'Valeurs Humaines' },
-    { id: 'FEEDBACK_APPRENTISSAGE', label: 'Feedback & Apprentissage' },
-    { id: 'EXCELLENCE_TECHNIQUE', label: 'Excellence Technique' },
-    { id: 'ORGANISATION_AUTONOMIE', label: 'Organisation & Autonomie' },
-    { id: 'FLUX_RAPIDITE', label: 'Flux & Rapidité' }
+    { id: 'TECHNICAL_QUALITY', label: 'Technical Quality & Engineering Excellence' },
+    { id: 'TEAM_CULTURE', label: 'Team Culture & Psychology' },
+    { id: 'PROCESS_EXECUTION', label: 'Process & Execution' },
+    { id: 'PRODUCT_VALUE', label: 'Product Value & Customer Alignment' }
 ]
 
 export const CategoryFilter = () => {

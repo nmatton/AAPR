@@ -155,7 +155,7 @@ Get all teams for authenticated user
 
 **Coverage Calculation:**
 - `pillars_covered` = distinct pillars from team's selected practices
-- `coverage` = `(pillars_covered / 19) * 100`
+- `coverage` = `(pillars_covered / 13) * 100`
 
 **Errors:**
 - 401: `{ "error": "Unauthorized" }` (no cookie)
@@ -437,8 +437,8 @@ Get practices currently selected by the team
       "title": "Daily Stand-up",
       "goal": "Improve team communication through brief daily synchronization meetings",
       "description": "Short daily meeting for progress and blockers",
-      "categoryId": "scrum",
-      "categoryName": "Scrum",
+      "categoryId": "PROCESS_EXECUTION",
+      "categoryName": "Process & Execution",
       "method": "Scrum",
       "tags": ["sync", "daily"],
       "benefits": ["Team alignment"],
@@ -450,8 +450,8 @@ Get practices currently selected by the team
       "pillars": [
         {
           "id": 5,
-          "name": "Communication",
-          "category": "Flow"
+          "name": "Work Transparency & Synchronization",
+          "category": "Process & Execution"
         }
       ]
     }
@@ -487,8 +487,8 @@ Get practices not yet selected by the team
       "title": "Daily Stand-up",
       "goal": "Improve team communication through brief daily synchronization meetings",
       "description": "A short daily meeting where team members share progress",
-      "categoryId": "scrum",
-      "categoryName": "Scrum",
+      "categoryId": "PROCESS_EXECUTION",
+      "categoryName": "Process & Execution",
       "method": "Scrum",
       "tags": ["sync", "daily"],
       "benefits": ["Team alignment"],
@@ -500,8 +500,8 @@ Get practices not yet selected by the team
       "pillars": [
         {
           "id": 5,
-          "name": "Communication",
-          "category": "Human Values"
+          "name": "Work Transparency & Synchronization",
+          "category": "Process & Execution"
         }
       ]
     }
@@ -590,7 +590,7 @@ Create a custom practice for the team (scratch or template)
   "title": "Team Retro Plus",
   "goal": "Improve retrospective outcomes",
   "pillarIds": [1, 2],
-  "categoryId": "scrum",
+  "categoryId": "PROCESS_EXECUTION",
   "description": "Structured retrospective with extra prompts",
   "method": "Scrum",
   "tags": ["retro", "team"],
@@ -606,7 +606,7 @@ Create a custom practice for the team (scratch or template)
   "title": "Daily Standup (Copy)",
   "goal": "Sync the team daily",
   "pillarIds": [5, 7],
-  "categoryId": "scrum",
+  "categoryId": "TEAM_CULTURE",
   "description": "Short daily meeting for progress and blockers",
   "method": "Scrum",
   "tags": ["sync", "daily"],

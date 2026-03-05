@@ -24,44 +24,42 @@ export interface ImportError {
 }
 
 // Practice type to category mapping
-// Map practice types to one of the 5 APR categories
+// Map practice types to one of the 4 taxonomy categories (source: docs/raw_practices/agile_pillars.md)
 const PRACTICE_TYPE_TO_CATEGORY: Record<string, string> = {
-  // Planning & Organization
-  'Planning Practice': 'ORGANISATION_AUTONOMIE',
-  'Process Practice': 'ORGANISATION_AUTONOMIE',
-  'Estimation Practice': 'ORGANISATION_AUTONOMIE',
-  'Governance Practice': 'ORGANISATION_AUTONOMIE',
-  
-  // Communication & Values
-  'Communication Practice': 'VALEURS_HUMAINES',
-  'Team Practice': 'VALEURS_HUMAINES',
-  'Teamwork Practice': 'VALEURS_HUMAINES',
-  'Team Building Practice': 'VALEURS_HUMAINES',
-  'Requirements Practice': 'VALEURS_HUMAINES',
-  'Meeting Facilitation': 'VALEURS_HUMAINES',
-  
-  // Feedback & Learning
-  'Feedback Practice': 'FEEDBACK_APPRENTISSAGE',
-  'Review Practice': 'FEEDBACK_APPRENTISSAGE',
-  'Inspection Practice': 'FEEDBACK_APPRENTISSAGE',
-  'Validation Practice': 'FEEDBACK_APPRENTISSAGE',
-  
-  // Technical Excellence
-  'Technical Practice': 'EXCELLENCE_TECHNIQUE',
-  'Quality Practice': 'EXCELLENCE_TECHNIQUE',
-  'Testing Practice': 'EXCELLENCE_TECHNIQUE',
-  'Design Practice': 'EXCELLENCE_TECHNIQUE',
-  
-  // Delivery & Flow
-  'Delivery Practice': 'FLUX_RAPIDITE',
-  'Discovery Practice': 'FLUX_RAPIDITE',
-  'Product Discovery Practice': 'FLUX_RAPIDITE',
-  'Product Management Practice': 'FLUX_RAPIDITE',
-  'Strategy Practice': 'FLUX_RAPIDITE',
-  'Prioritization Practice': 'FLUX_RAPIDITE',
-  'Risk Management Practice': 'FLUX_RAPIDITE',
-  'Problem Solving': 'FLUX_RAPIDITE',
-  'Management Practice': 'FLUX_RAPIDITE',
+  // Technical Quality & Engineering Excellence
+  'Technical Practice': 'TECHNICAL_QUALITY',
+  'Quality Practice': 'TECHNICAL_QUALITY',
+  'Testing Practice': 'TECHNICAL_QUALITY',
+  'Design Practice': 'TECHNICAL_QUALITY',
+
+  // Team Culture & Psychology
+  'Communication Practice': 'TEAM_CULTURE',
+  'Team Practice': 'TEAM_CULTURE',
+  'Teamwork Practice': 'TEAM_CULTURE',
+  'Team Building Practice': 'TEAM_CULTURE',
+  'Meeting Facilitation': 'TEAM_CULTURE',
+
+  // Process & Execution
+  'Planning Practice': 'PROCESS_EXECUTION',
+  'Process Practice': 'PROCESS_EXECUTION',
+  'Estimation Practice': 'PROCESS_EXECUTION',
+  'Governance Practice': 'PROCESS_EXECUTION',
+  'Feedback Practice': 'PROCESS_EXECUTION',
+  'Review Practice': 'PROCESS_EXECUTION',
+  'Inspection Practice': 'PROCESS_EXECUTION',
+  'Validation Practice': 'PROCESS_EXECUTION',
+
+  // Product Value & Customer Alignment
+  'Requirements Practice': 'PRODUCT_VALUE',
+  'Delivery Practice': 'PRODUCT_VALUE',
+  'Discovery Practice': 'PRODUCT_VALUE',
+  'Product Discovery Practice': 'PRODUCT_VALUE',
+  'Product Management Practice': 'PRODUCT_VALUE',
+  'Strategy Practice': 'PRODUCT_VALUE',
+  'Prioritization Practice': 'PRODUCT_VALUE',
+  'Risk Management Practice': 'PRODUCT_VALUE',
+  'Problem Solving': 'PRODUCT_VALUE',
+  'Management Practice': 'PRODUCT_VALUE',
 };
 
 /**
@@ -77,19 +75,16 @@ function mapTypeToCategory(practiceType: string): string | null {
   // Heuristic fallbacks based on keywords
   const lowerType = practiceType.toLowerCase();
   if (lowerType.includes('technical') || lowerType.includes('quality') || lowerType.includes('test')) {
-    return 'EXCELLENCE_TECHNIQUE';
-  }
-  if (lowerType.includes('feedback') || lowerType.includes('review') || lowerType.includes('retrospective')) {
-    return 'FEEDBACK_APPRENTISSAGE';
+    return 'TECHNICAL_QUALITY';
   }
   if (lowerType.includes('team') || lowerType.includes('communication')) {
-    return 'VALEURS_HUMAINES';
+    return 'TEAM_CULTURE';
+  }
+  if (lowerType.includes('feedback') || lowerType.includes('review') || lowerType.includes('retrospective') || lowerType.includes('planning') || lowerType.includes('process') || lowerType.includes('governance')) {
+    return 'PROCESS_EXECUTION';
   }
   if (lowerType.includes('delivery') || lowerType.includes('product') || lowerType.includes('discovery')) {
-    return 'FLUX_RAPIDITE';
-  }
-  if (lowerType.includes('planning') || lowerType.includes('process') || lowerType.includes('governance')) {
-    return 'ORGANISATION_AUTONOMIE';
+    return 'PRODUCT_VALUE';
   }
   
   // No match found

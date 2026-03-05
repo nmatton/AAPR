@@ -13,8 +13,8 @@ describe('practices.service', () => {
       id: 1,
       title: 'Daily Standup',
       goal: 'Sync',
-      categoryId: 'FEEDBACK_APPRENTISSAGE',
-      category: { id: 'FEEDBACK_APPRENTISSAGE', name: 'FEEDBACK & APPRENTISSAGE' },
+      categoryId: 'PROCESS_EXECUTION',
+      category: { id: 'PROCESS_EXECUTION', name: 'Process & Execution' },
       isGlobal: true,
       practiceVersion: 2,
       _count: { teamPractices: 3 },
@@ -22,10 +22,10 @@ describe('practices.service', () => {
         {
           pillar: {
             id: 5,
-            name: 'Communication',
-            categoryId: 'FEEDBACK_APPRENTISSAGE',
+            name: 'Work Transparency & Synchronization',
+            categoryId: 'PROCESS_EXECUTION',
             description: 'desc',
-            category: { id: 'FEEDBACK_APPRENTISSAGE', name: 'FEEDBACK & APPRENTISSAGE' }
+            category: { id: 'PROCESS_EXECUTION', name: 'Process & Execution' }
           }
         }
       ]
@@ -43,8 +43,8 @@ describe('practices.service', () => {
           title: 'Daily Standup',
           goal: 'Sync',
           description: null,
-          categoryId: 'FEEDBACK_APPRENTISSAGE',
-          categoryName: 'FEEDBACK & APPRENTISSAGE',
+          categoryId: 'PROCESS_EXECUTION',
+          categoryName: 'Process & Execution',
           method: null,
           tags: null,
           benefits: null,
@@ -56,8 +56,8 @@ describe('practices.service', () => {
           pillars: [
             {
               id: 5,
-              name: 'Communication',
-              category: 'FEEDBACK & APPRENTISSAGE',
+              name: 'Work Transparency & Synchronization',
+              category: 'Process & Execution',
               description: 'desc'
             }
           ]

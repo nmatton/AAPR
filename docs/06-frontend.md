@@ -149,7 +149,7 @@ retry(): Promise<void>
 
 **Search & Filter UI:**
 - Search input with 300ms debounce
-- Pillar filter dropdown (19 pillars, grouped by category)
+- Pillar filter dropdown (13 pillars, grouped by category)
 - Active filter badges with remove (×)
 
 ---

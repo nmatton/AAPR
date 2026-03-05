@@ -2,11 +2,10 @@ import type { ReactNode } from 'react'
 import type { Practice } from '../types'
 
 const CATEGORY_COLORS: Record<string, string> = {
-  VALEURS_HUMAINES: 'bg-red-100 text-red-700 border-red-200',
-  FEEDBACK_APPRENTISSAGE: 'bg-blue-100 text-blue-700 border-blue-200',
-  EXCELLENCE_TECHNIQUE: 'bg-purple-100 text-purple-700 border-purple-200',
-  ORGANISATION_AUTONOMIE: 'bg-green-100 text-green-700 border-green-200',
-  FLUX_RAPIDITE: 'bg-amber-100 text-amber-700 border-amber-200'
+  TECHNICAL_QUALITY: 'bg-purple-100 text-purple-700 border-purple-200',
+  TEAM_CULTURE: 'bg-red-100 text-red-700 border-red-200',
+  PROCESS_EXECUTION: 'bg-green-100 text-green-700 border-green-200',
+  PRODUCT_VALUE: 'bg-blue-100 text-blue-700 border-blue-200'
 }
 
 const normalizeCategoryKey = (value: string) =>

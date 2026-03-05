@@ -25,8 +25,8 @@ describe('coverageService.getTeamPillarCoverage', () => {
 
     ;(coverageRepository.findAllPillars as jest.MockedFunction<typeof coverageRepository.findAllPillars>)
       .mockResolvedValue([
-        { id: 1, name: 'Communication', categoryId: 'values', category: { id: 'values', name: 'Human Values' }, description: null },
-        { id: 2, name: 'Transparency', categoryId: 'values', category: { id: 'values', name: 'Human Values' }, description: null }
+        { id: 1, name: 'Psychological Safety & Core Values', categoryId: 'TEAM_CULTURE', category: { id: 'TEAM_CULTURE', name: 'Team Culture & Psychology' }, description: null },
+        { id: 2, name: 'Self-Organization & Autonomy', categoryId: 'TEAM_CULTURE', category: { id: 'TEAM_CULTURE', name: 'Team Culture & Psychology' }, description: null }
       ] as any)
 
     const result = await coverageService.getTeamPillarCoverage(1)
@@ -37,7 +37,7 @@ describe('coverageService.getTeamPillarCoverage', () => {
     expect(result.coveredPillars).toHaveLength(0)
     expect(result.gapPillars).toHaveLength(2)
     expect(result.categoryBreakdown).toHaveLength(1)
-    expect(result.categoryBreakdown[0].categoryId).toBe('values')
+    expect(result.categoryBreakdown[0].categoryId).toBe('TEAM_CULTURE')
     expect(result.categoryBreakdown[0].coveragePct).toBe(0)
     expect(result.categoryBreakdown[0].coveredCount).toBe(0)
     expect(result.categoryBreakdown[0].totalCount).toBe(2)
@@ -52,8 +52,8 @@ describe('coverageService.getTeamPillarCoverage', () => {
             id: 1,
             title: 'Retrospective',
             practicePillars: [
-              { pillar: { id: 1, name: 'Communication', categoryId: 'values', category: { id: 'values', name: 'Human Values' } } },
-              { pillar: { id: 2, name: 'Transparency', categoryId: 'values', category: { id: 'values', name: 'Human Values' } } }
+              { pillar: { id: 1, name: 'Psychological Safety & Core Values', categoryId: 'TEAM_CULTURE', category: { id: 'TEAM_CULTURE', name: 'Team Culture & Psychology' } } },
+              { pillar: { id: 2, name: 'Self-Organization & Autonomy', categoryId: 'TEAM_CULTURE', category: { id: 'TEAM_CULTURE', name: 'Team Culture & Psychology' } } }
             ]
           }
         },
@@ -62,18 +62,18 @@ describe('coverageService.getTeamPillarCoverage', () => {
             id: 2,
             title: 'Sprint Planning',
             practicePillars: [
-              { pillar: { id: 2, name: 'Transparency', categoryId: 'values', category: { id: 'values', name: 'Human Values' } } },
-              { pillar: { id: 3, name: 'Quality', categoryId: 'delivery', category: { id: 'delivery', name: 'Value Delivery' } } }
+              { pillar: { id: 2, name: 'Self-Organization & Autonomy', categoryId: 'TEAM_CULTURE', category: { id: 'TEAM_CULTURE', name: 'Team Culture & Psychology' } } },
+              { pillar: { id: 3, name: 'Flow & Delivery Cadence', categoryId: 'PROCESS_EXECUTION', category: { id: 'PROCESS_EXECUTION', name: 'Process & Execution' } } }
             ]
           }
         }
       ] as any)
 
-    const allPillars = Array.from({ length: 19 }, (_, index) => ({
+    const allPillars = Array.from({ length: 13 }, (_, index) => ({
       id: index + 1,
       name: `Pillar ${index + 1}`,
-      categoryId: 'values',
-      category: { id: 'values', name: 'Human Values' },
+      categoryId: 'TEAM_CULTURE',
+      category: { id: 'TEAM_CULTURE', name: 'Team Culture & Psychology' },
       description: null
     }))
 
@@ -83,10 +83,10 @@ describe('coverageService.getTeamPillarCoverage', () => {
     const result = await coverageService.getTeamPillarCoverage(2)
 
     expect(result.coveredCount).toBe(3)
-    expect(result.totalCount).toBe(19)
-    expect(result.overallCoveragePct).toBe(15.79)
+    expect(result.totalCount).toBe(13)
+    expect(result.overallCoveragePct).toBe(23.08)
     expect(result.coveredPillars.map((pillar) => pillar.id)).toEqual([1, 2, 3])
-    expect(result.gapPillars).toHaveLength(16)
+    expect(result.gapPillars).toHaveLength(10)
   })
 
   it('logs coverage.calculated event with payload', async () => {
@@ -97,7 +97,7 @@ describe('coverageService.getTeamPillarCoverage', () => {
             id: 3,
             title: 'Learning Review',
             practicePillars: [
-              { pillar: { id: 5, name: 'Learning', categoryId: 'values', category: { id: 'values', name: 'Human Values' } } }
+              { pillar: { id: 5, name: 'Inspection & Adaptation', categoryId: 'PROCESS_EXECUTION', category: { id: 'PROCESS_EXECUTION', name: 'Process & Execution' } } }
             ]
           }
         }
@@ -105,8 +105,8 @@ describe('coverageService.getTeamPillarCoverage', () => {
 
     ;(coverageRepository.findAllPillars as jest.MockedFunction<typeof coverageRepository.findAllPillars>)
       .mockResolvedValue([
-        { id: 5, name: 'Learning', categoryId: 'values', category: { id: 'values', name: 'Human Values' }, description: null },
-        { id: 6, name: 'Adaptation', categoryId: 'values', category: { id: 'values', name: 'Human Values' }, description: null }
+        { id: 5, name: 'Inspection & Adaptation', categoryId: 'PROCESS_EXECUTION', category: { id: 'PROCESS_EXECUTION', name: 'Process & Execution' }, description: null },
+        { id: 6, name: 'Work Transparency & Synchronization', categoryId: 'PROCESS_EXECUTION', category: { id: 'PROCESS_EXECUTION', name: 'Process & Execution' }, description: null }
       ] as any)
 
     await coverageService.getTeamPillarCoverage(7)
@@ -123,7 +123,7 @@ describe('coverageService.getTeamPillarCoverage', () => {
             timestamp: expect.any(String),
             categoryBreakdown: expect.arrayContaining([
               expect.objectContaining({
-                categoryName: 'Human Values',
+                categoryName: 'Process & Execution',
                 coveragePct: 50,
                 coveredCount: 1,
                 totalCount: 2
@@ -143,8 +143,8 @@ describe('coverageService.getTeamPillarCoverage', () => {
             id: 4,
             title: 'Feedback Loop',
             practicePillars: [
-              { pillar: { id: 1, name: 'Communication', categoryId: 'values', category: { id: 'values', name: 'VALEURS HUMAINES' } } },
-              { pillar: { id: 5, name: 'Retrospectives', categoryId: 'feedback', category: { id: 'feedback', name: 'FEEDBACK & APPRENTISSAGE' } } }
+              { pillar: { id: 1, name: 'Psychological Safety & Core Values', categoryId: 'TEAM_CULTURE', category: { id: 'TEAM_CULTURE', name: 'Team Culture & Psychology' } } },
+              { pillar: { id: 5, name: 'Inspection & Adaptation', categoryId: 'PROCESS_EXECUTION', category: { id: 'PROCESS_EXECUTION', name: 'Process & Execution' } } }
             ]
           }
         },
@@ -153,7 +153,7 @@ describe('coverageService.getTeamPillarCoverage', () => {
             id: 5,
             title: 'Transparency Check',
             practicePillars: [
-              { pillar: { id: 2, name: 'Transparency', categoryId: 'values', category: { id: 'values', name: 'VALEURS HUMAINES' } } }
+              { pillar: { id: 2, name: 'Self-Organization & Autonomy', categoryId: 'TEAM_CULTURE', category: { id: 'TEAM_CULTURE', name: 'Team Culture & Psychology' } } }
             ]
           }
         }
@@ -161,33 +161,32 @@ describe('coverageService.getTeamPillarCoverage', () => {
 
     ;(coverageRepository.findAllPillars as jest.MockedFunction<typeof coverageRepository.findAllPillars>)
       .mockResolvedValue([
-        { id: 1, name: 'Communication', categoryId: 'values', category: { id: 'values', name: 'VALEURS HUMAINES' }, description: null },
-        { id: 2, name: 'Transparency', categoryId: 'values', category: { id: 'values', name: 'VALEURS HUMAINES' }, description: null },
-        { id: 3, name: 'Courage', categoryId: 'values', category: { id: 'values', name: 'VALEURS HUMAINES' }, description: null },
-        { id: 4, name: 'Respect', categoryId: 'values', category: { id: 'values', name: 'VALEURS HUMAINES' }, description: null },
-        { id: 5, name: 'Retrospectives', categoryId: 'feedback', category: { id: 'feedback', name: 'FEEDBACK & APPRENTISSAGE' }, description: null },
-        { id: 6, name: 'Experiments', categoryId: 'feedback', category: { id: 'feedback', name: 'FEEDBACK & APPRENTISSAGE' }, description: null },
-        { id: 7, name: 'Metrics', categoryId: 'feedback', category: { id: 'feedback', name: 'FEEDBACK & APPRENTISSAGE' }, description: null },
-        { id: 8, name: 'Learning', categoryId: 'feedback', category: { id: 'feedback', name: 'FEEDBACK & APPRENTISSAGE' }, description: null }
+        { id: 1, name: 'Psychological Safety & Core Values', categoryId: 'TEAM_CULTURE', category: { id: 'TEAM_CULTURE', name: 'Team Culture & Psychology' }, description: null },
+        { id: 2, name: 'Self-Organization & Autonomy', categoryId: 'TEAM_CULTURE', category: { id: 'TEAM_CULTURE', name: 'Team Culture & Psychology' }, description: null },
+        { id: 3, name: 'Cross-Functionality & Shared Skills', categoryId: 'TEAM_CULTURE', category: { id: 'TEAM_CULTURE', name: 'Team Culture & Psychology' }, description: null },
+        { id: 4, name: 'Sustainable Pace', categoryId: 'TEAM_CULTURE', category: { id: 'TEAM_CULTURE', name: 'Team Culture & Psychology' }, description: null },
+        { id: 5, name: 'Inspection & Adaptation', categoryId: 'PROCESS_EXECUTION', category: { id: 'PROCESS_EXECUTION', name: 'Process & Execution' }, description: null },
+        { id: 6, name: 'Flow & Delivery Cadence', categoryId: 'PROCESS_EXECUTION', category: { id: 'PROCESS_EXECUTION', name: 'Process & Execution' }, description: null },
+        { id: 7, name: 'Work Transparency & Synchronization', categoryId: 'PROCESS_EXECUTION', category: { id: 'PROCESS_EXECUTION', name: 'Process & Execution' }, description: null },
       ] as any)
 
     const result = await coverageService.getTeamPillarCoverage(10)
 
     expect(result.categoryBreakdown).toHaveLength(2)
 
-    const valuesCategory = result.categoryBreakdown.find((c) => c.categoryId === 'values')
-    expect(valuesCategory).toBeDefined()
-    expect(valuesCategory!.categoryName).toBe('VALEURS HUMAINES')
-    expect(valuesCategory!.coveredCount).toBe(2)
-    expect(valuesCategory!.totalCount).toBe(4)
-    expect(valuesCategory!.coveragePct).toBe(50)
+    const teamCultureCategory = result.categoryBreakdown.find((c) => c.categoryId === 'TEAM_CULTURE')
+    expect(teamCultureCategory).toBeDefined()
+    expect(teamCultureCategory!.categoryName).toBe('Team Culture & Psychology')
+    expect(teamCultureCategory!.coveredCount).toBe(2)
+    expect(teamCultureCategory!.totalCount).toBe(4)
+    expect(teamCultureCategory!.coveragePct).toBe(50)
 
-    const feedbackCategory = result.categoryBreakdown.find((c) => c.categoryId === 'feedback')
-    expect(feedbackCategory).toBeDefined()
-    expect(feedbackCategory!.categoryName).toBe('FEEDBACK & APPRENTISSAGE')
-    expect(feedbackCategory!.coveredCount).toBe(1)
-    expect(feedbackCategory!.totalCount).toBe(4)
-    expect(feedbackCategory!.coveragePct).toBe(25)
+    const processCategory = result.categoryBreakdown.find((c) => c.categoryId === 'PROCESS_EXECUTION')
+    expect(processCategory).toBeDefined()
+    expect(processCategory!.categoryName).toBe('Process & Execution')
+    expect(processCategory!.coveredCount).toBe(1)
+    expect(processCategory!.totalCount).toBe(3)
+    expect(processCategory!.coveragePct).toBe(33.33)
   })
 
   it('returns correct color coding thresholds for categories', async () => {
@@ -198,12 +197,12 @@ describe('coverageService.getTeamPillarCoverage', () => {
             id: 6,
             title: 'Excellence Sprint',
             practicePillars: [
-              { pillar: { id: 1, name: 'Communication', categoryId: 'values', category: { id: 'values', name: 'VALEURS HUMAINES' } } },
-              { pillar: { id: 2, name: 'Transparency', categoryId: 'values', category: { id: 'values', name: 'VALEURS HUMAINES' } } },
-              { pillar: { id: 3, name: 'Courage', categoryId: 'values', category: { id: 'values', name: 'VALEURS HUMAINES' } } },
-              { pillar: { id: 5, name: 'Retrospectives', categoryId: 'feedback', category: { id: 'feedback', name: 'FEEDBACK & APPRENTISSAGE' } } },
-              { pillar: { id: 6, name: 'Experiments', categoryId: 'feedback', category: { id: 'feedback', name: 'FEEDBACK & APPRENTISSAGE' } } },
-              { pillar: { id: 9, name: 'TDD', categoryId: 'excellence', category: { id: 'excellence', name: 'EXCELLENCE TECHNIQUE' } } }
+              { pillar: { id: 1, name: 'Psychological Safety & Core Values', categoryId: 'TEAM_CULTURE', category: { id: 'TEAM_CULTURE', name: 'Team Culture & Psychology' } } },
+              { pillar: { id: 2, name: 'Self-Organization & Autonomy', categoryId: 'TEAM_CULTURE', category: { id: 'TEAM_CULTURE', name: 'Team Culture & Psychology' } } },
+              { pillar: { id: 3, name: 'Cross-Functionality & Shared Skills', categoryId: 'TEAM_CULTURE', category: { id: 'TEAM_CULTURE', name: 'Team Culture & Psychology' } } },
+              { pillar: { id: 5, name: 'Inspection & Adaptation', categoryId: 'PROCESS_EXECUTION', category: { id: 'PROCESS_EXECUTION', name: 'Process & Execution' } } },
+              { pillar: { id: 6, name: 'Flow & Delivery Cadence', categoryId: 'PROCESS_EXECUTION', category: { id: 'PROCESS_EXECUTION', name: 'Process & Execution' } } },
+              { pillar: { id: 9, name: 'Code Quality & Simple Design', categoryId: 'TECHNICAL_QUALITY', category: { id: 'TECHNICAL_QUALITY', name: 'Technical Quality & Engineering Excellence' } } }
             ]
           }
         }
@@ -211,30 +210,29 @@ describe('coverageService.getTeamPillarCoverage', () => {
 
     ;(coverageRepository.findAllPillars as jest.MockedFunction<typeof coverageRepository.findAllPillars>)
       .mockResolvedValue([
-        { id: 1, name: 'Communication', categoryId: 'values', category: { id: 'values', name: 'VALEURS HUMAINES' }, description: null },
-        { id: 2, name: 'Transparency', categoryId: 'values', category: { id: 'values', name: 'VALEURS HUMAINES' }, description: null },
-        { id: 3, name: 'Courage', categoryId: 'values', category: { id: 'values', name: 'VALEURS HUMAINES' }, description: null },
-        { id: 4, name: 'Respect', categoryId: 'values', category: { id: 'values', name: 'VALEURS HUMAINES' }, description: null },
-        { id: 5, name: 'Retrospectives', categoryId: 'feedback', category: { id: 'feedback', name: 'FEEDBACK & APPRENTISSAGE' }, description: null },
-        { id: 6, name: 'Experiments', categoryId: 'feedback', category: { id: 'feedback', name: 'FEEDBACK & APPRENTISSAGE' }, description: null },
-        { id: 7, name: 'Metrics', categoryId: 'feedback', category: { id: 'feedback', name: 'FEEDBACK & APPRENTISSAGE' }, description: null },
-        { id: 8, name: 'Learning', categoryId: 'feedback', category: { id: 'feedback', name: 'FEEDBACK & APPRENTISSAGE' }, description: null },
-        { id: 9, name: 'TDD', categoryId: 'excellence', category: { id: 'excellence', name: 'EXCELLENCE TECHNIQUE' }, description: null },
-        { id: 10, name: 'CI/CD', categoryId: 'excellence', category: { id: 'excellence', name: 'EXCELLENCE TECHNIQUE' }, description: null },
-        { id: 11, name: 'Code Review', categoryId: 'excellence', category: { id: 'excellence', name: 'EXCELLENCE TECHNIQUE' }, description: null },
-        { id: 12, name: 'Refactoring', categoryId: 'excellence', category: { id: 'excellence', name: 'EXCELLENCE TECHNIQUE' }, description: null }
+        { id: 1, name: 'Psychological Safety & Core Values', categoryId: 'TEAM_CULTURE', category: { id: 'TEAM_CULTURE', name: 'Team Culture & Psychology' }, description: null },
+        { id: 2, name: 'Self-Organization & Autonomy', categoryId: 'TEAM_CULTURE', category: { id: 'TEAM_CULTURE', name: 'Team Culture & Psychology' }, description: null },
+        { id: 3, name: 'Cross-Functionality & Shared Skills', categoryId: 'TEAM_CULTURE', category: { id: 'TEAM_CULTURE', name: 'Team Culture & Psychology' }, description: null },
+        { id: 4, name: 'Sustainable Pace', categoryId: 'TEAM_CULTURE', category: { id: 'TEAM_CULTURE', name: 'Team Culture & Psychology' }, description: null },
+        { id: 5, name: 'Inspection & Adaptation', categoryId: 'PROCESS_EXECUTION', category: { id: 'PROCESS_EXECUTION', name: 'Process & Execution' }, description: null },
+        { id: 6, name: 'Flow & Delivery Cadence', categoryId: 'PROCESS_EXECUTION', category: { id: 'PROCESS_EXECUTION', name: 'Process & Execution' }, description: null },
+        { id: 7, name: 'Work Transparency & Synchronization', categoryId: 'PROCESS_EXECUTION', category: { id: 'PROCESS_EXECUTION', name: 'Process & Execution' }, description: null },
+        { id: 9, name: 'Code Quality & Simple Design', categoryId: 'TECHNICAL_QUALITY', category: { id: 'TECHNICAL_QUALITY', name: 'Technical Quality & Engineering Excellence' }, description: null },
+        { id: 10, name: 'Automation & Continuous Integration', categoryId: 'TECHNICAL_QUALITY', category: { id: 'TECHNICAL_QUALITY', name: 'Technical Quality & Engineering Excellence' }, description: null },
+        { id: 11, name: 'Technical Debt Management', categoryId: 'TECHNICAL_QUALITY', category: { id: 'TECHNICAL_QUALITY', name: 'Technical Quality & Engineering Excellence' }, description: null },
+        { id: 12, name: 'Technical Collective Ownership', categoryId: 'TECHNICAL_QUALITY', category: { id: 'TECHNICAL_QUALITY', name: 'Technical Quality & Engineering Excellence' }, description: null }
       ] as any)
 
     const result = await coverageService.getTeamPillarCoverage(11)
 
-    const valuesCategory = result.categoryBreakdown.find((c) => c.categoryId === 'values')
-    expect(valuesCategory!.coveragePct).toBe(75)
+    const teamCultureCategory = result.categoryBreakdown.find((c) => c.categoryId === 'TEAM_CULTURE')
+    expect(teamCultureCategory!.coveragePct).toBe(75)
 
-    const feedbackCategory = result.categoryBreakdown.find((c) => c.categoryId === 'feedback')
-    expect(feedbackCategory!.coveragePct).toBe(50)
+    const processCategory = result.categoryBreakdown.find((c) => c.categoryId === 'PROCESS_EXECUTION')
+    expect(processCategory!.coveragePct).toBe(66.67)
 
-    const excellenceCategory = result.categoryBreakdown.find((c) => c.categoryId === 'excellence')
-    expect(excellenceCategory!.coveragePct).toBe(25)
+    const technicalCategory = result.categoryBreakdown.find((c) => c.categoryId === 'TECHNICAL_QUALITY')
+    expect(technicalCategory!.coveragePct).toBe(25)
   })
 
   it('throws 400 for invalid teamId', async () => {

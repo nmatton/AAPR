@@ -1,26 +1,36 @@
-# Agile Pillars
+# AAPR Tool: Two-Level Agile Taxonomy Dictionary
 
-This document outlines the core pillars of Agile methodology, detailing their descriptions and purposes within an Agile framework.
+This taxonomy emerges from existing Agile Maturity Models (AgilityMod, Agile Compass, Benefield, ATPI-SD) and converges towards four fundamental, mutually exclusive and exhaustive pillars that group agile practices according to their main objectives and impacts:
 
+## Category 1: Technical Quality & Engineering Excellence
 
-| Element | Description | Purpose |
-| :--- | :--- | :--- |
-| **Communication** | The continuous, open exchange of information between team members and stakeholders. It values face-to-face interaction over documentation. | To ensure everyone has a shared understanding of the project status and goals, preventing the "silo" effect where information gets lost. |
-| **Simplicity** | The art of maximizing the amount of work *not* done. It involves doing only what is needed immediately (YAGNI - You Ain't Gonna Need It) and avoiding over-engineering. | To reduce waste, keep the system easy to maintain, and allow the team to pivot quickly if requirements change. |
-| **Feedback** | The mechanism of validating work through various loops: unit tests (seconds), pair programming (minutes), daily integration (hours), and stakeholder reviews (weeks). | To provide immediate confirmation that the system works as intended and to validate that the team is building the *right* thing. |
-| **Courage** | The willingness to tell the truth about progress, estimates, and difficulties, and the bravery to refactor code or discard solutions that don't work. | To prevent technical debt from accumulating and to manage stakeholder expectations realistically, avoiding "death march" projects. |
-| **Humility** | The mindset where team members acknowledge they don't know everything and value the expertise of others (e.g., developers respecting business insight, and vice versa). | To foster a culture of learning and respect, ensuring that the best ideas win regardless of who proposes them. |
-| **Transparency** | Making the significant aspects of the process and the product visible to those responsible for the outcome (e.g., visible Kanban boards, open backlogs). | To ensure that decisions are based on the actual state of the artifact rather than a perceived or hopeful state. |
-| **Inspection** | The frequent and diligent assessment of Scrum artifacts and progress toward a goal to detect undesirable variances. | To identify problems, bugs, or process inefficiencies as early as possible before they compound into larger failures. |
-| **Adaptation** | The adjustment of the process or materials as soon as a deviation is detected during inspection. | To minimize further deviation and return the project to a path that delivers value. |
-| **Collective Code Ownership** | A practice where any developer can change any line of code in the system at any time to add functionality or fix a bug. | To prevent knowledge bottlenecks (where only one person understands a module) and ensure the whole team is responsible for quality. |
-| **Continuous Integration** | The practice of merging all developer working copies to a shared mainline several times a day, verified by an automated build and test. | To detect integration errors immediately and ensure the software is always in a working, releasable state. |
-| **TDD (Test First)** | Writing a failing automated test case that defines a desired improvement or new function *before* writing the minimum amount of code to pass that test. | To ensure code is testable by design, acts as living documentation, and gives developers the confidence to refactor later without breaking features. |
-| **Refactoring** | The process of restructuring existing computer code—changing the *factoring*—without changing its external behavior. | To improve nonfunctional attributes (readability, reduced complexity) and keep the cost of future changes low. |
-| **Simple Design** | A design strategy that prioritizes the system running all tests, containing no duplication, expressing every intent clearly, and having the fewest possible classes/methods. | To keep the code base understandable and flexible, ensuring the design doesn't become a barrier to adding new features. |
-| **Coding Standards** | A set of agreed-upon guidelines (naming conventions, formatting) that the team follows when writing code. | To make the code appear as if it was written by a single collaborative mind, which facilitates collective ownership and easier reading. |
-| **Sustainable Pace** | Working at a pace that can be sustained indefinitely (typically a 40-hour week), avoiding "crunch mode" or chronic overtime. | To prevent burnout, fatigue, and the inevitable drop in code quality and morale that comes with overwork. |
-| **Self-Organization** | The principle that the team members themselves decide *how* to accomplish their work, rather than being directed by a manager. | To empower those closest to the work to make technical decisions, leading to higher motivation and better problem-solving. |
-| **Cross-Functional Teams** | Teams composed of members with all the skills necessary to create value (e.g., analysis, coding, testing, UI design) without handing off work to other departments. | To remove dependencies on external teams, reduce wait times (handoff delays), and increase accountability for the end-to-end product. |
-| **Active Stakeholder Participation** | The practice of having customers or users actively involved in the development process to provide requirements, priorities, and feedback. | To ensure the team is building a product that actually solves the business problem and to clarify ambiguities instantly. |
-| **Short Releases** | The practice of releasing the product to production (or a production-like environment) frequently—every few weeks or months. | To accelerate the return on investment (ROI), reduce the risk of massive deployment failures, and get real-world feedback sooner. |
+*Description*: Focuses on the infrastructure, tooling, and strict coding standards that allow software to be built, tested, and modified safely.
+
+    1.1 Code Quality & Simple Design: The capability to maintain clean, understandable, and strictly standardized codebases..
+    1.2 Automation & Continuous Integration: The capability to merge, test, and validate development work frequently to prevent integration bottlenecks.
+    1.3 Technical Debt Management: The capability to continuously improve the internal architecture of the system without altering its external behavior.
+    1.4 Technical Collective Ownership: The shared responsibility and understanding of the technical architecture across the entire team, avoiding single points of failure.
+
+## Category 2: Team Culture & Psychology
+
+*Description*: Evaluates the sociological and psychological factors enabling true self-organization, intrinsic motivation, and team resilience.
+
+    2.1 Psychological Safety & Core Values: The establishment of a high-trust climate allowing for transparency, humility, courage, and the right to fail without blame.
+    2.2 Self-Organization & Autonomy: The team's capability to make decentralized decisions, manage their own tasks, and organize without top-down micro-management.
+    2.3 Cross-Functionality & Shared Skills: The team's capability to possess all necessary skills end-to-end to deliver value without relying on external dependencies.
+    2.4 Sustainable Pace: The capability to maintain a steady, predictable rhythm of work indefinitely, actively preventing developer burnout and managing cognitive load.
+
+## Category 3: Process & Execution
+
+*Description*: Covers the tactical workflows, iterative cadences, and specific ceremonies that dictate how work is planned, tracked, and adjusted.
+
+    3.1 Flow & Delivery Cadence: The capability to deliver working software increments rapidly, regularly, and with maximal workflow simplicity.
+    3.2 Inspection & Adaptation: The capability to formally evaluate team workflows and correct them regularly, establishing a continuous learning loop.
+    3.3 Work Transparency & Synchronization: The capability to make all work items, progress, and tactical blockers highly visible to everyone involved.
+
+## Category 4: Product Value & Customer Alignment
+
+*Description*: Evaluates the strategic alignment of daily engineering work with actual market needs, ensuring the delivered software maximizes return on investment.
+
+    4.1 Customer Involvement & Active Feedback: The capability to continuously collaborate with stakeholders, users, or clients, gathering and processing their feedback.
+    4.2 Value-Driven Prioritization: The capability to define and pivot the product's direction based on user impact, ensuring the most valuable features are delivered first.

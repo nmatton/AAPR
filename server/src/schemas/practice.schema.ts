@@ -48,27 +48,25 @@ export const AssociatedPracticeSchema = z.object({
 });
 
 // Valid tags - allow any string for flexibility with real-world data
-// Valid practice goals (pillars) - keep strict for data integrity
+// Valid practice goals (pillars) - strict, aligned with docs/raw_practices/agile_pillars.md
 const ValidPracticeGoals = [
-  'Communication',
-  'Simplicity',
-  'Feedback',
-  'Courage',
-  'Humility',
-  'Transparency',
-  'Inspection',
-  'Adaptation',
-  'Collective Code Ownership',
-  'Continuous Integration',
-  'TDD (Test First)',
-  'Refactoring',
-  'Simple Design',
-  'Coding Standards',
+  // Technical Quality & Engineering Excellence
+  'Code Quality & Simple Design',
+  'Automation & Continuous Integration',
+  'Technical Debt Management',
+  'Technical Collective Ownership',
+  // Team Culture & Psychology
+  'Psychological Safety & Core Values',
+  'Self-Organization & Autonomy',
+  'Cross-Functionality & Shared Skills',
   'Sustainable Pace',
-  'Self-Organization',
-  'Cross-Functional Teams',
-  'Active Stakeholder Participation',
-  'Short Releases',
+  // Process & Execution
+  'Flow & Delivery Cadence',
+  'Inspection & Adaptation',
+  'Work Transparency & Synchronization',
+  // Product Value & Customer Alignment
+  'Customer Involvement & Active Feedback',
+  'Value-Driven Prioritization',
 ] as const;
 
 // Main practice schema

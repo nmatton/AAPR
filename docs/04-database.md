@@ -208,17 +208,16 @@ The AAPR database uses a **normalized relational schema** (3NF) with the followi
 - INDEX on `is_global`
 
 **Categories (Epic 2):**
-- VALEURS HUMAINES
-- FEEDBACK & APPRENTISSAGE
-- EXCELLENCE TECHNIQUE
-- ORGANISATION & AUTONOMIE
-- FLUX & RAPIDITÉ
+- Technical Quality & Engineering Excellence
+- Team Culture & Psychology
+- Process & Execution
+- Product Value & Customer Alignment
 
 ---
 
 ### pillars
 
-**Purpose:** 19 agile pillars from APR framework
+**Purpose:** 13 agile pillars from converged taxonomy (see `docs/raw_practices/agile_pillars.md`)
 
 | Column | Type | Constraints | Description |
 |--------|------|-------------|-------------|
