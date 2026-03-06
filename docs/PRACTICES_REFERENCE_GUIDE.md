@@ -25,28 +25,17 @@ Unique identifier for the practice.
 Categorizes the practice by its primary function.
 
 **Possible Types:**
-- Communication
-- Simplicity
-- Feedback
-- Courage
-- Humility
-- Transparency
-- Inspection
-- Adaptation
-- Collective Code Ownership
-- Continuous Integration
-- TDD (test first)
-- Refactoring
-- Simple Design
-- Coding Standards
-- Sustainable Pace
-- Self-Organization
-- Cross-Functional Teams
-- Active Stakeholder Participation
-- Short Releases
+
+  - Product Discovery & Strategy: Practices aimed at understanding user needs, defining the product vision, designing the product, and exploring opportunities (e.g., Story Mapping, Value Proposition Canvas).
+  - Planning & Prioritization: Practices used to organize work, define what needs to be done, estimate effort, and prioritize high-value items (e.g., Sprint Planning, Planning Poker, MoSCoW).
+  - Engineering & Delivery: Technical practices related to software creation, architecture, code quality, testing, and deployment (e.g., TDD, Continuous Integration).
+  - Teamwork & Culture: Practices related to human dynamics, team cohesion, daily collaboration, and value alignment (e.g., Pair Programming, Team Canvas).
+  - Continuous Improvement & Problem Solving: Practices aimed at inspecting past work, identifying root causes of issues, and adapting processes for the future (e.g., Sprint Retrospective, 5 Whys).
+  - Governance, Management & Risk: Practices dedicated to systemic management, workflow tracking, risk reduction, and stakeholder alignment (e.g., Visualize Workflow/Kanban, RACI Matrix).
+  - Meeting Facilitation & Workshops: Agnostic meeting formats, ideation techniques, or structured discussion frameworks (e.g., Lean Coffee, Dot Voting).
+  - Analysis & Measurement: Practices focused on data collection, metrics, and experimentation to validate hypotheses or measure performance (e.g., Burnup Chart, A/B Testing).
 
 
-More details on each type can be found in the [Agile Pillars](raw_practices/agile_pillars.md) document.
 
 ---
 
@@ -71,32 +60,44 @@ Full, detailed explanation of the practice—what it is, why it matters, how it 
 The framework or methodology this practice belongs to.
 
 **Valid Values:**
-- `"Scrum"`
-- `"XP"` (Extreme Programming)
-- `"Kanban"`
-- `"Lean"`
-- `"Design Thinking"`
-- `"Product Management"`
-- `"DSDM"`
-- `"Agile"`
-- `""` (empty string if not applicable)
+- "Scrum",
+- "Kanban",
+- "XP",
+- "Lean",
+- "Scaled Agile",
+- "Product Management",
+- "Design Thinking & UX",
+- "Project Management",
+- "Agile",
+- "Facilitation & Workshops"
+
+for more details see [raw_practices/framework_methods.md](raw_practices/framework_methods.md).
 
 ---
 
 #### `tags` (Array of Strings, Required)
 Behavioral and experiential characteristics describing "how it feels to participate" rather than business outcomes. Used to filter practices based on participant preferences.
 
-**Valid Tags:**
-- `"Visual/Tactile"` – Primarily uses visual materials or tactile/physical engagement
-- `"Async-Ready"` – Can be performed asynchronously without real-time synchronization
-- `"Structured"` – Follows a defined process or template
-- `"Consensus-Driven"` – Requires group agreement
-- `"Whole Crowd"` – Involves all team members
-- `"Small Group"` – Designed for small team segments
-- `"Spontaneous"` – Can be initiated ad-hoc without formal scheduling
-- `"Verbal-Heavy"` – Relies primarily on discussion and conversation
-- `"Solo-Capable"` – Can be executed individually
-- `"Critical"` – Essential practice for team success
+* **Written / Async-Ready:** Effective communication can be achieved through writing or offline contributions, which reduces social anxiety and allows for thoughtful responses. 
+* **Visual / Tactile:** Utilizes physical or digital boards and diagrams to visualize workflows, enhancing communication and simplifying complex tasks. 
+* **Verbal-Heavy:** Relies on real-time verbalization and debate, ideal for extroverts or addressing communication-intensive blockages. 
+* **Remote-Friendly:** Standardizes accessible communication for remote work, preventing isolated team silos.
+* **Co-located / On-Site:** Requires in-person presence to address friction and resolve systemic latencies that are challenging to fix remotely. 
+* **Small Group / Pair:** Conducted in small groups of 2-3 to ensure psychological safety for juniors, facilitate skill transfer, and eliminate silos. 
+* **Whole Crowd:** Requires the entire team's presence for global alignment, but limit exposure for introverts as it is energy-consuming. 
+* **Solo-Capable:** Individually performed before sharing, restoring autonomy and deep technical flow to experts hindered by group synchronization. 
+* **Structured / Facilitated:** Uses a clear agenda and facilitator to create a strong framework, adding meaning to the ritual and avoiding bureaucratic drift. 
+* **Time-Boxed:** Enforces brief durations to minimize time loss and ensure high cognitive engagement, bypassing institutional delays. 
+* **Gamified:** Utilizes rules, turns, or props to depersonalize debates and abstract concepts, ideal for analytical profiles that dismiss emotional approaches. 
+* **Spontaneous / Improv:**Requires quick thinking and brainstorming, fulfilling experts' need for freedom from cumbersome processes. 
+* **High Visibility:** Presenting work to a large or hierarchical group requires careful management to avoid triggering impostor syndrome. 
+* **Consensus-Driven:** Requires full team alignment or compromise before concluding, ensuring quality but may exhaust impatient individuals. 
+* **Critical / Introspective:**Evaluates past work or peers for post-mortem analysis, requiring careful timing to prevent emotional overload. 
+* **Role-Fluid:**Rotate administrative duties to prevent technical experts from becoming locked into roles that erode their skills.
+* **Fast-Feedback:** Utilizes ultra-short feedback loops to reduce stagnation and frustration from long wait times. 
+* **User-Feedback Oriented:** Direct, frequent contact with end-users to rapidly adapt products and fulfill the team's need for recognition. 
+* **Documented / Traceable:** Creates a searchable, long-term project memory to bring order and reduce chaos-related anxiety. 
+* **Maintenance-Aware:** Integrates and manages technical debt and legacy systems to minimize friction from neglecting them. 
 
 see [raw_practices/tags-description.md](raw_practices/tags-description.md) for detailed tag descriptions.
 
@@ -105,26 +106,21 @@ see [raw_practices/tags-description.md](raw_practices/tags-description.md) for d
 #### `practice_goal` (Array of Strings, Required)
 List of strategic or organizational goals this practice contributes to achieving.
 
-**Valid Goals:**
-- `"Communication"` – Improves information sharing and clarity
-- `"Simplicity"` – Reduces complexity in processes or design
-- `"Feedback"` – Enables gathering and acting on feedback
-- `"Courage"` – Builds confidence to take risks
-- `"Humility"` – Promotes learning and openness
-- `"Transparency"` – Increases visibility of work and decisions
-- `"Inspection"` – Enables observation and measurement
-- `"Adaptation"` – Facilitates responding to change
-- `"Collective Code Ownership"` – Encourages shared responsibility for code quality
-- `"Continuous Integration"` – Supports frequent code integration and testing
-- `"TDD (test first)"` – Emphasizes writing tests before implementation
-- `"Refactoring"` – Supports code quality improvements
-- `"Simple Design"` – Promotes minimalist design approaches
-- `"Coding Standards"` – Enforces consistent code quality practices
-- `"Sustainable Pace"` – Supports work-life balance and long-term productivity
-- `"Self-Organization"` – Empowers teams to organize themselves
-- `"Cross-Functional Teams"` – Brings diverse skills together
-- `"Active Stakeholder Participation"` – Engages stakeholders actively
-- `"Short Releases"` – Supports frequent delivery of value
+* **1.1 Code Quality & Simple Design:** Maintaining clean, standardized code.
+* **1.2 Automation & CI:** Frequent merging and testing to prevent bottlenecks.
+* **1.3 Technical Debt Management:** Continuously improving internal architecture.
+* **1.4 Technical Collective Ownership:** Shared architectural responsibility to eliminate single points of failure.
+* **2.1 Psychological Safety:** Fostering high trust, transparency, and a blame-free culture.
+* **2.2 Self-Organization & Autonomy:** Decentralized decision-making without micromanagement.
+* **2.3 Cross-Functionality:** End-to-end team skills to eliminate external dependencies.
+* **2.4 Sustainable Pace:** Maintaining a predictable rhythm to prevent burnout.
+* **3.1 Flow & Delivery Cadence:** Rapid, regular, and simple delivery of working software.
+* **3.2 Inspection & Adaptation:** Continuous evaluation and correction of team workflows.
+* **3.3 Work Transparency:** Making tasks, progress, and blockers highly visible.
+* **4.1 Customer Involvement:** Continuous collaboration and feedback processing with users.
+* **4.2 Value-Driven Prioritization:** Defining product direction to deliver the highest-impact features first.
+
+For more details, see [raw_practices/practices_goals-description.md](raw_practices/practices_goals-description.md).
 
 ---
 
@@ -312,19 +308,19 @@ Other practices that relate to this one.
 ```json
 {
   "name": "Daily Stand-up",
-  "type": "Teamwork Practice",
+  "type": "Planning & Prioritization",
   "objective": "Synchronize the team and identify blockers",
   "description": "Each day at the same time, the team meets so as to bring everyone up to date on the information that is vital for coordination: each team member briefly describes any 'completed' contributions and any obstacles that stand in their way. This meeting is normally timeboxed to a maximum duration of 15 minutes, though this may need adjusting for larger teams. To keep the meeting short, any topic that starts a discussion is cut short, added to a 'parking lot' list, and discussed in greater depth after the meeting, between the people affected by the issue.",
   "method": "Scrum",
   "tags": [
-    "Visual/Tactile",
-    "Async-Ready",
-    "Structured"
+    "Visual / Tactile",
+    "Remote-Friendly",
+    "Structured / Facilitated"
   ],
   "practice_goal": [
-    "Communication",
-    "Transparency",
-    "Self-Organization"
+    "Flow & Delivery Cadence",
+    "Work Transparency",
+    "Self-Organization & Autonomy"
   ],
   "activities": [
     {
@@ -428,6 +424,7 @@ Other practices that relate to this one.
 ## Version History
 
 **Created:** January 19, 2026
+**Last Updated:** March 03, 2026
 
 ---
 

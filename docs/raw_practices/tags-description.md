@@ -110,7 +110,7 @@ Refactoring,, Continuous Integration
 
 # Category Structure & Cognitive Load
 
-## Tag : Structured / Facilit.
+## Tag : Structured / Facilitated
 
 ### Description
 Has a clear agenda, a facilitator, and specific steps (not a free-for-all).
@@ -190,7 +190,7 @@ DoD, Team Canvas, Sprint Planning
 
 ---
 
-## Tag : Critical / Introspect.
+## Tag : Critical / Introspective
 
 ### Description
 Direct analyse and evaluation of past work or peers
@@ -231,7 +231,7 @@ Continuous Deployment,TDD
 
 ---
 
-## Tag : User-Feedback Orien.
+## Tag : User-Feedback Oriented
 
 ### Description
 Direct, rapid or frecquent contact with the end user
