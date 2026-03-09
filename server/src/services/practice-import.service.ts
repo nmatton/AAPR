@@ -23,73 +23,42 @@ export interface ImportError {
   code: string;
 }
 
-// Practice type to category mapping
-// Map practice types to one of the 4 taxonomy categories (source: docs/raw_practices/agile_pillars.md)
-const PRACTICE_TYPE_TO_CATEGORY: Record<string, string> = {
+// Pillar-to-category mapping — source of truth: docs/raw_practices/agile_pillars.md
+const PILLAR_TO_CATEGORY: Record<string, string> = {
   // Technical Quality & Engineering Excellence
-  'Technical Practice': 'TECHNICAL_QUALITY',
-  'Quality Practice': 'TECHNICAL_QUALITY',
-  'Testing Practice': 'TECHNICAL_QUALITY',
-  'Design Practice': 'TECHNICAL_QUALITY',
-
+  'Code Quality & Simple Design': 'TECHNICAL_QUALITY',
+  'Automation & Continuous Integration': 'TECHNICAL_QUALITY',
+  'Technical Debt Management': 'TECHNICAL_QUALITY',
+  'Technical Collective Ownership': 'TECHNICAL_QUALITY',
   // Team Culture & Psychology
-  'Communication Practice': 'TEAM_CULTURE',
-  'Team Practice': 'TEAM_CULTURE',
-  'Teamwork Practice': 'TEAM_CULTURE',
-  'Team Building Practice': 'TEAM_CULTURE',
-  'Meeting Facilitation': 'TEAM_CULTURE',
-
+  'Psychological Safety & Core Values': 'TEAM_CULTURE',
+  'Self-Organization & Autonomy': 'TEAM_CULTURE',
+  'Cross-Functionality & Shared Skills': 'TEAM_CULTURE',
+  'Sustainable Pace': 'TEAM_CULTURE',
   // Process & Execution
-  'Planning Practice': 'PROCESS_EXECUTION',
-  'Process Practice': 'PROCESS_EXECUTION',
-  'Estimation Practice': 'PROCESS_EXECUTION',
-  'Governance Practice': 'PROCESS_EXECUTION',
-  'Feedback Practice': 'PROCESS_EXECUTION',
-  'Review Practice': 'PROCESS_EXECUTION',
-  'Inspection Practice': 'PROCESS_EXECUTION',
-  'Validation Practice': 'PROCESS_EXECUTION',
-
+  'Flow & Delivery Cadence': 'PROCESS_EXECUTION',
+  'Inspection & Adaptation': 'PROCESS_EXECUTION',
+  'Work Transparency & Synchronization': 'PROCESS_EXECUTION',
   // Product Value & Customer Alignment
-  'Requirements Practice': 'PRODUCT_VALUE',
-  'Delivery Practice': 'PRODUCT_VALUE',
-  'Discovery Practice': 'PRODUCT_VALUE',
-  'Product Discovery Practice': 'PRODUCT_VALUE',
-  'Product Management Practice': 'PRODUCT_VALUE',
-  'Strategy Practice': 'PRODUCT_VALUE',
-  'Prioritization Practice': 'PRODUCT_VALUE',
-  'Risk Management Practice': 'PRODUCT_VALUE',
-  'Problem Solving': 'PRODUCT_VALUE',
-  'Management Practice': 'PRODUCT_VALUE',
+  'Customer Involvement & Active Feedback': 'PRODUCT_VALUE',
+  'Value-Driven Prioritization': 'PRODUCT_VALUE',
 };
 
 /**
- * Map practice type to category
- * Returns null when no valid mapping found
+ * Derive category from a practice's goals (pillars).
+ * Uses majority vote: the category that appears most among the practice's pillars wins.
+ * Returns null only when none of the goals map to a known pillar.
  */
-function mapTypeToCategory(practiceType: string): string | null {
-  // Try exact match first
-  if (PRACTICE_TYPE_TO_CATEGORY[practiceType]) {
-    return PRACTICE_TYPE_TO_CATEGORY[practiceType];
+function categoryFromPillars(goals: string[]): string | null {
+  const counts: Record<string, number> = {};
+  for (const goal of goals) {
+    const cat = PILLAR_TO_CATEGORY[goal];
+    if (cat) {
+      counts[cat] = (counts[cat] || 0) + 1;
+    }
   }
-  
-  // Heuristic fallbacks based on keywords
-  const lowerType = practiceType.toLowerCase();
-  if (lowerType.includes('technical') || lowerType.includes('quality') || lowerType.includes('test')) {
-    return 'TECHNICAL_QUALITY';
-  }
-  if (lowerType.includes('team') || lowerType.includes('communication')) {
-    return 'TEAM_CULTURE';
-  }
-  if (lowerType.includes('feedback') || lowerType.includes('review') || lowerType.includes('retrospective') || lowerType.includes('planning') || lowerType.includes('process') || lowerType.includes('governance')) {
-    return 'PROCESS_EXECUTION';
-  }
-  if (lowerType.includes('delivery') || lowerType.includes('product') || lowerType.includes('discovery')) {
-    return 'PRODUCT_VALUE';
-  }
-  
-  // No match found
-  console.warn(`[WARN] No category mapping for practice type: ${practiceType}`);
-  return null;
+  if (Object.keys(counts).length === 0) return null;
+  return Object.entries(counts).sort((a, b) => b[1] - a[1])[0][0];
 }
 
 /**
@@ -203,13 +172,13 @@ export async function importPractices(
       // Calculate checksum
       const checksum = calculateChecksum(practice);
       
-      // Map practice type to category
-      const categoryId = mapTypeToCategory(practice.type);
+      // Derive category from practice goals (pillars)
+      const categoryId = categoryFromPillars(practice.practice_goal);
       if (!categoryId) {
         errors.push({
           practice: practice.name,
-          field: 'type',
-          error: `Unrecognized practice type: ${practice.type}`,
+          field: 'practice_goal',
+          error: `No pillar maps to a known category for goals: ${practice.practice_goal.join(', ')}`,
           code: 'invalid_category',
         });
         skippedCount++;

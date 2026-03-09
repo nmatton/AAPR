@@ -70,8 +70,32 @@ export const usePracticesStore = create<PracticesState>((set, get) => ({
         selectedMethods.length > 0 ? selectedMethods : undefined,
         selectedTags.length > 0 ? selectedTags : undefined
       )
+
+      let allItems = data.items
+      if (page === 1 && data.total > data.items.length) {
+        const totalPages = Math.ceil(data.total / pageSize)
+        const pageRequests: Promise<Awaited<ReturnType<typeof fetchPractices>>>[] = []
+
+        for (let pageNumber = 2; pageNumber <= totalPages; pageNumber += 1) {
+          pageRequests.push(
+            fetchPractices(
+              pageNumber,
+              pageSize,
+              trimmedSearch || undefined,
+              selectedPillars.length > 0 ? selectedPillars : undefined,
+              selectedCategories.length > 0 ? selectedCategories : undefined,
+              selectedMethods.length > 0 ? selectedMethods : undefined,
+              selectedTags.length > 0 ? selectedTags : undefined
+            )
+          )
+        }
+
+        const remainingPages = await Promise.all(pageRequests)
+        allItems = [data.items, ...remainingPages.map((result) => result.items)].flat()
+      }
+
       set({
-        practices: data.items,
+        practices: allItems,
         total: data.total,
         page: data.page,
         pageSize: data.pageSize,
@@ -79,7 +103,7 @@ export const usePracticesStore = create<PracticesState>((set, get) => ({
         error: null,
         catalogViewed: true
       })
-      await logCatalogViewed(teamId, data.items.length)
+      await logCatalogViewed(teamId, allItems.length)
       if (hasFilters) {
         await logCatalogSearched({
           teamId,
@@ -101,8 +125,20 @@ export const usePracticesStore = create<PracticesState>((set, get) => ({
     set({ isPillarsLoading: true })
     try {
       const data = await fetchPractices(1, 100)
+
+      let allItems = data.items
+      if (data.total > data.items.length) {
+        const totalPages = Math.ceil(data.total / data.pageSize)
+        const pageRequests: Promise<Awaited<ReturnType<typeof fetchPractices>>>[] = []
+        for (let pageNumber = 2; pageNumber <= totalPages; pageNumber += 1) {
+          pageRequests.push(fetchPractices(pageNumber, data.pageSize))
+        }
+        const remainingPages = await Promise.all(pageRequests)
+        allItems = [data.items, ...remainingPages.map((result) => result.items)].flat()
+      }
+
       const pillarMap = new Map<number, Pillar>()
-      data.items.forEach((practice) => {
+      allItems.forEach((practice) => {
         practice.pillars.forEach((pillar) => {
           pillarMap.set(pillar.id, pillar)
         })
@@ -183,6 +219,9 @@ export const selectFilteredPractices = (state: PracticesState): Practice[] => {
     const matchesSearch = !hasSearch
       || practice.title.toLowerCase().includes(searchValue)
       || practice.goal.toLowerCase().includes(searchValue)
+      || (practice.description?.toLowerCase().includes(searchValue) ?? false)
+      || (practice.method?.toLowerCase().includes(searchValue) ?? false)
+      || (practice.tags?.some((tag) => tag.toLowerCase().includes(searchValue)) ?? false)
 
     const matchesPillars = !hasPillarFilters
       || practice.pillars.some((pillar) => state.selectedPillars.includes(pillar.id))

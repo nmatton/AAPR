@@ -131,7 +131,7 @@ npx prisma migrate deploy
 
 **Seed Database (Optional):**
 ```powershell
-npx tsx prisma/seed.ts
+npm run db:seed
 ```
 
 **Start Development Server:**

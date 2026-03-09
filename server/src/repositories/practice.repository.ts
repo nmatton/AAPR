@@ -418,13 +418,19 @@ export async function searchAndFilter(options: {
 
   const whereConditions: Prisma.PracticeWhereInput[] = [{ isGlobal: true }];
 
-  // Add search condition (OR logic for title/goal/description)
+  // Add search condition (OR logic for title/goal/description/method/tags)
   if (search && search.trim()) {
     whereConditions.push({
       OR: [
         { title: { contains: search.trim(), mode: 'insensitive' } },
         { goal: { contains: search.trim(), mode: 'insensitive' } },
         { description: { contains: search.trim(), mode: 'insensitive' } },
+        { method: { contains: search.trim(), mode: 'insensitive' } },
+        {
+          tags: {
+            array_contains: search.trim(),
+          },
+        },
       ],
     });
   }
@@ -512,13 +518,19 @@ export async function countFiltered(options: {
 
   const whereConditions: Prisma.PracticeWhereInput[] = [{ isGlobal: true }];
 
-  // Add search condition
+  // Add search condition (title/goal/description/method/tags)
   if (search && search.trim()) {
     whereConditions.push({
       OR: [
         { title: { contains: search.trim(), mode: 'insensitive' } },
         { goal: { contains: search.trim(), mode: 'insensitive' } },
         { description: { contains: search.trim(), mode: 'insensitive' } },
+        { method: { contains: search.trim(), mode: 'insensitive' } },
+        {
+          tags: {
+            array_contains: search.trim(),
+          },
+        },
       ],
     });
   }
@@ -607,13 +619,19 @@ export async function findAvailableForTeam(
     },
   ];
 
-  // Add search condition
+  // Add search condition (title/goal/description/method/tags)
   if (search && search.trim()) {
     whereConditions.push({
       OR: [
         { title: { contains: search.trim(), mode: 'insensitive' } },
         { goal: { contains: search.trim(), mode: 'insensitive' } },
         { description: { contains: search.trim(), mode: 'insensitive' } },
+        { method: { contains: search.trim(), mode: 'insensitive' } },
+        {
+          tags: {
+            array_contains: search.trim(),
+          },
+        },
       ],
     });
   }
@@ -717,13 +735,19 @@ export async function countAvailableForTeam(
     },
   ];
 
-  // Add search condition
+  // Add search condition (title/goal/description/method/tags)
   if (search && search.trim()) {
     whereConditions.push({
       OR: [
         { title: { contains: search.trim(), mode: 'insensitive' } },
         { goal: { contains: search.trim(), mode: 'insensitive' } },
         { description: { contains: search.trim(), mode: 'insensitive' } },
+        { method: { contains: search.trim(), mode: 'insensitive' } },
+        {
+          tags: {
+            array_contains: search.trim(),
+          },
+        },
       ],
     });
   }

@@ -308,11 +308,16 @@ export const PracticeEditForm = ({
                 className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">None</option>
-                <option value="Scrum">Scrum</option>
-                <option value="XP">XP</option>
+                <option value="Agile">Agile</option>
+                <option value="Design Thinking & UX">Design Thinking & UX</option>
+                <option value="Facilitation & Workshops">Facilitation & Workshops</option>
                 <option value="Kanban">Kanban</option>
                 <option value="Lean">Lean</option>
-                <option value="SAFe">SAFe</option>
+                <option value="Product Management">Product Management</option>
+                <option value="Project Management">Project Management</option>
+                <option value="Scaled Agile">Scaled Agile</option>
+                <option value="Scrum">Scrum</option>
+                <option value="XP">XP</option>
                 <option value="Custom">Custom</option>
               </select>
             </div>

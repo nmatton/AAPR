@@ -269,6 +269,7 @@ describe('PracticeCatalog', () => {
     mockStore.isLoading = false
     mockStore.searchQuery = 'standup'
     mockStore.selectedPillars = [1]
+    mockStore.selectedCategories = ['PROCESS_EXECUTION']
     mockStore.practices = [
       {
         id: 1,
@@ -285,7 +286,7 @@ describe('PracticeCatalog', () => {
       </MemoryRouter>
     )
 
-    fireEvent.click(screen.getByText('Clear All Filters'))
+    fireEvent.click(screen.getByText('Clear all'))
     expect(mockClearFilters).toHaveBeenCalled()
   })
 

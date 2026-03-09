@@ -34,10 +34,7 @@ export const MetricSchema = z.object({
 // Resource guideline schema
 export const GuidelineSchema = z.object({
   name: z.string().min(1).max(200),
-  url: z.string().url().refine(
-    (url) => url.startsWith('https://'),
-    { message: 'URL must use HTTPS protocol' }
-  ),
+  url: z.union([z.string().url(), z.literal('')]),
   type: z.string().optional(), // Allow any resource type
 });
 
