@@ -11,9 +11,9 @@ workflowType: 'epics-and-stories'
 project_name: 'bmad_version'
 user_name: 'nicolas'
 date: '2026-01-15'
-epicStructure: 'Sequential delivery (Epic 1 → 2 → 3 → 4 → 5, Epic 6 parallel)'
-totalEpics: 6
-totalFRsCovered: 20
+epicStructure: 'Sequential delivery (Epic 1 → 2 → 3 → 4 → 4.1 → 5, Epic 6 parallel)'
+totalEpics: 8
+totalFRsCovered: 22
 totalNFRsCovered: 18
 ---
 
@@ -29,7 +29,7 @@ The platform is a research-grade web application enabling development teams to s
 
 ## Requirements Inventory
 
-### Functional Requirements (20 total)
+### Functional Requirements (22 total)
 
 **FR1-3: User Management**
 - FR1: User can register with name, email, password
@@ -49,6 +49,10 @@ The platform is a research-grade web application enabling development teams to s
 **FR11-12: Big Five Questionnaire**
 - FR11: User can complete the 44-item IPIP-NEO questionnaire
 - FR12: User can view their Big Five profile scores
+
+**FR12A-12B: Affinity Scoring**
+- FR12A: System can calculate an individual practice affinity score from a user's Big Five profile and a practice's tags
+- FR12B: System can calculate a team practice affinity score by aggregating available individual affinity scores for that practice
 
 **FR13-18: Issues & Discussions**
 - FR13: User can submit an issue linked to a practice with description
@@ -132,7 +136,8 @@ The platform is a research-grade web application enabling development teams to s
 | **Epic 2.1: Team Dashboard & Catalog UX Refinement + Database Normalization** | Refined UI/UX for dashboard and catalog; improved practice information visibility; proper practice association modeling | FR8-10 (enhanced) | NFR12-14 (data normalization) |
 | **Epic 3: Big Five Personality Profiling** | Self-awareness of personality traits and behavioral style | FR11-12 | NFR6, NFR12-14 |
 | **Epic 4: Issue Submission & Discussion** | Structured practice friction identification, team dialogue, and conflict resolution | FR13-14, FR19 | NFR5-7, NFR12-14, NFR18 |
-| **Epic 5: Adaptation Decision & Tracking** | Recorded practice changes with coverage-based recommendations and full audit trail | FR15-18 | NFR5-6, NFR12-14 |
+| **Epic 4.1: Affinity Scoring Foundation** | Explainable personality-practice fit signals for individuals and teams before recommendation ranking | FR12A-12B | NFR6, NFR12-14 |
+| **Epic 5: Adaptation Decision & Tracking** | Recorded practice changes with coverage-aware and affinity-aware recommendations and full audit trail | FR15-18 | NFR5-6, NFR12-14 |
 | **Epic 6: Research Data Integrity** | Complete, queryable, immutable event logs for analysis | FR17 | NFR5-9, NFR12-14 |
 
 ---
@@ -1799,14 +1804,181 @@ So that **I can navigate smoothly, quickly view statuses, and access related pra
 
 ---
 
+### Epic 4.1: Affinity Scoring Foundation
+
+**Epic Goal:** Establish a deterministic and explainable scoring engine that links Big Five profiles to practice tags for both individuals and teams.
+
+**User Value:** Teams get evidence-based fit signals before evaluating adaptations, and later recommendation flows can rely on a transparent scoring foundation instead of opaque ranking.
+
+**FRs Covered:** FR12A-12B
+
+**Scope:** Load curated personality-tag affinity matrix and trait bounds → compute tag-level trait contributions → aggregate per-practice individual affinity → aggregate per-practice team affinity → expose explanation-ready results for downstream recommendation views.
+
+**Stories:**
+
+#### Story 4.1.1: Calculate Individual Practice Affinity Score
+
+As a researcher,
+I want the system to calculate an individual affinity score for each practice from a user's Big Five profile and the practice's tags,
+So that personality-practice fit can be used consistently in later recommendation and analysis workflows.
+
+**Acceptance Criteria:**
+
+- **Given** a user has completed the Big Five questionnaire
+  **And** a practice has one or more tags stored in the catalog
+  **When** the affinity engine evaluates that practice for that user
+  **Then** it loads the configured low/high bounds for each Big Five trait
+  **And** it loads the theoretical tag-personality relations for each relevant tag
+
+- **Given** a tag defines theoretical affinities for a trait at the low and high poles using values in `{ -, 0, + }`
+  **When** the system evaluates that trait
+  **Then** it maps those poles to numeric endpoints in `{-1, 0, 1}`
+  **And** any user trait value less than or equal to the configured low bound returns exactly the low endpoint with no extrapolation
+  **And** any user trait value greater than or equal to the configured high bound returns exactly the high endpoint with no extrapolation
+
+- **Given** a user's trait score falls between the configured low and high bounds
+  **When** the system computes the trait contribution for a tag
+  **Then** it uses linear interpolation between the low endpoint and high endpoint
+  **And** the resulting value remains within `[-1, 1]`
+
+- **Given** a tag has been evaluated across all five traits
+  **When** the system completes the tag calculation
+  **Then** it averages the five trait contributions to produce a tag affinity score in `[-1, 1]`
+
+- **Given** a practice contains multiple tags
+  **When** the system completes the practice calculation
+  **Then** it averages the tag affinity scores to produce one final individual practice affinity score in `[-1, 1]`
+
+- **Given** an affinity score has been computed
+  **When** a consuming service requests an explanation payload
+  **Then** the response includes the final practice score and the intermediate trait/tag breakdown used to derive it
+  **And** the calculation is deterministic for the same inputs
+
+---
+
+#### Story 4.1.2: Calculate Team Practice Affinity Score
+
+As a Scrum Master,
+I want the system to calculate a team-level affinity score for each practice,
+So that adaptation discussions can use a group-level fit signal without exposing teammates' raw personality profiles.
+
+**Acceptance Criteria:**
+
+- **Given** a team has members with completed Big Five profiles
+  **When** the team affinity engine evaluates a practice
+  **Then** it computes or reuses the individual practice affinity score for each eligible member
+
+- **Given** some team members have not completed the Big Five questionnaire
+  **When** team affinity is calculated
+  **Then** only members with available profiles are included in the aggregation
+  **And** the response reports how many members were included and excluded
+
+- **Given** individual practice affinity scores are available for included members
+  **When** the team result is produced
+  **Then** the system averages those individual practice scores to produce a team practice affinity score in `[-1, 1]`
+
+- **Given** a team affinity score is returned
+  **When** downstream recommendation views consume it
+  **Then** they receive only aggregated team-level context and explanation data
+  **And** they do not receive any other member's raw Big Five trait values
+
+- **Given** no eligible profiles are available for a team
+  **When** team affinity is requested
+  **Then** the system returns a clear "insufficient profile data" state
+  **And** downstream recommendation flows fall back to coverage-only ordering
+
+---
+
+#### Story 4.1.3: Display Affinity Scores on Practice Cards
+
+As a **team member**,
+I want to **see visual affinity indicators on each practice card in both the catalog and team dashboard**,
+So that **I can quickly identify practices with good fit (green), neutral fit (grey), or poor fit (red) for both my individual profile and our team's collective profile**.
+
+**Acceptance Criteria:**
+
+- **Given** I have completed the Big Five questionnaire
+  **And** I'm viewing the Practice Catalog or Team Dashboard
+  **When** practice cards are displayed
+  **Then** each practice card shows an affinity badge in the top-right corner
+
+- **Given** a practice card is displayed
+  **When** the affinity badge is rendered
+  **Then** it shows two sections:
+    - Individual affinity (my personal fit)
+    - Team affinity (team collective fit)
+
+- **Given** an individual affinity score is available for a practice
+  **When** the score is less than -0.3
+  **Then** the individual section of the badge displays in red
+  **And** shows the score rounded to 2 decimal places (e.g., "-0.45")
+
+- **Given** an individual affinity score is calculated
+  **When** the score is between -0.3 and 0.3 (inclusive)
+  **Then** the individual section displays in grey
+  **And** shows the score rounded to 2 decimal places (e.g., "0.12")
+
+- **Given** an individual affinity score exists
+  **When** the score is greater than 0.3
+  **Then** the individual section displays in green
+  **And** shows the score rounded to 2 decimal places (e.g., "0.67")
+
+- **Given** a team affinity score is available for a practice
+  **When** the score is less than -0.3
+  **Then** the team section of the badge displays in red with the score
+
+- **Given** a team affinity score is calculated
+  **When** the score is between -0.3 and 0.3 (inclusive)
+  **Then** the team section displays in grey with the score
+
+- **Given** a team affinity score exists
+  **When** the score is greater than 0.3
+  **Then** the team section displays in green with the score
+
+- **Given** I have not completed the Big Five questionnaire
+  **When** practice cards are displayed
+  **Then** the individual affinity section shows "N/A" or a neutral indicator
+  **And** only the team affinity section displays a score (if team data is available)
+
+- **Given** my team has insufficient Big Five profile data
+  **When** practice cards are displayed
+  **Then** the team affinity section shows "N/A" or "Insufficient data"
+  **And** the individual affinity still displays if my profile is available
+
+- **Given** I hover over or click the affinity badge
+  **When** the tooltip/popover appears
+  **Then** I see an explanation:
+    - "Individual: Your personality-practice fit based on your Big Five profile and practice tags"
+    - "Team: Average fit across all team members with completed profiles"
+    - Color legend: "Green (>0.3) = Good fit, Grey (-0.3 to 0.3) = Neutral, Red (<-0.3) = Poor fit"
+
+- **Given** affinity badges are displayed on practice cards
+  **When** I'm in the Practice Catalog
+  **Then** affinity scores help me identify which new practices might fit well before adding them to our team
+
+- **Given** affinity badges are shown on the Team Dashboard
+  **When** I view our current portfolio
+  **Then** I can quickly spot practices with poor fit that might benefit from adaptation
+
+- **Given** affinity data is loaded for practice cards
+  **When** the cards are rendered
+  **Then** the affinity scores are fetched efficiently (batched API call for visible practices)
+  **And** loading states show skeleton loaders or spinners in the badge position
+
+- **Given** I view practice cards with affinity badges
+  **When** the page loads
+  **Then** an event is logged: `{ action: "affinity.displayed", context: "catalog|dashboard", teamId, userId, practiceCount, timestamp }`
+
+---
+
 
 ### Epic 5: Adaptation Decision & Tracking
 
-**Epic Goal:** Record team decisions on practice adaptations and track resolution progress.
+**Epic Goal:** Record team decisions on practice adaptations, track resolution progress, and surface coverage-aware plus affinity-aware alternatives.
 
 **User Value:** Teams document what they decided to change and see the outcome over time.
 
-**Scope:** Record adaptation decision → track status progression → view decision history → link to recommendations.
+**Scope:** Record adaptation decision → track status progression → view decision history → link to recommendations enriched by coverage and affinity context.
 
 **Stories:**
 
@@ -1873,7 +2045,7 @@ So that we can track which adaptations worked.
 #### Story 5.3: View System Recommendations for Alternative Practices
 
 As a **developer with a practice difficulty**,
-I want to **see system-generated recommendations for alternative practices that cover the same or missing pillars**,
+I want to **see system-generated recommendations for alternative practices that cover the same or missing pillars and are compatible with my team's affinity profile when available**,
 So that **I can discuss evidence-informed adaptations with my team**.
 
 **Acceptance Criteria:**
@@ -1889,14 +2061,21 @@ So that **I can discuss evidence-informed adaptations with my team**.
 - **Given** my team's coverage is low in some pillars (e.g., team covers 14/19 pillars)
   **When** I view the recommendations
   **Then** I see practices that cover the 5 missing pillars, sorted by: practices covering most missing pillars first
+  **And** ties are broken by highest team affinity score when enough profile data is available
 
 - **Given** recommendations are displayed
   **When** I click a recommended practice
   **Then** I see: description, pillars it covers, why it was recommended (e.g., "Covers same Communication + Feedback pillars as Daily Standup")
+  **And** I see a factual affinity explanation such as "High team affinity based on tags: Written / Async-Ready, Solo-Capable"
 
 - **Given** the system shows recommendations
   **When** they're displayed
   **Then** they're labeled as "Alternative practices with similar pillar coverage" or "Practices covering missing pillars" (factual, not prescriptive)
+
+- **Given** the team does not yet have enough Big Five profile data
+  **When** recommendations are shown
+  **Then** the recommendation list falls back to coverage-only ordering
+  **And** the UI clearly states that affinity context is unavailable for this team
 
 - **Given** recommendations are generated
   **When** they're shown
@@ -1904,7 +2083,9 @@ So that **I can discuss evidence-informed adaptations with my team**.
 
 - **Given** I'm viewing recommendations
   **When** I see multiple practices covering the same pillars
-  **Then** they're presented as "equivalent alternatives" with no ranking or preference indicated
+  **Then** they're presented with the same pillar-coverage rationale first
+  **And** if affinity context exists they are secondarily ordered by team affinity score descending
+  **And** if affinity context does not exist they remain unranked beyond coverage matching
 
 ---
 
@@ -2035,8 +2216,8 @@ So that **I can analyze specific periods or events for research**.
 
 **Total FRs covered:** 20 functional requirements
 **Total NFRs covered:** 18 non-functional requirements
-**Epics:** 7 major epics (including Epic 2.1 UX refinement)
-**Stories:** 43 detailed user stories
+**Epics:** 8 major epics (including Epic 2.1 UX refinement and Epic 4.1 affinity scoring)
+**Stories:** 46 detailed user stories
 
 **Story Breakdown by Epic:**
 - Epic 1 (Authentication & Team Onboarding): 8 stories
@@ -2044,10 +2225,11 @@ So that **I can analyze specific periods or events for research**.
 - Epic 2.1 (Team Dashboard & Catalog UX Refinement + Database Normalization): 12 stories
 - Epic 3 (Big Five Personality Profiling): 4 stories
 - Epic 4 (Issue Submission & Discussion): 5 stories
+- Epic 4.1 (Affinity Scoring Foundation): 2 stories
 - Epic 5 (Adaptation Decision & Tracking): 3 stories
-- Epic 6 (Research Data Integrity & Event Logging): 2 stories
+- Epic 6 (Research Data Integrity & Event Logging): 3 stories
 
-**Delivery Sequence:** Epic 1 → Epic 2 → Epic 2.1 → Epic 3 → Epic 4 → Epic 5 (Epic 6 runs in parallel)
+**Delivery Sequence:** Epic 1 → Epic 2 → Epic 2.1 → Epic 3 → Epic 4 → Epic 4.1 → Epic 5 (Epic 6 runs in parallel)
 
 **Key Improvements in Epic 2.1:**
 - ✅ Team dashboard redesigned with practices as central focus

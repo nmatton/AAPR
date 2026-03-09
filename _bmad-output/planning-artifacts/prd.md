@@ -119,7 +119,7 @@ author: nicolas
 
 ### Growth Features (Post-MVP)
 
-- Personality-ranked recommendations (Big Five-informed ranking); real-time notifications; advanced practice visualizations; analytics dashboards; onboarding walkthrough.
+- Affinity scoring foundation (individual and team practice fit from Big Five + tags); personality-ranked recommendations (Big Five-informed ranking); real-time notifications; advanced practice visualizations; analytics dashboards; onboarding walkthrough.
 
 ### Vision (Future)
 
@@ -211,9 +211,9 @@ Resolution: Export completes; user verifies sample rows. No account or team comp
 - All team members can: create team; configure practices and pillar specifics; invite members; manage team membership; submit issues; comment in discussions; view coverage and catalog; manage own Big Five profile; view/export events.
 - No permission restrictions or owner-only actions in MVP.
 
-### Practice Recommendation Logic (MVP - Coverage-Based)
+### Practice Recommendation Logic (MVP - Coverage-Based + Affinity Foundation)
 
-**Scope:** MVP recommendations focus on pillar coverage equivalence, not personality matching.
+**Scope:** MVP recommendations remain coverage-first, but the next implementation increment introduces an explainable affinity scoring foundation that can be used as a secondary signal once profile data exists.
 
 **Algorithm:**
 1. **Same-Pillar Recommendations:** When viewing a practice, system suggests all other practices that cover the exact same set of pillars.
@@ -223,14 +223,25 @@ Resolution: Export completes; user verifies sample rows. No account or team comp
    - Example: If team covers 14/19 pillars, show practices that cover any of the 5 missing pillars
    - Sort by: practices covering most missing pillars first
 
-3. **Presentation Rules:**
+3. **Affinity Scoring Foundation:** For a given practice, system can compute an individual and team affinity score from Big Five profiles and practice tags.
+  - Trait bounds define low and high anchors for each trait
+  - Tag-personality relations define the theoretical low/high affinity values in `{ -, 0, + }`
+  - If a trait score is below the configured low bound, the contribution stays constant at the low endpoint
+  - If a trait score is above the configured high bound, the contribution stays constant at the high endpoint
+  - Only values strictly between the bounds use linear interpolation between the low and high endpoints, normalized to `[-1, 1]`
+  - Tag score = average of the five trait contributions
+  - Practice score = average of the tag scores
+  - Team score = average of available individual practice scores for that team
+
+4. **Presentation Rules:**
    - Recommendations appear as a sidebar on issue detail or practice catalog views
-   - No ranking by personality traits in MVP
+  - Coverage remains the primary recommendation rationale
+  - Affinity becomes a secondary ordering signal only when enough Big Five profile data is available
    - Clear labeling: "Alternative practices covering the same pillars" vs "Practices covering missing pillars"
    - Non-intrusive; optional for users to explore
 
 **Future (Phase 2 - Post-MVP):**
-- Personality-informed ranking: Boost recommendations for practices matching user's Big Five profile
+- Personality-informed ranking: Expand from team-level secondary ordering to richer per-user ranking and explanation patterns
 - Correlation analysis: Track which practice-personality combinations lead to successful adaptations
 - Personalized suggestions: "Based on your [Introversion, Low Conscientiousness], consider practices with [Async, Flexible] characteristics"
 
@@ -240,6 +251,7 @@ Resolution: Export completes; user verifies sample rows. No account or team comp
 - Teams: GET/POST /api/teams; GET /api/teams/:id; POST /api/teams/:id/invites
 - Practices: GET /api/practices (filters); GET /api/practices/:id; POST/DELETE /api/teams/:id/practices
 - Practice Recommendations: GET /api/teams/:id/practices/:practiceId/alternatives (same-pillar); GET /api/teams/:id/recommendations/coverage-gaps (missing pillars)
+- Affinity: GET /api/teams/:id/practices/:practiceId/affinity/me; GET /api/teams/:id/practices/:practiceId/affinity/team
 - Coverage: GET /api/teams/:id/coverage
 - Issues: GET/POST /api/teams/:id/issues; GET/POST /api/issues/:id/comments; POST /api/issues/:id/decision
 - Events: GET /api/events (filterable by type/date); optional export to CSV/JSON
@@ -249,7 +261,9 @@ Resolution: Export completes; user verifies sample rows. No account or team comp
 - Idempotent invites prevent duplicate memberships; clear statuses (added/pending/failed) with retry.
 - Event log schema: actor_id, team_id, entity_type, entity_id, action, payload_snapshot, created_at.
 - No hard deletes for research-critical entities; use status fields; retain events until manual purge.
-- Recommendation algorithms: Pillar set matching (same-pillar) and set difference operations (coverage gaps); no ranking in MVP. 
+- Recommendation algorithms: Pillar set matching (same-pillar), set difference operations (coverage gaps), and optional affinity-based secondary ordering when enough profile data is available.
+- Affinity calculations use curated trait bounds and tag-personality relation matrices; results must remain explainable and bounded in `[-1, 1]`.
+- Affinity calculations must clamp outside configured bounds instead of extrapolating beyond the boundary affinity value.
 ## Project Scoping & Phased Development
 
 ### MVP Strategy & Deliverable
@@ -301,6 +315,11 @@ Personality-informed recommendations v2, multi-team insights, richer visualizati
 
 - FR11: User can complete the 44-item IPIP-NEO questionnaire.
 - FR12: User can view their Big Five profile scores.
+
+### Affinity Scoring
+
+- FR12A: System can calculate an individual practice affinity score from a user's Big Five profile and a practice's tags.
+- FR12B: System can calculate a team practice affinity score by aggregating available individual affinity scores for that practice.
 
 ### Issues & Discussions
 

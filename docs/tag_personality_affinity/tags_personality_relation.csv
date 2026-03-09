@@ -1,0 +1,21 @@
+﻿Tag;High E;Low E;High A;Low A;High C;Low C;High N;Low N;High O;Low O
+Written / Async-Ready;-;+;+;0;+;0;+;0;0;+
+Visual / Tactile;+;0;+;0;+;0;0;+;+;0
+Verbal-Heavy;+;-;+;0;0;0;-;0;+;0
+Remote-Friendly;-;+;0;0;+;0;0;-;0;0
+Co-located / On-Site;+;-;+;0;0;0;0;+;0;0
+Small Group / Pair;0;+;+;0;0;+;+;0;0;0
+Whole Crowd;+;-;0;0;0;0;-;+;+;0
+Solo-Capable;-;+;+;0;+;0;0;+;+;0
+Structured / Facilit.;-;+;+;0;+;0;+;0;-;+
+Time-Boxed;0;0;+;0;+;0;+;0;0;+
+Gamified;0;0;+;-;-;0;-;0;0;-
+Spontaneous / Improv;+;0;+;0;-;+;-;+;+;-
+High Visibility;+;-;-;+;0;0;-;0;0;0
+Consensus-Driven;0;0;+;-;0;0;0;0;0;0
+Critical / Introspect.;-;0;-;+;+;0;0;+;-;0
+Role-Fluid;0;+;0;0;+;0;0;0;+;0
+Fast-Feedback;0;0;0;+;0;0;0;0;+;+
+User-Feedback Orien.;+;-;+;-;+;-;0;0;+;0
+Documented / Traceable;-;+;0;0;+;-;+;0;-;+
+Maintenance-Aware;0;0;0;0;+;0;+;0;0;0

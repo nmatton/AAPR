@@ -162,6 +162,11 @@ Critical constraint: Practices are currently stored in structured JSON format an
 
 **5. Big Five Personality Integration**
 - 44-item IPIP-NEO questionnaire embedded in UI
+- Affinity scoring engine derives per-practice individual and team fit scores from Big Five profiles and practice tags
+- Trait bounds provide low/high interpolation anchors; theoretical tag-pole affinities map to numeric endpoints in `{-1, 0, 1}`
+- Trait values outside configured bounds are clamped to the boundary affinity value; interpolation applies only inside the open interval between bounds
+- Tag score = average of five trait contributions; practice score = average of tag scores; team score = average of eligible member practice scores
+- Recommendation surfaces consume aggregated team affinity context only; raw teammate trait scores remain hidden
 - Use structured error shape and carry requestId end-to-end.
 - Follow snake_case DB, camelCase API/TS, and stated route patterns.
 - Keep tests co-located with implementations using *.test.ts[x].
@@ -1813,6 +1818,7 @@ Without any rework, can add:
   - **Practices & Coverage:** frontend/features/practices-coverage/*; backend routes/practices + coverage; services/practices, coverage; repositories/practice, practice_pillars, team_practices; shared coverage constants in frontend lib/constants/coverage.ts and backend config/coverage.ts.
   - **Issues & Comments:** frontend/features/issues/*; backend routes/issues; services/issues/comments; repositories/issues/comments; optimistic version handling.
   - **Big Five:** frontend/features/big-five/*; backend routes/bigfive; services/bigfive; repositories/bigfive_results; schemas for validation.
+  - **Affinity Scoring:** frontend/features/issues/* and frontend/features/big-five/* consume affinity context; backend routes/affinity; services/affinity; repositories/bigfive_results + practice tags; curated reference data loaded from personality bounds and tag-relation CSVs.
   - **Events & Export:** frontend/features/events-export/*; backend routes/events; eventsRepository only; export endpoints; telemetry/logger middleware for correlation IDs.
   - **Provisioning:** ops/ scripts; backend prisma/migrations for schema; no feature code imports from ops.
 

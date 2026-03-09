@@ -144,6 +144,7 @@ Users should feel **safe, empowered, and heard**. Developers speaking up about p
 - Practice catalog sidebar keeps options visible without leaving detail view
 - Coverage score sidebar shows impact at a glance
 - Personality context gentle sidebar hint (not center stage)
+- Team affinity context appears as supporting evidence, never as a directive or opaque score without explanation
 
 ### Anti-Patterns to Avoid
 
@@ -671,7 +672,7 @@ flowchart TD
 
 #### Issue Detail View
 **Purpose**: The hubissue description, comments, status, activity, decision logging.
-**Layout**: Left main content (description, comments, status timeline, activity feed); right sidebar (practice info, personality context, related issues).
+**Layout**: Left main content (description, comments, status timeline, activity feed); right sidebar (practice info, personality context, affinity context, related issues).
 **Components**: IssueDetail, CommentList, ActivityFeed, StatusBadge, SidebarPanel.
 **Interactions**: Add comment, record decision, edit description (triggers optimistic conflict flow), change status.
 **States**: Viewing, editing, conflict resolution, loading.

@@ -5,6 +5,7 @@ import * as membersController from '../controllers/members.controller';
 import { requireAuth } from '../middleware/requireAuth';
 import { validateTeamMembership } from '../middleware/validateTeamMembership';
 import { issuesRouter } from './issues.routes';
+import { affinityRouter } from './affinity.routes';
 
 export const teamsRouter = Router();
 
@@ -13,6 +14,12 @@ export const teamsRouter = Router();
  * POST /api/v1/teams/:teamId/issues
  */
 teamsRouter.use('/:teamId/issues', requireAuth, validateTeamMembership, issuesRouter);
+
+/**
+ * Mount affinity router
+ * GET /api/v1/teams/:teamId/practices/:practiceId/affinity/me
+ */
+teamsRouter.use('/:teamId/practices', requireAuth, validateTeamMembership, affinityRouter);
 
 /**
  * GET /api/v1/teams
