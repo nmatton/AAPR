@@ -2,7 +2,7 @@ import { prisma } from '../lib/prisma'
 import { AppError } from './auth.service'
 import { getReferenceData } from './affinity/affinity-reference-data'
 import { computeIndividualPracticeAffinity } from './affinity/affinity-scoring'
-import type { UserProfile, IndividualAffinityResult } from './affinity/affinity.types'
+import type { UserProfile, IndividualAffinityResult, TagScoreDetail } from './affinity/affinity.types'
 import { TRAIT_ITEM_COUNTS, TRAIT_KEYS } from './affinity/affinity.types'
 
 /**
@@ -154,5 +154,188 @@ export async function getMyPracticeAffinity(
         ),
       })),
     },
+  }
+}
+
+/**
+ * Build team-level explanation: average each tag's score across all eligible members,
+ * then pick the top 3 positive and top 3 negative tags.
+ */
+function buildTeamAffinityExplanation(
+  allTagScores: TagScoreDetail[][]
+): { topPositiveTags: string[]; topNegativeTags: string[] } {
+  // Accumulate sum + count for each tag (using normalized key for grouping)
+  const tagAccum = new Map<string, { rawTag: string; sum: number; count: number }>()
+
+  for (const memberScores of allTagScores) {
+    for (const ts of memberScores) {
+      const key = ts.tag
+      const existing = tagAccum.get(key)
+      if (existing) {
+        existing.sum += ts.score
+        existing.count += 1
+      } else {
+        tagAccum.set(key, { rawTag: ts.tag, sum: ts.score, count: 1 })
+      }
+    }
+  }
+
+  // Compute averages and sort
+  const tagAverages = Array.from(tagAccum.values()).map((entry) => ({
+    tag: entry.rawTag,
+    avgScore: entry.sum / entry.count,
+  }))
+
+  // Sort descending by avgScore, alphabetical tie-breaker
+  tagAverages.sort((a, b) => {
+    if (b.avgScore !== a.avgScore) return b.avgScore - a.avgScore
+    return a.tag.localeCompare(b.tag)
+  })
+
+  const topPositiveTags = tagAverages
+    .filter((t) => t.avgScore > 0)
+    .slice(0, 3)
+    .map((t) => t.tag)
+
+  // For negative: sort ascending and take first 3 with negative scores
+  const topNegativeTags = tagAverages
+    .slice()
+    .sort((a, b) => {
+      if (a.avgScore !== b.avgScore) return a.avgScore - b.avgScore
+      return a.tag.localeCompare(b.tag)
+    })
+    .filter((t) => t.avgScore < 0)
+    .slice(0, 3)
+    .map((t) => t.tag)
+
+  return { topPositiveTags, topNegativeTags }
+}
+
+/**
+ * Compute the team-level affinity score for a practice.
+ *
+ * Loads team members, filters by Big Five profile completeness,
+ * computes individual affinity for each eligible member, and averages.
+ */
+export async function getTeamPracticeAffinity(
+  teamId: number,
+  practiceId: number
+): Promise<{
+  status: string
+  teamId: number
+  practiceId: number
+  score: number | null
+  scale?: { min: number; max: number }
+  aggregation: { includedMembers: number; excludedMembers: number }
+  explanation?: { topPositiveTags: string[]; topNegativeTags: string[] }
+}> {
+  // Fetch practice to verify it exists and get tags
+  const practice = await prisma.practice.findFirst({
+    where: {
+      id: practiceId,
+      OR: [
+        { isGlobal: true },
+        { teamPractices: { some: { teamId } } },
+      ],
+    },
+    select: { id: true, tags: true },
+  })
+
+  if (!practice) {
+    throw new AppError(
+      'not_found',
+      'Practice not found for this team',
+      { practiceId, teamId },
+      404
+    )
+  }
+
+  // Load all team members with their Big Five scores
+  const teamMembers = await prisma.teamMember.findMany({
+    where: { teamId },
+    select: {
+      userId: true,
+      user: {
+        select: {
+          bigFiveScore: true,
+        },
+      },
+    },
+  })
+
+  // Load reference data (cached after first call)
+  const { bounds, relations } = getReferenceData()
+
+  // Extract practice tags
+  const practiceTags = extractPracticeTags(practice.tags)
+
+  // Separate eligible vs excluded members
+  let includedMembers = 0
+  let excludedMembers = 0
+  const eligibleScores: number[] = []
+  const eligibleTagScores: TagScoreDetail[][] = []
+
+  for (const member of teamMembers) {
+    const bigFiveScore = member.user.bigFiveScore
+    if (!bigFiveScore) {
+      excludedMembers++
+      continue
+    }
+
+    const userProfile = toUserProfile(bigFiveScore)
+
+    // Validate all traits present
+    const hasAllTraits = TRAIT_KEYS.every(
+      (k) => userProfile[k] !== undefined && userProfile[k] !== null && !isNaN(userProfile[k])
+    )
+
+    if (!hasAllTraits) {
+      excludedMembers++
+      continue
+    }
+
+    // Compute individual affinity
+    const result: IndividualAffinityResult = computeIndividualPracticeAffinity(
+      userProfile,
+      practiceTags,
+      bounds,
+      relations
+    )
+
+    if (result.status === 'ok' && result.score !== null) {
+      includedMembers++
+      eligibleScores.push(result.score)
+      eligibleTagScores.push(result.tagScores)
+    } else {
+      // No mappable tags or other non-success → exclude from aggregation
+      excludedMembers++
+    }
+  }
+
+  // No eligible members → insufficient_profile_data
+  if (includedMembers === 0) {
+    return {
+      status: 'insufficient_profile_data',
+      teamId,
+      practiceId,
+      score: null,
+      aggregation: { includedMembers: 0, excludedMembers: teamMembers.length },
+    }
+  }
+
+  // Compute team score as arithmetic mean
+  const teamScore = eligibleScores.reduce((sum, s) => sum + s, 0) / eligibleScores.length
+
+  // Build explanation
+  const explanation = buildTeamAffinityExplanation(eligibleTagScores)
+
+  return {
+    status: 'ok',
+    teamId,
+    practiceId,
+    score: roundTo(teamScore, 4),
+    scale: { min: -1, max: 1 },
+    aggregation: { includedMembers, excludedMembers },
+    explanation,
   }
 }

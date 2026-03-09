@@ -100,7 +100,7 @@ development_status:
   # Epic 4.1: Affinity Scoring Foundation
   epic-4-1: in-progress
   4-1-1-calculate-individual-practice-affinity-score: done
-  4-1-2-calculate-team-practice-affinity-score: backlog
+  4-1-2-calculate-team-practice-affinity-score: done
   epic-4-1-retrospective: optional
 
   # Epic 5: Adaptation Decision & Tracking

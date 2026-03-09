@@ -40,3 +40,35 @@ export const getMyPracticeAffinity = async (
     next(error)
   }
 }
+
+/**
+ * GET /api/v1/teams/:teamId/practices/:practiceId/affinity/team
+ *
+ * Compute team-level practice affinity score.
+ */
+export const getTeamPracticeAffinity = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { practiceId } = req.params
+    const teamId = res.locals.teamId as number
+
+    if (!practiceId || isNaN(Number(practiceId))) {
+      throw new AppError('validation_error', 'Valid practice ID is required', { practiceId }, 400)
+    }
+
+    const result = await affinityService.getTeamPracticeAffinity(
+      teamId,
+      Number(practiceId)
+    )
+
+    res.json({
+      ...result,
+      requestId: res.getHeader('x-request-id'),
+    })
+  } catch (error) {
+    next(error)
+  }
+}

@@ -1,4 +1,4 @@
-import { getMyPracticeAffinity } from './affinity.controller'
+import { getMyPracticeAffinity, getTeamPracticeAffinity } from './affinity.controller'
 import * as affinityService from '../services/affinity.service'
 import { AppError } from '../services/auth.service'
 
@@ -133,6 +133,109 @@ describe('Affinity Controller', () => {
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({ requestId: 'req-123' })
       )
+    })
+  })
+
+  describe('getTeamPracticeAffinity', () => {
+    it('returns ok response with team score and aggregation', async () => {
+      const serviceResult = {
+        status: 'ok',
+        teamId: 1,
+        practiceId: 42,
+        score: 0.1523,
+        scale: { min: -1, max: 1 },
+        aggregation: { includedMembers: 3, excludedMembers: 1 },
+        explanation: {
+          topPositiveTags: ['Verbal-Heavy'],
+          topNegativeTags: ['Structured'],
+        },
+      }
+
+      ;(affinityService.getTeamPracticeAffinity as jest.Mock).mockResolvedValue(serviceResult)
+
+      await getTeamPracticeAffinity(req, res, next)
+
+      expect(affinityService.getTeamPracticeAffinity).toHaveBeenCalledWith(1, 42)
+      expect(res.json).toHaveBeenCalledWith({
+        ...serviceResult,
+        requestId: 'req-123',
+      })
+    })
+
+    it('returns insufficient_profile_data when no eligible members', async () => {
+      const serviceResult = {
+        status: 'insufficient_profile_data',
+        teamId: 1,
+        practiceId: 42,
+        score: null,
+        aggregation: { includedMembers: 0, excludedMembers: 4 },
+      }
+
+      ;(affinityService.getTeamPracticeAffinity as jest.Mock).mockResolvedValue(serviceResult)
+
+      await getTeamPracticeAffinity(req, res, next)
+
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({
+          status: 'insufficient_profile_data',
+          score: null,
+          aggregation: { includedMembers: 0, excludedMembers: 4 },
+        })
+      )
+    })
+
+    it('passes invalid practiceId to next as AppError', async () => {
+      req.params.practiceId = 'invalid'
+
+      await getTeamPracticeAffinity(req, res, next)
+
+      expect(next).toHaveBeenCalledWith(expect.any(AppError))
+    })
+
+    it('passes service errors to next middleware', async () => {
+      const error = new AppError('not_found', 'Practice not found', {}, 404)
+      ;(affinityService.getTeamPracticeAffinity as jest.Mock).mockRejectedValue(error)
+
+      await getTeamPracticeAffinity(req, res, next)
+
+      expect(next).toHaveBeenCalledWith(error)
+    })
+
+    it('includes requestId in response', async () => {
+      ;(affinityService.getTeamPracticeAffinity as jest.Mock).mockResolvedValue({
+        status: 'ok',
+        teamId: 1,
+        practiceId: 42,
+        score: 0.1,
+        scale: { min: -1, max: 1 },
+        aggregation: { includedMembers: 2, excludedMembers: 0 },
+        explanation: { topPositiveTags: [], topNegativeTags: [] },
+      })
+
+      await getTeamPracticeAffinity(req, res, next)
+
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ requestId: 'req-123' })
+      )
+    })
+
+    it('does not require userId (team endpoint is not user-specific)', async () => {
+      delete req.user
+
+      ;(affinityService.getTeamPracticeAffinity as jest.Mock).mockResolvedValue({
+        status: 'ok',
+        teamId: 1,
+        practiceId: 42,
+        score: 0.1,
+        scale: { min: -1, max: 1 },
+        aggregation: { includedMembers: 2, excludedMembers: 0 },
+        explanation: { topPositiveTags: [], topNegativeTags: [] },
+      })
+
+      await getTeamPracticeAffinity(req, res, next)
+
+      expect(res.json).toHaveBeenCalled()
+      expect(next).not.toHaveBeenCalled()
     })
   })
 })

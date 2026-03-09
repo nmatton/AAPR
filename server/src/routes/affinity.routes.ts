@@ -13,3 +13,13 @@ affinityRouter.get(
   '/:practiceId/affinity/me',
   affinityController.getMyPracticeAffinity
 )
+
+/**
+ * GET /api/v1/teams/:teamId/practices/:practiceId/affinity/team
+ * Compute team-level affinity score for a practice.
+ * Protected by requireAuth + team membership validation (applied by parent router).
+ */
+affinityRouter.get(
+  '/:practiceId/affinity/team',
+  affinityController.getTeamPracticeAffinity
+)
