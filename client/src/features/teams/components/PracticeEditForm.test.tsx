@@ -13,6 +13,8 @@ const basePractice = {
   goal: 'Plan the sprint goals',
   categoryId: 'feedback',
   categoryName: 'FEEDBACK & APPRENTISSAGE',
+  method: 'Scrum',
+  tags: ['Written / Async-Ready'],
   pillars: [
     { id: 1, name: 'Communication', category: 'FEEDBACK & APPRENTISSAGE' },
     { id: 2, name: 'Alignment', category: 'VALEURS HUMAINES' }
@@ -70,6 +72,7 @@ describe('PracticeEditForm', () => {
     await waitFor(() => {
       expect(screen.getByText('2 pillars selected')).toBeInTheDocument()
     })
+    expect(screen.getByRole('checkbox', { name: 'Written / Async-Ready' })).toBeChecked()
   })
 
   it('blocks save when validation fails', async () => {
@@ -123,10 +126,16 @@ describe('PracticeEditForm', () => {
       />
     )
 
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Remote-Friendly' }))
+    fireEvent.change(screen.getByDisplayValue('Scrum'), { target: { value: 'Kanban' } })
     fireEvent.click(screen.getByRole('button', { name: /save as team-specific copy/i }))
 
     await waitFor(() => {
-      expect(editPractice).toHaveBeenCalledWith(1, 1, expect.objectContaining({ saveAsCopy: true }))
+      expect(editPractice).toHaveBeenCalledWith(1, 1, expect.objectContaining({
+        saveAsCopy: true,
+        method: 'Kanban',
+        tags: ['Written / Async-Ready', 'Remote-Friendly']
+      }))
       expect(onSaved).toHaveBeenCalledWith({ practiceId: 99, practice: undefined })
     })
   })

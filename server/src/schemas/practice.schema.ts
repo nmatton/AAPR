@@ -4,6 +4,7 @@
  */
 
 import { z } from 'zod';
+import { VALID_TAGS } from '../constants/tags.constants';
 
 // Activity schema
 export const ActivitySchema = z.object({
@@ -44,7 +45,6 @@ export const AssociatedPracticeSchema = z.object({
   association_type: z.enum(['Configuration', 'Equivalence', 'Dependency', 'Complementarity', 'Exclusion']),
 });
 
-// Valid tags - allow any string for flexibility with real-world data
 // Valid practice goals (pillars) - strict, aligned with docs/raw_practices/agile_pillars.md
 const ValidPracticeGoals = [
   // Technical Quality & Engineering Excellence
@@ -73,7 +73,7 @@ export const PracticeSchema = z.object({
   objective: z.string().min(1).max(500).trim(),
   description: z.string().min(1).max(10000).optional(),
   method: z.string().max(100).optional(), // Allow any method/framework
-  tags: z.array(z.string()).optional(), // Allow any tags
+  tags: z.array(z.enum(VALID_TAGS)).optional(),
   practice_goal: z.array(z.enum(ValidPracticeGoals)).min(1), // Keep pillars strict
   activities: z.array(ActivitySchema).optional(),
   roles: z.array(RoleSchema).optional(),

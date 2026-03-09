@@ -6,6 +6,7 @@
 import crypto from 'crypto';
 import { prisma } from '../lib/prisma';
 import { validatePractice, type Practice } from '../schemas/practice.schema';
+import { isValidTag } from '../constants/tags.constants';
 import type { Prisma } from '@prisma/client';
 
 export interface ImportResult {
@@ -168,6 +169,21 @@ export async function importPractices(
       }
       
       const practice = validationResult.data!;
+
+      // Defensive validation at import boundary: reject deprecated or ad-hoc tags
+      // even if upstream validation behavior changes in the future.
+      const invalidTags = (practice.tags ?? []).filter((tag) => !isValidTag(tag));
+      if (invalidTags.length > 0) {
+        console.warn(`[WARN] Invalid tags found for ${practice.name}: ${invalidTags.join(', ')}`);
+        errors.push({
+          practice: practice.name,
+          field: 'tags',
+          error: `Invalid tags: ${invalidTags.join(', ')}`,
+          code: 'invalid_tags'
+        });
+        skippedCount++;
+        continue;
+      }
       
       // Calculate checksum
       const checksum = calculateChecksum(practice);

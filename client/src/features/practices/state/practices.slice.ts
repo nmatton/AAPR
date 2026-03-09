@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { fetchPractices, logCatalogViewed, logCatalogSearched, ApiError } from '../api/practices.api'
+import { normalizeValidTags } from '../../../shared/constants/tags.constants'
 import type { Practice, Pillar } from '../types'
 
 export interface PracticesState {
@@ -190,7 +191,7 @@ export const usePracticesStore = create<PracticesState>((set, get) => ({
   },
 
   setTags: (tags) => {
-    set({ selectedTags: tags, page: 1 })
+    set({ selectedTags: normalizeValidTags(tags), page: 1 })
   },
 
   clearFilters: () => {

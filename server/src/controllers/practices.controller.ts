@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import * as practicesService from '../services/practices.service';
+import { isValidTag } from '../constants/tags.constants';
 import { AppError } from '../services/auth.service';
 
 declare global {
@@ -62,8 +63,30 @@ export const getPractices = async (
     // Parse categories, methods, tags (comma-separated strings)
     const categories = categoriesParam ? categoriesParam.split(',').map(s => s.trim()).filter(Boolean) : undefined;
     const methods = methodsParam ? methodsParam.split(',').map(s => s.trim()).filter(Boolean) : undefined;
-    // Tags might contain commas? Assuming simple tags for now. If tags contain commas, this splitting is problematic, but standard URL usage often uses repeating params or comma-separated. AC says "comma-separated text input" for UI, probably same for API.
-    const tags = tagsParam ? tagsParam.split(',').map(s => s.trim()).filter(Boolean) : undefined;
+    const parsedTags = tagsParam ? tagsParam.split(',').map(s => s.trim()).filter(Boolean) : [];
+    const filteredTags = parsedTags.filter(isValidTag);
+    const tags = filteredTags.length > 0 ? filteredTags : undefined;
+
+    if (parsedTags.length !== filteredTags.length) {
+      const invalidTags = parsedTags.filter((tag) => !isValidTag(tag));
+      console.warn('[WARN] Invalid tag query params rejected', {
+        invalidTags,
+        requestId: req.id
+      });
+    }
+
+    // If tags were explicitly requested but all are invalid, return no matches
+    // rather than falling back to an unfiltered catalog response.
+    if (tagsParam && filteredTags.length === 0) {
+      res.json({
+        items: [],
+        page,
+        pageSize,
+        total: 0,
+        requestId: req.id
+      });
+      return;
+    }
 
     // Use searchPractices if search or filter params provided
     const practices = (search || pillars || categories || methods || tags)

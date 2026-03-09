@@ -37,6 +37,12 @@ const normalizeStringArray = (value: unknown): string[] | null => {
   return normalized.length > 0 ? normalized : null
 }
 
+const normalizeOptionalList = (values?: string[] | null): string[] | undefined => {
+  if (!values) return undefined
+  const normalized = values.map((value) => value.trim()).filter(Boolean)
+  return normalized.length > 0 ? normalized : undefined
+}
+
 /**
  * Update team name with optimistic locking
  * Prevents concurrent updates by checking version before applying changes
@@ -505,6 +511,8 @@ export interface EditPracticePayload {
   goal: string;
   pillarIds: number[];
   categoryId: string;
+  method?: string | null;
+  tags?: string[];
   saveAsCopy?: boolean;
   version: number;
 }
@@ -867,11 +875,6 @@ export const createCustomPracticeForTeam = async (
 
   const normalizedDescription = description?.trim() || undefined;
   const normalizedMethod = method?.trim() || undefined;
-  const normalizeOptionalList = (values?: string[]): string[] | undefined => {
-    if (!values) return undefined;
-    const normalized = values.map((value) => value.trim()).filter(Boolean);
-    return normalized.length > 0 ? normalized : undefined;
-  };
   const normalizedTags = normalizeOptionalList(tags);
   const normalizedBenefits = normalizeOptionalList(benefits);
   const normalizedPitfalls = normalizeOptionalList(pitfalls);
@@ -985,11 +988,15 @@ const buildPracticeChangeSet = (current: {
   title: string;
   goal: string;
   categoryId: string;
+  method?: string | null;
+  tags?: string[];
   pillarIds: number[];
 }, next: {
   title: string;
   goal: string;
   categoryId: string;
+  method?: string | null;
+  tags?: string[];
   pillarIds: number[];
 }): Record<string, { from: Prisma.InputJsonValue; to: Prisma.InputJsonValue }> => {
   const changes: Record<string, { from: Prisma.InputJsonValue; to: Prisma.InputJsonValue }> = {}
@@ -1004,6 +1011,18 @@ const buildPracticeChangeSet = (current: {
 
   if (current.categoryId !== next.categoryId) {
     changes.categoryId = { from: current.categoryId, to: next.categoryId }
+  }
+
+  const currentMethod = current.method ?? ''
+  const nextMethod = next.method ?? ''
+  if (currentMethod !== nextMethod) {
+    changes.method = { from: currentMethod, to: nextMethod }
+  }
+
+  const currentTags = normalizeOptionalList(current.tags)?.slice().sort() ?? []
+  const nextTags = normalizeOptionalList(next.tags)?.slice().sort() ?? []
+  if (currentTags.join(',') !== nextTags.join(',')) {
+    changes.tags = { from: currentTags, to: nextTags }
   }
 
   const currentPillars = [...current.pillarIds].sort((a, b) => a - b)
@@ -1021,7 +1040,7 @@ export const editPracticeForTeam = async (
   practiceId: number,
   payload: EditPracticePayload
 ): Promise<EditPracticeResult> => {
-  const { title, goal, pillarIds, categoryId, saveAsCopy = false, version } = payload
+  const { title, goal, pillarIds, categoryId, method, tags, saveAsCopy = false, version } = payload
 
   const existingPractice = await practiceRepository.findById(practiceId)
   if (!existingPractice) {
@@ -1073,17 +1092,27 @@ export const editPracticeForTeam = async (
   }
 
   const currentPillarIds = existingPractice.practicePillars.map((pp) => pp.pillar.id)
+  const existingTags = normalizeStringArray(existingPractice.tags) ?? undefined
+  const normalizedMethod = method === undefined
+    ? (existingPractice.method ?? null)
+    : (method?.trim() || null)
+  const normalizedTags = tags === undefined ? existingTags : normalizeOptionalList(tags)
+
   const changes = buildPracticeChangeSet(
     {
       title: existingPractice.title,
       goal: existingPractice.goal,
       categoryId: existingPractice.categoryId,
+      method: existingPractice.method,
+      tags: existingTags,
       pillarIds: currentPillarIds
     },
     {
       title,
       goal,
       categoryId,
+      method: normalizedMethod,
+      tags: normalizedTags,
       pillarIds
     }
   )
@@ -1103,8 +1132,8 @@ export const editPracticeForTeam = async (
           goal,
           description: existingPractice.description ?? undefined,
           category: { connect: { id: categoryId } },
-          method: existingPractice.method ?? undefined,
-          tags: existingPractice.tags ?? undefined,
+          method: normalizedMethod ?? undefined,
+          tags: normalizedTags,
           activities: existingPractice.activities ?? undefined,
           roles: existingPractice.roles ?? undefined,
           workProducts: existingPractice.workProducts ?? undefined,
@@ -1210,7 +1239,7 @@ export const editPracticeForTeam = async (
     const updatedCount = await practiceRepository.updatePracticeWithVersion(
       practiceId,
       version,
-      { title, goal, categoryId },
+      { title, goal, categoryId, method: normalizedMethod, tags: normalizedTags },
       tx
     )
 

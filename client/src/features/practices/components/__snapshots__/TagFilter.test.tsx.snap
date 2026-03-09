@@ -1,0 +1,316 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`TagFilter > renders categorized selector and updates selected tags 1`] = `
+<div
+  class="space-y-2"
+>
+  <h3
+    class="text-sm font-medium text-gray-700"
+  >
+    Tags
+  </h3>
+  <div
+    class="max-h-72 overflow-y-auto rounded-lg border border-gray-200 p-3 space-y-3"
+  >
+    <section
+      aria-label="Interaction & Communication Style"
+    >
+      <h4
+        class="text-xs font-semibold uppercase tracking-wide text-blue-700 mb-2"
+      >
+        Interaction & Communication Style
+      </h4>
+      <div
+        class="grid grid-cols-1 gap-1.5 sm:grid-cols-2"
+      >
+        <label
+          class="flex items-start gap-2 text-sm text-gray-700"
+        >
+          <input
+            checked=""
+            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
+            type="checkbox"
+          />
+          <span>
+            Written / Async-Ready
+          </span>
+        </label>
+        <label
+          class="flex items-start gap-2 text-sm text-gray-700"
+        >
+          <input
+            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
+            type="checkbox"
+          />
+          <span>
+            Visual / Tactile
+          </span>
+        </label>
+        <label
+          class="flex items-start gap-2 text-sm text-gray-700"
+        >
+          <input
+            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
+            type="checkbox"
+          />
+          <span>
+            Verbal-Heavy
+          </span>
+        </label>
+        <label
+          class="flex items-start gap-2 text-sm text-gray-700"
+        >
+          <input
+            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
+            type="checkbox"
+          />
+          <span>
+            Remote-Friendly
+          </span>
+        </label>
+        <label
+          class="flex items-start gap-2 text-sm text-gray-700"
+        >
+          <input
+            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
+            type="checkbox"
+          />
+          <span>
+            Co-located / On-Site
+          </span>
+        </label>
+      </div>
+    </section>
+    <section
+      aria-label="Social Density & Energy"
+    >
+      <h4
+        class="text-xs font-semibold uppercase tracking-wide text-blue-700 mb-2"
+      >
+        Social Density & Energy
+      </h4>
+      <div
+        class="grid grid-cols-1 gap-1.5 sm:grid-cols-2"
+      >
+        <label
+          class="flex items-start gap-2 text-sm text-gray-700"
+        >
+          <input
+            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
+            type="checkbox"
+          />
+          <span>
+            Small Group / Pair
+          </span>
+        </label>
+        <label
+          class="flex items-start gap-2 text-sm text-gray-700"
+        >
+          <input
+            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
+            type="checkbox"
+          />
+          <span>
+            Whole Crowd
+          </span>
+        </label>
+        <label
+          class="flex items-start gap-2 text-sm text-gray-700"
+        >
+          <input
+            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
+            type="checkbox"
+          />
+          <span>
+            Solo-Capable
+          </span>
+        </label>
+      </div>
+    </section>
+    <section
+      aria-label="Structure & Cognitive Load"
+    >
+      <h4
+        class="text-xs font-semibold uppercase tracking-wide text-blue-700 mb-2"
+      >
+        Structure & Cognitive Load
+      </h4>
+      <div
+        class="grid grid-cols-1 gap-1.5 sm:grid-cols-2"
+      >
+        <label
+          class="flex items-start gap-2 text-sm text-gray-700"
+        >
+          <input
+            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
+            type="checkbox"
+          />
+          <span>
+            Structured / Facilitated
+          </span>
+        </label>
+        <label
+          class="flex items-start gap-2 text-sm text-gray-700"
+        >
+          <input
+            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
+            type="checkbox"
+          />
+          <span>
+            Time-Boxed
+          </span>
+        </label>
+        <label
+          class="flex items-start gap-2 text-sm text-gray-700"
+        >
+          <input
+            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
+            type="checkbox"
+          />
+          <span>
+            Gamified
+          </span>
+        </label>
+        <label
+          class="flex items-start gap-2 text-sm text-gray-700"
+        >
+          <input
+            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
+            type="checkbox"
+          />
+          <span>
+            Spontaneous / Improv
+          </span>
+        </label>
+      </div>
+    </section>
+    <section
+      aria-label="Emotional & Conflict Exposure"
+    >
+      <h4
+        class="text-xs font-semibold uppercase tracking-wide text-blue-700 mb-2"
+      >
+        Emotional & Conflict Exposure
+      </h4>
+      <div
+        class="grid grid-cols-1 gap-1.5 sm:grid-cols-2"
+      >
+        <label
+          class="flex items-start gap-2 text-sm text-gray-700"
+        >
+          <input
+            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
+            type="checkbox"
+          />
+          <span>
+            High Visibility
+          </span>
+        </label>
+        <label
+          class="flex items-start gap-2 text-sm text-gray-700"
+        >
+          <input
+            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
+            type="checkbox"
+          />
+          <span>
+            Consensus-Driven
+          </span>
+        </label>
+        <label
+          class="flex items-start gap-2 text-sm text-gray-700"
+        >
+          <input
+            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
+            type="checkbox"
+          />
+          <span>
+            Critical / Introspective
+          </span>
+        </label>
+        <label
+          class="flex items-start gap-2 text-sm text-gray-700"
+        >
+          <input
+            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
+            type="checkbox"
+          />
+          <span>
+            Role-Fluid
+          </span>
+        </label>
+      </div>
+    </section>
+    <section
+      aria-label="Technical Cadence & Feedback Loop"
+    >
+      <h4
+        class="text-xs font-semibold uppercase tracking-wide text-blue-700 mb-2"
+      >
+        Technical Cadence & Feedback Loop
+      </h4>
+      <div
+        class="grid grid-cols-1 gap-1.5 sm:grid-cols-2"
+      >
+        <label
+          class="flex items-start gap-2 text-sm text-gray-700"
+        >
+          <input
+            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
+            type="checkbox"
+          />
+          <span>
+            Fast-Feedback
+          </span>
+        </label>
+        <label
+          class="flex items-start gap-2 text-sm text-gray-700"
+        >
+          <input
+            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
+            type="checkbox"
+          />
+          <span>
+            User-Feedback Oriented
+          </span>
+        </label>
+      </div>
+    </section>
+    <section
+      aria-label="Knowledge & Technical Continuity"
+    >
+      <h4
+        class="text-xs font-semibold uppercase tracking-wide text-blue-700 mb-2"
+      >
+        Knowledge & Technical Continuity
+      </h4>
+      <div
+        class="grid grid-cols-1 gap-1.5 sm:grid-cols-2"
+      >
+        <label
+          class="flex items-start gap-2 text-sm text-gray-700"
+        >
+          <input
+            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
+            type="checkbox"
+          />
+          <span>
+            Documented / Traceable
+          </span>
+        </label>
+        <label
+          class="flex items-start gap-2 text-sm text-gray-700"
+        >
+          <input
+            class="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
+            type="checkbox"
+          />
+          <span>
+            Maintenance-Aware
+          </span>
+        </label>
+      </div>
+    </section>
+  </div>
+</div>
+`;

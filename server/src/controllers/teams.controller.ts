@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import * as teamsService from '../services/teams.service';
 import * as coverageService from '../services/coverage.service';
+import { VALID_TAGS } from '../constants/tags.constants';
 import { AppError } from '../services/auth.service';
 
 // Extend Express Request type for middleware-added properties
@@ -186,6 +187,8 @@ const addPracticeSchema = z.object({
 /**
  * Validation schema for creating a custom practice
  */
+const validTagSchema = z.enum(VALID_TAGS)
+
 const createCustomPracticeSchema = z.object({
   title: z.string()
     .min(2, 'Title is required')
@@ -207,7 +210,7 @@ const createCustomPracticeSchema = z.object({
     .optional()
     .transform((value) => value?.trim())
     .refine((value) => value === undefined || value.length > 0, 'Method cannot be empty'),
-  tags: z.array(z.string().min(1).max(100)).optional(),
+  tags: z.array(validTagSchema).optional(),
   benefits: z.array(z.string().min(1).max(500)).optional(),
   pitfalls: z.array(z.string().min(1).max(500)).optional(),
   workProducts: z.array(z.string().min(1).max(500)).optional(),
@@ -228,6 +231,13 @@ const editPracticeSchema = z.object({
     .min(1, 'Select at least one pillar'),
   categoryId: z.string()
     .min(1, 'Category is required'),
+  method: z.string()
+    .max(50, 'Method must be under 50 characters')
+    .nullable()
+    .optional()
+    .transform((value) => (value === null ? null : value?.trim()))
+    .refine((value) => value === undefined || value === null || value.length > 0, 'Method cannot be empty'),
+  tags: z.array(validTagSchema).optional(),
   saveAsCopy: z.boolean().optional(),
   version: z.number().int().positive()
 });

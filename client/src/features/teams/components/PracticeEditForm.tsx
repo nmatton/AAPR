@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { CategorizedTagSelector } from '../../../shared/components/CategorizedTagSelector'
+import { normalizeValidTags } from '../../../shared/constants/tags.constants'
 import { getTeamPillarCoverage } from '../api/coverageApi'
 import { useManagePracticesStore } from '../state/managePracticesSlice'
 
@@ -41,7 +43,7 @@ export const PracticeEditForm = ({
   const [goal, setGoal] = useState(practice.goal)
   const [categoryId, setCategoryId] = useState(practice.categoryId)
   const [method, setMethod] = useState(practice.method ?? '')
-  const [tags, setTags] = useState((practice.tags && Array.isArray(practice.tags)) ? (practice.tags as string[]).join(', ') : '')
+  const [tags, setTags] = useState<string[]>(normalizeValidTags(Array.isArray(practice.tags) ? (practice.tags as string[]) : []))
   const [pillarIds, setPillarIds] = useState<number[]>(practice.pillars.map((pillar) => pillar.id))
   const [availablePillars, setAvailablePillars] = useState(practice.pillars)
   const [categories, setCategories] = useState<CategoryOption[]>([])
@@ -56,18 +58,21 @@ export const PracticeEditForm = ({
     goal: practice.goal,
     categoryId: practice.categoryId,
     method: practice.method ?? '',
-    tags: (practice.tags && Array.isArray(practice.tags)) ? (practice.tags as string[]).join(', ') : '',
+    tags: normalizeValidTags(Array.isArray(practice.tags) ? (practice.tags as string[]) : []),
     pillarIds: practice.pillars.map((pillar) => pillar.id).sort((a, b) => a - b)
   }), [practice])
 
   const isDirty = useMemo(() => {
     const sortedCurrent = [...pillarIds].sort((a, b) => a - b)
+    const currentTags = [...tags].sort().join(',')
+    const initialTags = [...initialState.tags].sort().join(',')
+
     return (
       title !== initialState.title ||
       goal !== initialState.goal ||
       categoryId !== initialState.categoryId ||
       method !== initialState.method ||
-      tags !== initialState.tags ||
+      currentTags !== initialTags ||
       sortedCurrent.join(',') !== initialState.pillarIds.join(',')
     )
   }, [title, goal, categoryId, method, tags, pillarIds, initialState])
@@ -102,6 +107,8 @@ export const PracticeEditForm = ({
     setTitle(practice.title)
     setGoal(practice.goal)
     setCategoryId(practice.categoryId)
+    setMethod(practice.method ?? '')
+    setTags(normalizeValidTags(Array.isArray(practice.tags) ? (practice.tags as string[]) : []))
     setPillarIds(practice.pillars.map((pillar) => pillar.id))
     setErrors({})
   }, [practice])
@@ -190,7 +197,7 @@ export const PracticeEditForm = ({
         goal: goal.trim(),
         categoryId,
         method: method || null,
-        tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+        tags,
         pillarIds,
         saveAsCopy,
         version: practice.practiceVersion ?? 1
@@ -214,6 +221,8 @@ export const PracticeEditForm = ({
       setTitle(updatedPractice.title)
       setGoal(updatedPractice.goal)
       setCategoryId(updatedPractice.categoryId)
+      setMethod(updatedPractice.method ?? '')
+      setTags(normalizeValidTags(Array.isArray(updatedPractice.tags) ? (updatedPractice.tags as string[]) : []))
       setPillarIds(updatedPractice.pillars.map((pillar) => pillar.id))
     }
     setConflictMessage(null)
@@ -324,14 +333,7 @@ export const PracticeEditForm = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
-              <input
-                type="text"
-                value={tags}
-                onChange={(event) => setTags(event.target.value)}
-                placeholder="e.g. Visual, Async, Planning"
-                className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-              <p className="text-xs text-gray-500 mt-1">Separate tags with commas</p>
+              <CategorizedTagSelector selectedTags={tags} onChange={setTags} disabled={isUpdating} />
             </div>
           </div>
 

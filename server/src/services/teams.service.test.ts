@@ -695,6 +695,8 @@ describe('teamsService.editPracticeForTeam', () => {
       title: 'Old Title',
       goal: 'Old Goal',
       categoryId: 'feedback',
+      method: 'Scrum',
+      tags: ['Written / Async-Ready'],
       category: { name: 'FEEDBACK & APPRENTISSAGE' },
       isGlobal: true,
       practiceVersion: 2,
@@ -745,6 +747,8 @@ describe('teamsService.editPracticeForTeam', () => {
       title: 'New Title',
       goal: 'New Goal',
       categoryId: 'excellence',
+      method: 'Kanban',
+      tags: ['Remote-Friendly', 'Written / Async-Ready'],
       pillarIds: [2, 3],
       version: 2
     })
@@ -755,7 +759,13 @@ describe('teamsService.editPracticeForTeam', () => {
     expect(practiceRepository.updatePracticeWithVersion).toHaveBeenCalledWith(
       practiceId,
       2,
-      { title: 'New Title', goal: 'New Goal', categoryId: 'excellence' },
+      {
+        title: 'New Title',
+        goal: 'New Goal',
+        categoryId: 'excellence',
+        method: 'Kanban',
+        tags: ['Remote-Friendly', 'Written / Async-Ready']
+      },
       mockTx
     )
     expect(practiceRepository.replacePracticePillars).toHaveBeenCalledWith(practiceId, [2, 3], mockTx)
@@ -851,6 +861,8 @@ describe('teamsService.editPracticeForTeam', () => {
         .mockResolvedValue([])
       ; (practiceRepository.validateCategoryId as jest.MockedFunction<typeof practiceRepository.validateCategoryId>)
         .mockResolvedValue(true)
+      ; (practiceRepository.generateUniquePracticeTitle as jest.MockedFunction<typeof practiceRepository.generateUniquePracticeTitle>)
+        .mockResolvedValue('Custom Title')
       ; (practiceRepository.createPractice as jest.MockedFunction<typeof practiceRepository.createPractice>)
         .mockResolvedValue({ id: 77 } as any)
       ; (practiceRepository.createPracticePillars as jest.MockedFunction<typeof practiceRepository.createPracticePillars>)

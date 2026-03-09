@@ -21,7 +21,7 @@ describe('CreatePracticeModal', () => {
       categoryId: 'scrum',
       categoryName: 'Scrum',
       method: 'Scrum',
-      tags: ['sync', 'daily'],
+      tags: ['Written / Async-Ready', 'Remote-Friendly'],
       benefits: ['Team alignment', 'Fast issue discovery'],
       pitfalls: ['Too long updates'],
       workProducts: ['Daily action list'],
@@ -104,7 +104,8 @@ describe('CreatePracticeModal', () => {
       expect(screen.getByLabelText('Category')).toHaveValue('scrum');
       expect(screen.getByLabelText('Detailed Description')).toHaveValue('Share daily progress and blockers.');
       expect(screen.getByLabelText('Method / Framework')).toHaveValue('Scrum');
-      expect(screen.getByLabelText('Tags')).toHaveValue('sync, daily');
+      expect(screen.getByRole('checkbox', { name: 'Written / Async-Ready' })).toBeChecked();
+      expect(screen.getByRole('checkbox', { name: 'Remote-Friendly' })).toBeChecked();
       expect(screen.getByLabelText('Benefits')).toHaveValue('Team alignment, Fast issue discovery');
       expect(screen.getByLabelText('Pitfalls')).toHaveValue('Too long updates');
       expect(screen.getByLabelText('Work Products')).toHaveValue('Daily action list');
@@ -159,7 +160,8 @@ describe('CreatePracticeModal', () => {
 
     fireEvent.change(screen.getByLabelText('Detailed Description'), { target: { value: 'Async-friendly format.' } });
     fireEvent.change(screen.getByLabelText('Method / Framework'), { target: { value: 'Custom' } });
-    fireEvent.change(screen.getByLabelText('Tags'), { target: { value: 'async, remote,  , team' } });
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Written / Async-Ready' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Remote-Friendly' }));
     fireEvent.change(screen.getByLabelText('Benefits'), { target: { value: 'Better focus\nReduced fatigue' } });
     fireEvent.change(screen.getByLabelText('Pitfalls'), { target: { value: 'Low participation' } });
     fireEvent.change(screen.getByLabelText('Work Products'), { target: { value: 'Action list, Decision log' } });
@@ -174,7 +176,7 @@ describe('CreatePracticeModal', () => {
         pillarIds: [10],
         description: 'Async-friendly format.',
         method: 'Custom',
-        tags: ['async', 'remote', 'team'],
+        tags: ['Written / Async-Ready', 'Remote-Friendly'],
         benefits: ['Better focus', 'Reduced fatigue'],
         pitfalls: ['Low participation'],
         workProducts: ['Action list', 'Decision log']

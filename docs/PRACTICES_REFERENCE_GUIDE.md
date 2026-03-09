@@ -76,30 +76,37 @@ for more details see [raw_practices/framework_methods.md](raw_practices/framewor
 ---
 
 #### `tags` (Array of Strings, Required)
-Behavioral and experiential characteristics describing "how it feels to participate" rather than business outcomes. Used to filter practices based on participant preferences.
+Behavioral and experiential characteristics describing "how it feels to participate" rather than business outcomes.
 
-* **Written / Async-Ready:** Effective communication can be achieved through writing or offline contributions, which reduces social anxiety and allows for thoughtful responses. 
-* **Visual / Tactile:** Utilizes physical or digital boards and diagrams to visualize workflows, enhancing communication and simplifying complex tasks. 
-* **Verbal-Heavy:** Relies on real-time verbalization and debate, ideal for extroverts or addressing communication-intensive blockages. 
-* **Remote-Friendly:** Standardizes accessible communication for remote work, preventing isolated team silos.
-* **Co-located / On-Site:** Requires in-person presence to address friction and resolve systemic latencies that are challenging to fix remotely. 
-* **Small Group / Pair:** Conducted in small groups of 2-3 to ensure psychological safety for juniors, facilitate skill transfer, and eliminate silos. 
-* **Whole Crowd:** Requires the entire team's presence for global alignment, but limit exposure for introverts as it is energy-consuming. 
-* **Solo-Capable:** Individually performed before sharing, restoring autonomy and deep technical flow to experts hindered by group synchronization. 
-* **Structured / Facilitated:** Uses a clear agenda and facilitator to create a strong framework, adding meaning to the ritual and avoiding bureaucratic drift. 
-* **Time-Boxed:** Enforces brief durations to minimize time loss and ensure high cognitive engagement, bypassing institutional delays. 
-* **Gamified:** Utilizes rules, turns, or props to depersonalize debates and abstract concepts, ideal for analytical profiles that dismiss emotional approaches. 
-* **Spontaneous / Improv:**Requires quick thinking and brainstorming, fulfilling experts' need for freedom from cumbersome processes. 
-* **High Visibility:** Presenting work to a large or hierarchical group requires careful management to avoid triggering impostor syndrome. 
-* **Consensus-Driven:** Requires full team alignment or compromise before concluding, ensuring quality but may exhaust impatient individuals. 
-* **Critical / Introspective:**Evaluates past work or peers for post-mortem analysis, requiring careful timing to prevent emotional overload. 
-* **Role-Fluid:**Rotate administrative duties to prevent technical experts from becoming locked into roles that erode their skills.
-* **Fast-Feedback:** Utilizes ultra-short feedback loops to reduce stagnation and frustration from long wait times. 
-* **User-Feedback Oriented:** Direct, frequent contact with end-users to rapidly adapt products and fulfill the team's need for recognition. 
-* **Documented / Traceable:** Creates a searchable, long-term project memory to bring order and reduce chaos-related anxiety. 
-* **Maintenance-Aware:** Integrates and manages technical debt and legacy systems to minimize friction from neglecting them. 
+Closed taxonomy policy:
+- The tags list is closed and enforced by backend validation.
+- The only source of truth is [raw_practices/tags-description.md](raw_practices/tags-description.md).
+- Deprecated or ad-hoc tags are rejected.
+- UI uses a categorized multi-select (non-searchable) matching taxonomy categories.
 
-see [raw_practices/tags-description.md](raw_practices/tags-description.md) for detailed tag descriptions.
+Valid tags (20):
+- Written / Async-Ready
+- Visual / Tactile
+- Verbal-Heavy
+- Remote-Friendly
+- Co-located / On-Site
+- Small Group / Pair
+- Whole Crowd
+- Solo-Capable
+- Structured / Facilitated
+- Time-Boxed
+- Gamified
+- Spontaneous / Improv
+- High Visibility
+- Consensus-Driven
+- Critical / Introspective
+- Role-Fluid
+- Fast-Feedback
+- User-Feedback Oriented
+- Documented / Traceable
+- Maintenance-Aware
+
+See [raw_practices/tags-description.md](raw_practices/tags-description.md) for full descriptions and category grouping.
 
 ---
 

@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
+import { CategorizedTagSelector } from '../../../shared/components/CategorizedTagSelector';
+import { normalizeValidTags, type ValidTag } from '../../../shared/constants/tags.constants';
 import { fetchAvailablePractices, fetchTeamPractices } from '../api/teamPracticesApi';
 import { useManagePracticesStore } from '../state/managePracticesSlice';
 import type { Practice } from '../types/practice.types';
-
 interface CreatePracticeModalProps {
   teamId: number;
   onClose: () => void;
@@ -17,7 +18,7 @@ type FormState = {
   description: string;
   categoryId: string;
   pillarIds: number[];
-  tags: string;
+  tags: ValidTag[];
   method: string;
   benefits: string;
   pitfalls: string;
@@ -39,7 +40,7 @@ export const CreatePracticeModal = ({ teamId, onClose, onCreated }: CreatePracti
     description: '',
     categoryId: '',
     pillarIds: [],
-    tags: '',
+    tags: [],
     method: '',
     benefits: '',
     pitfalls: '',
@@ -163,7 +164,7 @@ export const CreatePracticeModal = ({ teamId, onClose, onCreated }: CreatePracti
       description: '',
       categoryId: '',
       pillarIds: [],
-      tags: '',
+      tags: [],
       method: '',
       benefits: '',
       pitfalls: '',
@@ -206,7 +207,7 @@ export const CreatePracticeModal = ({ teamId, onClose, onCreated }: CreatePracti
       description: selected.description ?? '',
       categoryId: selected.categoryId,
       pillarIds: selected.pillars.map((pillar) => pillar.id),
-      tags: joinValues(selected.tags ?? undefined),
+      tags: normalizeValidTags(selected.tags),
       method: selected.method ?? '',
       benefits: joinValues(selected.benefits ?? undefined),
       pitfalls: joinValues(selected.pitfalls ?? undefined),
@@ -242,7 +243,7 @@ export const CreatePracticeModal = ({ teamId, onClose, onCreated }: CreatePracti
         pillarIds: formState.pillarIds,
         description: description.length > 0 ? description : undefined,
         method: method.length > 0 ? method : undefined,
-        tags: normalizeListInput(formState.tags),
+        tags: formState.tags.length > 0 ? formState.tags : undefined,
         benefits: normalizeListInput(formState.benefits),
         pitfalls: normalizeListInput(formState.pitfalls),
         workProducts: normalizeListInput(formState.workProducts),
@@ -495,18 +496,11 @@ export const CreatePracticeModal = ({ teamId, onClose, onCreated }: CreatePracti
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="practice-tags">
-                  Tags
-                </label>
-                <input
-                  id="practice-tags"
-                  type="text"
-                  value={formState.tags}
-                  onChange={(event) => setFormState({ ...formState, tags: event.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="e.g. async, remote, facilitation"
+                <p className="block text-sm font-medium text-gray-700 mb-2">Tags</p>
+                <CategorizedTagSelector
+                  selectedTags={formState.tags}
+                  onChange={(tags) => setFormState({ ...formState, tags })}
                 />
-                <p className="text-xs text-gray-500 mt-1">Separate tags with commas or new lines.</p>
               </div>
 
               <div>

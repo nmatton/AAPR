@@ -840,6 +840,8 @@ export async function updatePracticeWithVersion(
     title: string
     goal: string
     categoryId: string
+    method?: string | null
+    tags?: string[]
   },
   tx?: Prisma.TransactionClient
 ): Promise<number> {
@@ -853,6 +855,8 @@ export async function updatePracticeWithVersion(
       title: data.title,
       goal: data.goal,
       categoryId: data.categoryId,
+      method: data.method,
+      tags: data.tags,
       practiceVersion: { increment: 1 }
     }
   })
