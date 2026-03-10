@@ -34,7 +34,7 @@ scopeDecisions:
     - 'Big Five questionnaire (44-item IPIP-NEO)'
     - 'Issue submission + team discussion (page-refresh acceptable)'
     - 'Event logging for research audit trail'
-    - 'Practice recommendations (alternative practices with same or better pillar coverage)'
+    - 'Practice recommendations (coverage & affinity based)'
   outOfScope:
     - 'Personality-ranked recommendations (Phase 2 - Big Five-informed ranking)'
     - 'Real-time notifications'
@@ -115,11 +115,11 @@ author: nicolas
 
 ### MVP - Minimum Viable Product
 
-- Self-service signup; team creation with practice selection and pillar config; email invites (existing/new users with pending state); practice catalog + search; coverage dashboard; Big Five questionnaire; issue submission + page-refresh discussion; practice recommendations (coverage-based); event logging and export.
+- Self-service signup; team creation with practice selection and pillar config; email invites (existing/new users with pending state); practice catalog + search; coverage dashboard; Big Five questionnaire; issue submission + page-refresh discussion; practice recommendations (coverage & affinity based); event logging and export.
 
 ### Growth Features (Post-MVP)
 
-- Affinity scoring foundation (individual and team practice fit from Big Five + tags); personality-ranked recommendations (Big Five-informed ranking); real-time notifications; advanced practice visualizations; analytics dashboards; onboarding walkthrough.
+- Personality-ranked recommendations (Big Five-informed ranking); real-time notifications; advanced practice visualizations; analytics dashboards; onboarding walkthrough.
 
 ### Vision (Future)
 
@@ -211,39 +211,25 @@ Resolution: Export completes; user verifies sample rows. No account or team comp
 - All team members can: create team; configure practices and pillar specifics; invite members; manage team membership; submit issues; comment in discussions; view coverage and catalog; manage own Big Five profile; view/export events.
 - No permission restrictions or owner-only actions in MVP.
 
-### Practice Recommendation Logic (MVP - Coverage-Based + Affinity Foundation)
+### Practice Recommendation Logic (MVP - Coverage & Affinity-Based)
 
-**Scope:** MVP recommendations remain coverage-first, but the next implementation increment introduces an explainable affinity scoring foundation that can be used as a secondary signal once profile data exists.
+**Scope:** The MVP includes an integrated recommendation engine on the issue detail page. It combines coverage gap analysis, pillar matching, and the newly established affinity scoring foundation. 
 
-**Algorithm:**
-1. **Same-Pillar Recommendations:** When viewing a practice, system suggests all other practices that cover the exact same set of pillars.
-   - Example: If "Daily Standup" covers [Communication, Feedback], show all practices that cover [Communication, Feedback]
-   
-2. **Gap-Filling Recommendations:** When viewing team coverage, system suggests practices that cover the team's missing pillars.
-   - Example: If team covers 14/19 pillars, show practices that cover any of the 5 missing pillars
-   - Sort by: practices covering most missing pillars first
+**Algorithm Criteria:**
+1. **Maintain or Increase Coverage:** The recommended practice must cover the same pillars as the current practice OR provide coverage that doesn't reduce the team's overall agility score.
+2. **Increase Affinity:** Evaluates the `team_affinity_score` (computed from existing team members' Big Five profiles against the practice's tag-personality relations). The recommended practice must have a strictly higher score than the practice causing friction.
+3. **Practice Type Matching:** Prioritize practices from the same category or type (e.g. replacing a discussion practice with another discussion practice) to maintain team dynamics.
+4. **Explicit Equivalence Associations:** Heavily weight alternative practices that are linked to the current practice via the `practice_associations` table with an `association_type` of `'Equivalence'`.
 
-3. **Affinity Scoring Foundation:** For a given practice, system can compute an individual and team affinity score from Big Five profiles and practice tags.
-  - Trait bounds define low and high anchors for each trait
-  - Tag-personality relations define the theoretical low/high affinity values in `{ -, 0, + }`
-  - If a trait score is below the configured low bound, the contribution stays constant at the low endpoint
-  - If a trait score is above the configured high bound, the contribution stays constant at the high endpoint
-  - Only values strictly between the bounds use linear interpolation between the low and high endpoints, normalized to `[-1, 1]`
-  - Tag score = average of the five trait contributions
-  - Practice score = average of the tag scores
-  - Team score = average of available individual practice scores for that team
-
-4. **Presentation Rules:**
-   - Recommendations appear as a sidebar on issue detail or practice catalog views
-  - Coverage remains the primary recommendation rationale
-  - Affinity becomes a secondary ordering signal only when enough Big Five profile data is available
-   - Clear labeling: "Alternative practices covering the same pillars" vs "Practices covering missing pillars"
-   - Non-intrusive; optional for users to explore
+**Presentation Rules:**
+- Recommendations (max 3) appear as a panel within the Issue Detail sidebar.
+- Each recommendation highlights the "Why?" (e.g., "Covers the same pillars, but matches your team's personality better").
+- Continues to provide general gap-filling suggestions on the overall team coverage dashboard.
 
 **Future (Phase 2 - Post-MVP):**
-- Personality-informed ranking: Expand from team-level secondary ordering to richer per-user ranking and explanation patterns
-- Correlation analysis: Track which practice-personality combinations lead to successful adaptations
-- Personalized suggestions: "Based on your [Introversion, Low Conscientiousness], consider practices with [Async, Flexible] characteristics"
+- Personality-informed ranking: Expand from team-level secondary ordering to richer per-user ranking and explanation patterns.
+- Correlation analysis: Track which practice-personality combinations lead to successful adaptations.
+- Personalized suggestions: "Based on your [Introversion, Low Conscientiousness], consider practices with [Async, Flexible] characteristics."
 
 ### API Endpoint Specification (MVP)
 

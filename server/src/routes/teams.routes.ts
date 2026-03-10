@@ -6,6 +6,7 @@ import { requireAuth } from '../middleware/requireAuth';
 import { validateTeamMembership } from '../middleware/validateTeamMembership';
 import { issuesRouter } from './issues.routes';
 import { affinityRouter } from './affinity.routes';
+import { recommendationRouter } from './recommendation.routes';
 
 export const teamsRouter = Router();
 
@@ -20,6 +21,12 @@ teamsRouter.use('/:teamId/issues', requireAuth, validateTeamMembership, issuesRo
  * GET /api/v1/teams/:teamId/practices/:practiceId/affinity/me
  */
 teamsRouter.use('/:teamId/practices', requireAuth, validateTeamMembership, affinityRouter);
+
+/**
+ * Mount recommendation router
+ * GET /api/v1/teams/:teamId/practices/:practiceId/recommendations
+ */
+teamsRouter.use('/:teamId/practices', requireAuth, validateTeamMembership, recommendationRouter);
 
 /**
  * GET /api/v1/teams

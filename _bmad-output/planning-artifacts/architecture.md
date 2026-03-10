@@ -259,6 +259,32 @@ CREATE TABLE schema_migrations (
 
 ---
 
+### Decision 1.5: Practice Recommendation Engine
+
+**Chosen Approach:** TypeScript Service Layer (`services/recommendation.service.ts`) using SQL queries on existing `practice_associations`, `team_coverage`, and `affinity_scores` tables.
+
+**Algorithm Logic Pipeline:**
+1. **Target Identification:** Identify the practice the team is currently having friction with.
+2. **Retrieve Current State:** Fetch the team's `team_affinity_score` for the target practice and the team's current `team_coverage`.
+3. **Filtering Alternative Practices:**
+   - **Condition 1 (Affinity):** `alternative_practice.team_affinity_score > target_practice.team_affinity_score`
+   - **Condition 2 (Coverage):** The combined coverage of the team's current portfolio minus the target practice plus the alternative practice must be ≥ the current overall coverage. Ideally, it covers the exact same pillars.
+4. **Ranking & Prioritization (Heuristics):**
+   - **Tier 1:** Practices linked to the target practice via `practice_associations` where `association_type = 'Equivalence'`.
+   - **Tier 2:** Practices in the same `category` or "type" as the target practice.
+   - **Tier 3:** All other practices that meet Conditions 1 & 2.
+5. **Selection:** Return the top 3 practices from the prioritized list.
+
+**Rationale:**
+- Computations can be done strictly in the service layer, keeping the database schema lean.
+- Fulfills the requirement to provide immediate value on the Issue Detail page without waiting for Phase 2.
+- "Equivalence" associations act as manual expert overrides that guarantee relevance if affinity also aligns.
+
+**Trade-offs Accepted:**
+- Real-time calculation on the Issue Detail page might add ~50-100ms latency. Acceptable for MVP.
+
+---
+
 ### Decision 2: Event Logging Architecture
 
 **Chosen Approach:** Dedicated `events` table with JSONB payloads storing deltas (changed fields only)
@@ -798,6 +824,7 @@ This dictionary is **critical for research publications** — enables researcher
   - Member joined team
   - Big Five questionnaire completed
   - Adaptation decision recorded
+  - Practice recommendation requested (for usage analysis)
 - ✅ Wrap DB operation + event log in single transaction (atomicity guaranteed):
   ```javascript
   db.transaction(async (trx) => {

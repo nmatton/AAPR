@@ -61,6 +61,7 @@ Users should feel **safe, empowered, and heard**. Developers speaking up about p
 ### Emotional Journey Mapping
 - **Arrival**: Calm, approachable interface. No overwhelming navigation.
 - **First Issue**: Safe to speak. Form feels lightweight. "I can do this."
+- **First Recommendation**: Ah! This makes sense. "This practice fits us better and fixes our friction."
 - **Conflict**: Panic → relief. Clear diff, reversible options, auto-saved draft. "This is handled."
 - **Decision**: Momentum. Clear next step. "We're moving forward together."
 - **Export**: Trust. Complete data. "The system captured what matters."
@@ -144,6 +145,7 @@ Users should feel **safe, empowered, and heard**. Developers speaking up about p
 - Practice catalog sidebar keeps options visible without leaving detail view
 - Coverage score sidebar shows impact at a glance
 - Personality context gentle sidebar hint (not center stage)
+- **Practice recommendations panel** (Issue Detail sidebar) offers alternative paths seamlessly.
 - Team affinity context appears as supporting evidence, never as a directive or opaque score without explanation
 
 ### Anti-Patterns to Avoid
@@ -510,6 +512,13 @@ flowchart TD
 - Variants: submitted, discussed, decided, evaluated, conflict, success.
 - Accessibility: always includes text; not color-only.
 
+#### RecommendationWidget
+- Purpose: Show up to 3 alternative practices that are a better fit.
+- Usage: Sidebar of the Issue Detail view.
+- Content: Practice name, brief "Why?" (e.g. "Better team fit, covers same pillars"), affinity delta.
+- Accessibility: region landmark with aria-label="Practice Recommendations".
+- Interaction: Click to view alternative practice details.
+
 #### SidebarPanel
 - Purpose: Container for catalog/personality/activity.
 - States: collapsible; scrollable content.
@@ -672,8 +681,8 @@ flowchart TD
 
 #### Issue Detail View
 **Purpose**: The hubissue description, comments, status, activity, decision logging.
-**Layout**: Left main content (description, comments, status timeline, activity feed); right sidebar (practice info, personality context, affinity context, related issues).
-**Components**: IssueDetail, CommentList, ActivityFeed, StatusBadge, SidebarPanel.
+**Layout**: Left main content (description, comments, status timeline, activity feed); right sidebar (practice info, personality context, affinity context, related issues, practice recommendations).
+**Components**: IssueDetail, CommentList, ActivityFeed, StatusBadge, SidebarPanel, RecommendationWidget.
 **Interactions**: Add comment, record decision, edit description (triggers optimistic conflict flow), change status.
 **States**: Viewing, editing, conflict resolution, loading.
 
