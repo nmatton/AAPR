@@ -15,12 +15,14 @@ interface DecisionModalProps {
     isOpen: boolean;
     onClose: () => void;
     onSubmit: (decisionText: string) => Promise<void>;
+    initialText?: string;
 }
 
 export const DecisionModal: React.FC<DecisionModalProps> = ({
     isOpen,
     onClose,
     onSubmit,
+    initialText = '',
 }) => {
     const {
         register,
@@ -29,7 +31,15 @@ export const DecisionModal: React.FC<DecisionModalProps> = ({
         reset,
     } = useForm<DecisionFormData>({
         resolver: zodResolver(decisionSchema),
+        defaultValues: { decisionText: initialText },
     });
+
+    // Reset form when modal opens with new initialText
+    React.useEffect(() => {
+        if (isOpen) {
+            reset({ decisionText: initialText });
+        }
+    }, [isOpen, initialText, reset]);
 
     const onFormSubmit = async (data: DecisionFormData) => {
         try {

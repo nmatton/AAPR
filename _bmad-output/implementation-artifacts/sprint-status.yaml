@@ -105,9 +105,10 @@ development_status:
   epic-4-1-retrospective: optional
 
   # Epic 4.2: Practice Recommendations on Issues
-  epic-4-2: in-progress
+  epic-4-2: done
   4-2-1-recommendation-engine-api: review
   4-2-2-issue-detail-recommendations-ui: done
+  epic-4-2-retrospective: optional
 
   # Epic 5: Adaptation Decision & Tracking
   epic-5: in-progress

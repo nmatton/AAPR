@@ -13,6 +13,18 @@ interface IssueTimelineProps {
     events: TimelineEvent[];
 }
 
+const eventTypeLabels: Record<string, string> = {
+    'issue.created': 'created the issue',
+    'issue.status_changed': 'changed the status',
+    'issue.priority_changed': 'changed the priority',
+    'issue.comment_added': 'added a comment',
+    'issue.decision_recorded': 'recorded a decision',
+};
+
+const getEventLabel = (event: TimelineEvent): string => {
+    return eventTypeLabels[event.eventType] || event.eventType.replace('issue.', '');
+};
+
 export const IssueTimeline = ({ events }: IssueTimelineProps) => {
     return (
         <div className="space-y-4">
@@ -36,7 +48,7 @@ export const IssueTimeline = ({ events }: IssueTimelineProps) => {
                                         {event.actor?.name || 'System'}
                                     </span>
                                     <span className="text-gray-600">
-                                        {event.action || event.eventType.replace('issue.', '')}
+                                        {getEventLabel(event)}
                                     </span>
                                     <span className="text-sm text-gray-500">
                                         {formatDistanceToNow(new Date(event.createdAt), { addSuffix: true })}

@@ -99,6 +99,11 @@ N/A
   - **[L1]** Aligned backend Zod min-length validation from 1 to 10 chars to match frontend.
   - **[L2]** Added `ADAPTATION_IN_PROGRESS` to `getIssueStats` status mapping to prevent silent data loss in stats.
   - **[H3+M1]** Updated story task checkboxes and File List to reflect actual implementation.
+- **2026-03-10 (Post-completion Bug Fixes - Antigravity):**
+  - **[B1]** Added `ADAPTATION_IN_PROGRESS` to `StatusSelect` type and config so status badge displays correctly instead of falling back to "Open".
+  - **[B2]** Added `eventTypeLabels` map to `IssueTimeline` for user-friendly history text (e.g., "recorded a decision" instead of raw "issue.decision_recorded").
+  - **[B3]** Added ✏️ Edit button on the decision green box; `DecisionModal` now accepts `initialText` prop to pre-fill when editing.
+  - **[B4]** Removed status guard so "Record Decision" button is always visible regardless of issue status.
 
 ### File List
 - _bmad-output/implementation-artifacts/5-1-record-adaptation-decision-on-issue.md

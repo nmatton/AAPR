@@ -173,14 +173,12 @@ export const IssueDetailView = () => {
                 <div className="flex justify-between items-start">
                     <h1 className="text-2xl font-bold text-gray-900">{issue.title}</h1>
                     <div className="flex gap-2 items-center">
-                        {issue.status !== 'ADAPTATION_IN_PROGRESS' && (
-                            <button
-                                onClick={() => setIsDecisionModalOpen(true)}
-                                className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-medium"
-                            >
-                                Record Decision
-                            </button>
-                        )}
+                        <button
+                            onClick={() => setIsDecisionModalOpen(true)}
+                            className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-medium"
+                        >
+                            Record Decision
+                        </button>
                         <PrioritySelect
                             value={issue.priority as PriorityLevel}
                             onChange={handlePriorityChange}
@@ -208,9 +206,18 @@ export const IssueDetailView = () => {
 
                 {issue.decisionText && (
                     <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
-                        <h3 className="text-lg font-bold text-green-900 flex items-center mb-2">
-                            ✅ Adaptation Decision Recorded
-                        </h3>
+                        <div className="flex justify-between items-start">
+                            <h3 className="text-lg font-bold text-green-900 flex items-center mb-2">
+                                ✅ Adaptation Decision Recorded
+                            </h3>
+                            <button
+                                onClick={() => setIsDecisionModalOpen(true)}
+                                className="px-2 py-1 text-green-700 hover:bg-green-100 rounded text-sm font-medium flex items-center gap-1"
+                                title="Edit decision"
+                            >
+                                ✏️ Edit
+                            </button>
+                        </div>
                         <p className="text-green-800 whitespace-pre-wrap">{issue.decisionText}</p>
                         <div className="mt-2 text-sm text-green-600 flex items-center gap-3">
                             {issue.decisionRecordedBy && (
@@ -294,6 +301,7 @@ export const IssueDetailView = () => {
                 isOpen={isDecisionModalOpen}
                 onClose={() => setIsDecisionModalOpen(false)}
                 onSubmit={handleRecordDecision}
+                initialText={issue.decisionText || ''}
             />
 
             {/* Toast notification */}
