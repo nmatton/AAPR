@@ -28,7 +28,8 @@ model User {
   teamMembers       TeamMember[]
   bigFiveResponses  BigFiveResponse[]
   bigFiveScore      BigFiveScore?
-  createdIssues     Issue[]
+  createdIssues     Issue[]          @relation("created_issues")
+  recordedDecisions Issue[]          @relation("recorded_decisions")
   comments          Comment[]
 
   @@map("users")
@@ -382,6 +383,7 @@ enum Priority {
 enum IssueStatus {
   OPEN
   IN_DISCUSSION
+  ADAPTATION_IN_PROGRESS
   RESOLVED
 }
 
@@ -394,6 +396,12 @@ model Issue {
   title       String   @db.VarChar(255)
   /// Detailed description (markdown supported)
   description String   @db.Text
+  /// Adaptation decision text
+  decisionText String?  @map("decision_text") @db.Text
+  /// User who recorded the adaptation decision
+  decisionRecordedBy Int? @map("decision_recorded_by")
+  /// When the adaptation decision was recorded
+  decisionRecordedAt DateTime? @map("decision_recorded_at")
   /// Priority level
   priority    Priority
   /// Current status
@@ -410,7 +418,8 @@ model Issue {
   version     Int      @default(1)
   
   team           Team            @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  createdByUser  User            @relation(fields: [createdBy], references: [id])
+  createdByUser  User            @relation("created_issues", fields: [createdBy], references: [id])
+  decisionRecorder User?         @relation("recorded_decisions", fields: [decisionRecordedBy], references: [id])
   linkedPractices IssuePractice[]
   comments       Comment[]
 

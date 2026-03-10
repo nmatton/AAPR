@@ -2048,7 +2048,7 @@ So that the decision is documented and we can track if it worked.
 
 #### Story 5.2: Update Issue Status to "Evaluated" & Capture Outcome
 
-As a Scrum Master,
+As a team member,
 I want to mark an adaptation as "Evaluated" after we've tried it for a sprint,
 So that we can track which adaptations worked.
 

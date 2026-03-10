@@ -4,6 +4,7 @@ import * as issueService from '../services/issue.service';
 import { AuthenticatedRequest } from '../middleware/requireAuth';
 import { AppError } from '../services/auth.service';
 import { IssueStatus } from '@prisma/client';
+import { recordDecisionSchema } from '../schemas/issue.schema';
 
 export const createIssue = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -150,3 +151,38 @@ export const getStats = async (req: Request, res: Response, next: NextFunction) 
     }
 };
 
+export const recordDecision = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { teamId, issueId } = req.params;
+        const userId = (req as AuthenticatedRequest).user?.userId;
+
+        if (!teamId || isNaN(Number(teamId))) {
+            throw new AppError('validation_error', 'Invalid team ID', {}, 400);
+        }
+        if (!issueId || isNaN(Number(issueId))) {
+            throw new AppError('validation_error', 'Invalid issue ID', {}, 400);
+        }
+        if (!userId) {
+            throw new AppError('unauthorized', 'User not authenticated', {}, 401);
+        }
+
+        const validation = recordDecisionSchema.safeParse(req.body);
+        if (!validation.success) {
+            throw new AppError('validation_error', 'Invalid input data', { errors: validation.error.format() }, 400);
+        }
+
+        const { decisionText, version } = validation.data;
+
+        const issue = await issueService.recordDecision(
+            Number(teamId),
+            Number(issueId),
+            userId,
+            decisionText,
+            version
+        );
+
+        res.json(issue);
+    } catch (error) {
+        next(error);
+    }
+};

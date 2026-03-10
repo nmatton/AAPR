@@ -14,6 +14,7 @@ jest.mock('../lib/prisma', () => ({
         issue: {
             create: jest.fn(),
             findUnique: jest.fn(),
+            update: jest.fn(),
         },
         issuePractice: {
             create: jest.fn(),
@@ -287,6 +288,88 @@ describe('getIssueStats', () => {
             // Wait, the story says "returning counts by status". Usually keys are the status enum values.
             // Let's assume keys are 'OPEN', 'IN_PROGRESS', 'DONE'.
         });
+    });
+});
+
+describe('recordDecision', () => {
+    const teamId = 1;
+    const issueId = 100;
+    const userId = 5;
+    const decisionText = 'Switching to async standups';
+    const currentVersion = 2;
+
+    it('should record decision atomically, update status, increment version and log event', async () => {
+        const mockIssue = { id: issueId, teamId, version: currentVersion };
+        const mockUpdatedIssue = {
+            ...mockIssue,
+            decisionText,
+            status: 'ADAPTATION_IN_PROGRESS',
+            version: currentVersion + 1,
+            decisionRecordedBy: userId,
+            decisionRecordedAt: expect.any(Date),
+            createdByUser: { id: 1, name: 'Alice' },
+            decisionRecorder: { id: userId, name: 'Bob' },
+            linkedPractices: []
+        };
+
+        const issueRepo = require('../repositories/issue.repository');
+        issueRepo.findById.mockResolvedValue(mockIssue);
+
+        // Mock updateMany returning count: 1 (success)
+        (prisma.issue as any).updateMany = jest.fn().mockResolvedValue({ count: 1 });
+        // Mock findUniqueOrThrow returning the updated issue
+        (prisma.issue as any).findUniqueOrThrow = jest.fn().mockResolvedValue(mockUpdatedIssue);
+
+        const service = await import('./issue.service');
+        const result = await service.recordDecision(teamId, issueId, userId, decisionText, currentVersion);
+
+        expect(issueRepo.findById).toHaveBeenCalledWith(issueId, teamId);
+        expect(prisma.$transaction).toHaveBeenCalled();
+        expect((prisma.issue as any).updateMany).toHaveBeenCalledWith({
+            where: { id: issueId, teamId, version: currentVersion },
+            data: expect.objectContaining({
+                decisionText,
+                status: 'ADAPTATION_IN_PROGRESS',
+                version: { increment: 1 },
+                decisionRecordedBy: userId,
+            })
+        });
+        expect(eventService.logEvent).toHaveBeenCalledWith(
+            expect.objectContaining({
+                eventType: 'issue.decision_recorded',
+                teamId,
+                actorId: userId,
+                action: 'issue.decision_recorded',
+                payload: expect.objectContaining({
+                    decision_text: decisionText
+                })
+            }),
+            expect.anything()
+        );
+        expect(result).toEqual(mockUpdatedIssue);
+    });
+
+    it('should throw 404 if issue not found', async () => {
+        const issueRepo = require('../repositories/issue.repository');
+        issueRepo.findById.mockResolvedValue(null);
+        
+        const service = await import('./issue.service');
+        await expect(service.recordDecision(teamId, issueId, userId, decisionText, currentVersion))
+            .rejects.toThrow('Issue not found');
+    });
+
+    it('should throw 409 if version mismatch (atomic check via updateMany count=0)', async () => {
+        const mockIssue = { id: issueId, teamId, version: currentVersion + 1 }; // DB has newer version
+        const issueRepo = require('../repositories/issue.repository');
+        issueRepo.findById.mockResolvedValue(mockIssue); // exists check passes
+
+        // updateMany returns count: 0 (version mismatch)
+        (prisma.issue as any).updateMany = jest.fn().mockResolvedValue({ count: 0 });
+        (prisma.issue as any).findUnique = jest.fn().mockResolvedValue({ version: currentVersion + 1 });
+
+        const service = await import('./issue.service');
+        await expect(service.recordDecision(teamId, issueId, userId, decisionText, currentVersion))
+            .rejects.toThrow('someone else');
     });
 });
 

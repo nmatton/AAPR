@@ -225,6 +225,12 @@ export const getIssueDetails = async (teamId: number, issueId: number) => {
             id: issue.id,
             title: issue.title,
             description: issue.description,
+            decisionText: issue.decisionText,
+            decisionRecordedAt: issue.decisionRecordedAt,
+            decisionRecordedBy: issue.decisionRecorder
+                ? { id: issue.decisionRecorder.id, name: issue.decisionRecorder.name }
+                : null,
+            version: issue.version,
             priority: issue.priority,
             status: issue.status,
             createdAt: issue.createdAt,
@@ -292,6 +298,7 @@ export const getIssueStats = async (teamId: number) => {
     const byStatus = {
         open: 0,
         in_progress: 0,
+        adaptation_in_progress: 0,
         done: 0
     };
 
@@ -299,6 +306,7 @@ export const getIssueStats = async (teamId: number) => {
         let key: keyof typeof byStatus | null = null;
         if (stat.status === 'OPEN') key = 'open';
         else if (stat.status === 'IN_DISCUSSION') key = 'in_progress';
+        else if (stat.status === 'ADAPTATION_IN_PROGRESS') key = 'adaptation_in_progress';
         else if (stat.status === 'RESOLVED') key = 'done';
 
         if (key) {
@@ -308,4 +316,80 @@ export const getIssueStats = async (teamId: number) => {
 
     return { total, byStatus };
 };
+
+export const recordDecision = async (
+    teamId: number,
+    issueId: number,
+    userId: number,
+    decisionText: string,
+    version: number
+) => {
+    // 1. Verify issue exists (fast check before transaction)
+    const issue = await issueRepository.findById(issueId, teamId);
+    if (!issue) {
+        throw new AppError('not_found', 'Issue not found', { issueId, teamId }, 404);
+    }
+
+    return await prisma.$transaction(async (tx) => {
+        // 2. Atomic version-checked update (eliminates TOCTOU race)
+        //    Architecture Decision 5: WHERE id = ? AND version = ?
+        const now = new Date();
+        const updateResult = await tx.issue.updateMany({
+            where: { id: issueId, teamId, version },
+            data: {
+                decisionText,
+                status: 'ADAPTATION_IN_PROGRESS',
+                version: { increment: 1 },
+                decisionRecordedBy: userId,
+                decisionRecordedAt: now
+            }
+        });
+
+        if (updateResult.count === 0) {
+            // Re-fetch to get current version for error detail
+            const current = await tx.issue.findUnique({ where: { id: issueId }, select: { version: true } });
+            throw new AppError('conflict', 'Issue has been updated by someone else', {
+                currentVersion: current?.version,
+                providedVersion: version
+            }, 409);
+        }
+
+        // 3. Fetch the updated issue with relations for response
+        const updatedIssue = await tx.issue.findUniqueOrThrow({
+            where: { id: issueId },
+            include: {
+                createdByUser: {
+                    select: { id: true, name: true }
+                },
+                decisionRecorder: {
+                    select: { id: true, name: true }
+                },
+                linkedPractices: {
+                    include: {
+                        practice: {
+                            select: { id: true, title: true }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 4. Log Event
+        await eventService.logEvent({
+            eventType: 'issue.decision_recorded',
+            teamId,
+            actorId: userId,
+            entityType: 'issue',
+            entityId: issueId,
+            action: 'issue.decision_recorded',
+            payload: {
+                decision_text: decisionText,
+                timestamp: now.toISOString()
+            }
+        }, tx);
+        
+        return updatedIssue;
+    });
+};
+
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { getIssueDetails, IssueDetails, createComment } from '../api/issuesApi';
+import { getIssueDetails, IssueDetails, createComment, updateIssue, recordDecision } from '../api/issuesApi';
 import { IssueTimeline } from './IssueTimeline';
 import { CommentList } from './CommentList';
 import { CommentForm } from './CommentForm';
@@ -9,7 +9,7 @@ import { RecommendationWidget } from './RecommendationWidget';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 import { formatDistanceToNow } from 'date-fns';
-import { updateIssue } from '../api/issuesApi';
+import { DecisionModal } from './DecisionModal';
 import { StatusSelect, IssueStatus } from './StatusSelect';
 import { PrioritySelect, PriorityLevel } from './PrioritySelect';
 
@@ -21,6 +21,8 @@ export const IssueDetailView = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [submittingComment, setSubmittingComment] = useState(false);
+    const [isDecisionModalOpen, setIsDecisionModalOpen] = useState(false);
+    const [toast, setToast] = useState<{ type: 'success' | 'error' | 'warning'; message: string } | null>(null);
 
     const openPracticeId = searchParams.get('practiceId') ? Number(searchParams.get('practiceId')) : null;
 
@@ -48,6 +50,14 @@ export const IssueDetailView = () => {
         fetchDetails();
     }, [teamId, issueId]);
 
+    // Auto-dismiss toast after timeout
+    useEffect(() => {
+        if (!toast) return;
+        const duration = toast.type === 'success' ? 3000 : 5000;
+        const timer = setTimeout(() => setToast(null), duration);
+        return () => clearTimeout(timer);
+    }, [toast]);
+
     const handleCommentSubmit = async (content: string) => {
         if (!teamId || !issueId || !details) return;
 
@@ -64,6 +74,28 @@ export const IssueDetailView = () => {
             // Could show a toast here
         } finally {
             setSubmittingComment(false);
+        }
+    };
+
+    const handleRecordDecision = async (decisionText: string) => {
+        if (!teamId || !issueId || !details) return;
+        try {
+            await recordDecision(Number(teamId), Number(issueId), decisionText, details.issue.version);
+            const updatedData = await getIssueDetails(Number(teamId), Number(issueId));
+            setDetails(updatedData);
+            setIsDecisionModalOpen(false);
+            setToast({ type: 'success', message: 'Decision recorded successfully.' });
+        } catch (err: any) {
+            console.error('Failed to record decision', err);
+            if (err.status === 409) {
+                setToast({ type: 'warning', message: 'Conflict: The issue was updated by someone else. Please refresh and try again.' });
+                // Refetch to get latest data
+                const updatedData = await getIssueDetails(Number(teamId), Number(issueId));
+                setDetails(updatedData);
+            } else {
+                setToast({ type: 'error', message: 'Failed to record decision. Please try again.' });
+            }
+            throw err;
         }
     };
 
@@ -140,7 +172,15 @@ export const IssueDetailView = () => {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 space-y-4">
                 <div className="flex justify-between items-start">
                     <h1 className="text-2xl font-bold text-gray-900">{issue.title}</h1>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 items-center">
+                        {issue.status !== 'ADAPTATION_IN_PROGRESS' && (
+                            <button
+                                onClick={() => setIsDecisionModalOpen(true)}
+                                className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-medium"
+                            >
+                                Record Decision
+                            </button>
+                        )}
                         <PrioritySelect
                             value={issue.priority as PriorityLevel}
                             onChange={handlePriorityChange}
@@ -165,6 +205,26 @@ export const IssueDetailView = () => {
                 <div className="prose max-w-none text-gray-800">
                     <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{issue.description}</ReactMarkdown>
                 </div>
+
+                {issue.decisionText && (
+                    <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <h3 className="text-lg font-bold text-green-900 flex items-center mb-2">
+                            ✅ Adaptation Decision Recorded
+                        </h3>
+                        <p className="text-green-800 whitespace-pre-wrap">{issue.decisionText}</p>
+                        <div className="mt-2 text-sm text-green-600 flex items-center gap-3">
+                            {issue.decisionRecordedBy && (
+                                <span>Recorded by <strong>{issue.decisionRecordedBy.name}</strong></span>
+                            )}
+                            {issue.decisionRecordedAt && (
+                                <span>• {formatDistanceToNow(new Date(issue.decisionRecordedAt), { addSuffix: true })}</span>
+                            )}
+                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                Implementation in progress
+                            </span>
+                        </div>
+                    </div>
+                )}
 
                 {/* Linked Practices */}
                 {issue.practices.length > 0 && (
@@ -229,6 +289,31 @@ export const IssueDetailView = () => {
                 teamId={Number(teamId)}
                 isPracticeInTeam={issue.practices.some((p) => p.id === openPracticeId)}
             />
+
+            <DecisionModal
+                isOpen={isDecisionModalOpen}
+                onClose={() => setIsDecisionModalOpen(false)}
+                onSubmit={handleRecordDecision}
+            />
+
+            {/* Toast notification */}
+            {toast && (
+                <div className="fixed bottom-4 right-4 z-50 animate-fade-in">
+                    <div
+                        className={`rounded-lg px-4 py-3 text-sm shadow-lg flex items-center gap-2 ${
+                            toast.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' :
+                            toast.type === 'warning' ? 'bg-yellow-50 text-yellow-800 border border-yellow-200' :
+                            'bg-red-50 text-red-800 border border-red-200'
+                        }`}
+                    >
+                        {toast.type === 'success' && '✅ '}
+                        {toast.type === 'warning' && '⚠️ '}
+                        {toast.type === 'error' && '❌ '}
+                        {toast.message}
+                        <button onClick={() => setToast(null)} className="ml-2 text-gray-500 hover:text-gray-700">×</button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

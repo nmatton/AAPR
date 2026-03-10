@@ -33,6 +33,10 @@ export interface IssueDetails {
         id: number;
         title: string;
         description: string;
+        decisionText: string | null;
+        decisionRecordedAt: string | null;
+        decisionRecordedBy: { id: number; name: string } | null;
+        version: number;
         priority: 'LOW' | 'MEDIUM' | 'HIGH';
         status: string;
         createdAt: string;
@@ -69,6 +73,16 @@ export const createComment = async (teamId: number, issueId: number, content: st
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({ content }),
+    });
+};
+
+export const recordDecision = async (teamId: number, issueId: number, decisionText: string, version: number) => {
+    return apiClient(`/api/v1/teams/${teamId}/issues/${issueId}/decisions`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ decisionText, version }),
     });
 };
 

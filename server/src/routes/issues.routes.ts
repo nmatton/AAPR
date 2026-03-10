@@ -48,3 +48,10 @@ issuesRouter.patch('/:issueId', issuesController.updateIssue);
  */
 issuesRouter.post('/:issueId/comments', issuesController.createComment);
 
+/**
+ * POST /api/v1/teams/:teamId/issues/:issueId/decisions
+ * Record an adaptation decision for an issue
+ */
+issuesRouter.post('/:issueId/decisions', issuesController.recordDecision);
+
+
