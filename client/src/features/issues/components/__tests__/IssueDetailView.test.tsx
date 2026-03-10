@@ -5,6 +5,9 @@ import * as issuesApi from '../../api/issuesApi';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 
 vi.mock('../../api/issuesApi');
+vi.mock('../../api/recommendationsApi', () => ({
+    getRecommendations: vi.fn().mockResolvedValue([]),
+}));
 
 describe('IssueDetailView', () => {
     const mockIssueDetails = {
@@ -40,8 +43,8 @@ describe('IssueDetailView', () => {
 
         await waitFor(() => {
             expect(screen.getByText('Test Issue')).toBeInTheDocument();
-            expect(screen.getByText('OPEN')).toBeInTheDocument();
-            expect(screen.getByText('HIGH')).toBeInTheDocument();
+            expect(screen.getByText('Open')).toBeInTheDocument();
+            expect(screen.getByText('High')).toBeInTheDocument();
         });
 
         // Check Markdown rendering
@@ -65,5 +68,42 @@ describe('IssueDetailView', () => {
         await waitFor(() => {
             expect(screen.getByText(/not found/i)).toBeInTheDocument();
         });
+    });
+
+    it('renders one RecommendationWidget per linked practice', async () => {
+        const multiPracticeDetails = {
+            ...mockIssueDetails,
+            issue: {
+                ...mockIssueDetails.issue,
+                practices: [
+                    { id: 1, title: 'Practice A' },
+                    { id: 2, title: 'Practice B' },
+                ],
+            },
+        };
+        vi.mocked(issuesApi.getIssueDetails).mockResolvedValue(multiPracticeDetails);
+
+        const recommendationsApi = await import('../../api/recommendationsApi');
+
+        render(
+            <MemoryRouter initialEntries={['/teams/1/issues/100']}>
+                <Routes>
+                    <Route path="/teams/:teamId/issues/:issueId" element={<IssueDetailView />} />
+                </Routes>
+            </MemoryRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText('Test Issue')).toBeInTheDocument();
+        });
+
+        // Should have called recommendations API once per linked practice
+        expect(recommendationsApi.getRecommendations).toHaveBeenCalledTimes(2);
+        expect(recommendationsApi.getRecommendations).toHaveBeenCalledWith(1, 1);
+        expect(recommendationsApi.getRecommendations).toHaveBeenCalledWith(1, 2);
+
+        // Both "For: Practice X" labels should be visible
+        expect(screen.getByText('For: Practice A')).toBeInTheDocument();
+        expect(screen.getByText('For: Practice B')).toBeInTheDocument();
     });
 });

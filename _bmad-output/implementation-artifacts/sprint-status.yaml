@@ -107,7 +107,7 @@ development_status:
   # Epic 4.2: Practice Recommendations on Issues
   epic-4-2: in-progress
   4-2-1-recommendation-engine-api: review
-  4-2-2-issue-detail-recommendations-ui: backlog
+  4-2-2-issue-detail-recommendations-ui: done
 
   # Epic 5: Adaptation Decision & Tracking
   epic-5: backlog

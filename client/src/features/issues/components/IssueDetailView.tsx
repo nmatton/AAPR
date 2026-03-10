@@ -5,6 +5,7 @@ import { IssueTimeline } from './IssueTimeline';
 import { CommentList } from './CommentList';
 import { CommentForm } from './CommentForm';
 import { PracticeDetailSidebar } from '../../practices/components/PracticeDetailSidebar';
+import { RecommendationWidget } from './RecommendationWidget';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 import { formatDistanceToNow } from 'date-fns';
@@ -191,6 +192,18 @@ export const IssueDetailView = () => {
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                         <IssueTimeline events={details.history} />
                     </div>
+
+                    {/* Alternative Practices — one widget per linked practice */}
+                    {issue.practices.length > 0 && issue.practices.map((practice) => (
+                        <div key={`rec-${practice.id}`} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                            <p className="text-xs text-gray-400 mb-2">For: {practice.title}</p>
+                            <RecommendationWidget
+                                teamId={Number(teamId)}
+                                practiceId={practice.id}
+                                onPracticeClick={(id) => setSearchParams({ practiceId: id.toString() })}
+                            />
+                        </div>
+                    ))}
                 </div>
 
                 {/* Discussion - Main Content Area */}
@@ -214,7 +227,7 @@ export const IssueDetailView = () => {
                 practiceId={openPracticeId}
                 onClose={() => setSearchParams({})}
                 teamId={Number(teamId)}
-                isPracticeInTeam={true} // Likely true since we are in team context
+                isPracticeInTeam={issue.practices.some((p) => p.id === openPracticeId)}
             />
         </div>
     );

@@ -10,6 +10,7 @@ export interface PracticeRecommendation {
   categoryId: string
   tier: number
   affinityScore: number
+  affinityDelta: number
   reason: string
 }
 
@@ -260,6 +261,7 @@ export async function getRecommendations(
     categoryId: c.practice.categoryId,
     tier: c.tier,
     affinityScore: c.affinityScore,
+    affinityDelta: c.affinityScore - targetScore,
     reason: c.reason,
   }))
 }
