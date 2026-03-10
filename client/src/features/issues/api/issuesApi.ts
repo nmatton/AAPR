@@ -16,7 +16,7 @@ export const createIssue = async (teamId: number, data: CreateIssueDto) => {
 };
 
 export interface UpdateIssueDto {
-    status?: 'OPEN' | 'IN_DISCUSSION' | 'RESOLVED';
+    status?: 'OPEN' | 'IN_DISCUSSION' | 'ADAPTATION_IN_PROGRESS' | 'EVALUATED' | 'RESOLVED';
     priority?: 'LOW' | 'MEDIUM' | 'HIGH';
 }
 
@@ -36,6 +36,10 @@ export interface IssueDetails {
         decisionText: string | null;
         decisionRecordedAt: string | null;
         decisionRecordedBy: { id: number; name: string } | null;
+        evaluationOutcome: string | null;
+        evaluationComments: string | null;
+        evaluationRecordedAt: string | null;
+        evaluationRecordedBy: { id: number; name: string } | null;
         version: number;
         priority: 'LOW' | 'MEDIUM' | 'HIGH';
         status: string;
@@ -86,6 +90,16 @@ export const recordDecision = async (teamId: number, issueId: number, decisionTe
     });
 };
 
+export const evaluateIssue = async (teamId: number, issueId: number, outcome: string, comments: string, version: number) => {
+    return apiClient(`/api/v1/teams/${teamId}/issues/${issueId}/evaluations`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ outcome, comments, version }),
+    });
+};
+
 
 export interface IssueFilters {
     status?: string;
@@ -125,6 +139,8 @@ export interface IssueStats {
     byStatus: {
         open: number;
         in_progress: number;
+        adaptation_in_progress: number;
+        evaluated: number;
         done: number;
     };
 }

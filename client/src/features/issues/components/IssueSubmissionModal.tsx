@@ -9,8 +9,10 @@ import { XMarkIcon } from '@heroicons/react/24/outline';
 const issueSchema = z.object({
     title: z.string().min(5, 'Title must be at least 5 characters'),
     description: z.string().min(10, 'Description must be at least 10 characters'),
-    priority: z.enum(['LOW', 'MEDIUM', 'HIGH']),
-    practiceIds: z.array(z.coerce.number()).optional(),
+    priority: z.enum(['LOW', 'MEDIUM', 'HIGH'], {
+        message: 'Please select a priority'
+    }),
+    practiceIds: z.array(z.number()).optional(),
 });
 
 type IssueFormData = z.infer<typeof issueSchema>;
@@ -18,7 +20,6 @@ type IssueFormData = z.infer<typeof issueSchema>;
 interface IssueSubmissionModalProps {
     isOpen: boolean;
     onClose: () => void;
-    teamId: number;
     practices: Practice[];
     onSubmit: (data: IssueFormData) => Promise<void>;
 }
@@ -26,7 +27,6 @@ interface IssueSubmissionModalProps {
 export const IssueSubmissionModal: React.FC<IssueSubmissionModalProps> = ({
     isOpen,
     onClose,
-    teamId,
     practices,
     onSubmit,
 }) => {

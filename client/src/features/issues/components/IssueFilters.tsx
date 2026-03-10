@@ -20,6 +20,8 @@ export const IssueFilters: React.FC<IssueFiltersProps> = ({ filters, onFilterCha
                 <option value="">All Statuses</option>
                 <option value="OPEN">Open</option>
                 <option value="IN_DISCUSSION">In Discussion</option>
+                <option value="ADAPTATION_IN_PROGRESS">Adaptation in Progress</option>
+                <option value="EVALUATED">Evaluated</option>
                 <option value="RESOLVED">Resolved</option>
             </select>
 

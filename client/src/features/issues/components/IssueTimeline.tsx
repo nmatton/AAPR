@@ -19,6 +19,7 @@ const eventTypeLabels: Record<string, string> = {
     'issue.priority_changed': 'changed the priority',
     'issue.comment_added': 'added a comment',
     'issue.decision_recorded': 'recorded a decision',
+    'issue.evaluated': 'evaluated the adaptation',
 };
 
 const getEventLabel = (event: TimelineEvent): string => {

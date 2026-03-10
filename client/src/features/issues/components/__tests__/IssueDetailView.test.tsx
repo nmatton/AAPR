@@ -22,7 +22,8 @@ describe('IssueDetailView', () => {
             practices: [{ id: 1, title: 'Practice A' }],
         },
         history: [],
-    };
+        comments: [],
+    } as any;
 
     beforeEach(() => {
         vi.clearAllMocks();

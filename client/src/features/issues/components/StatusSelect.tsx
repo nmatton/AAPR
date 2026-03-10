@@ -2,7 +2,7 @@ import { Listbox, Transition } from '@headlessui/react';
 import { Fragment } from 'react';
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid';
 
-export type IssueStatus = 'OPEN' | 'IN_DISCUSSION' | 'ADAPTATION_IN_PROGRESS' | 'RESOLVED';
+export type IssueStatus = 'OPEN' | 'IN_DISCUSSION' | 'ADAPTATION_IN_PROGRESS' | 'EVALUATED' | 'RESOLVED';
 
 interface StatusSelectProps {
     value: IssueStatus;
@@ -14,6 +14,7 @@ const statusConfig: Record<IssueStatus, { label: string; className: string }> = 
     OPEN: { label: 'Open', className: 'bg-blue-100 text-blue-800' },
     IN_DISCUSSION: { label: 'In Discussion', className: 'bg-yellow-100 text-yellow-800' },
     ADAPTATION_IN_PROGRESS: { label: 'Adaptation in Progress', className: 'bg-orange-100 text-orange-800' },
+    EVALUATED: { label: 'Evaluated', className: 'bg-purple-100 text-purple-800' },
     RESOLVED: { label: 'Resolved', className: 'bg-green-100 text-green-800' },
 };
 

@@ -266,27 +266,27 @@ describe('getIssueStats', () => {
         const mockCounts = [
             { status: 'OPEN', _count: { _all: 5 } },
             { status: 'IN_DISCUSSION', _count: { _all: 3 } },
+            { status: 'ADAPTATION_IN_PROGRESS', _count: { _all: 2 } },
+            { status: 'EVALUATED', _count: { _all: 1 } },
             { status: 'RESOLVED', _count: { _all: 10 } }
         ];
 
-        // Access the mocked repository function
         const issueRepo = require('../repositories/issue.repository');
         issueRepo.countByStatus.mockResolvedValue(mockCounts);
 
-        // We cast to any because the function doesn't exist on the type yet
         const service = await import('./issue.service') as any;
         const result = await service.getIssueStats(teamId);
 
         expect(issueRepo.countByStatus).toHaveBeenCalledWith(teamId);
         expect(result).toEqual({
-            total: 18,
+            total: 21,
             byStatus: {
                 open: 5,
                 in_progress: 3,
+                adaptation_in_progress: 2,
+                evaluated: 1,
                 done: 10
-            } // Normalized keys to lowercase as per likely requirement or convention?
-            // Wait, the story says "returning counts by status". Usually keys are the status enum values.
-            // Let's assume keys are 'OPEN', 'IN_PROGRESS', 'DONE'.
+            }
         });
     });
 });
@@ -316,9 +316,9 @@ describe('recordDecision', () => {
         issueRepo.findById.mockResolvedValue(mockIssue);
 
         // Mock updateMany returning count: 1 (success)
-        (prisma.issue as any).updateMany = jest.fn().mockResolvedValue({ count: 1 });
+        (prisma.issue as any).updateMany = jest.fn<any>().mockResolvedValue({ count: 1 });
         // Mock findUniqueOrThrow returning the updated issue
-        (prisma.issue as any).findUniqueOrThrow = jest.fn().mockResolvedValue(mockUpdatedIssue);
+        (prisma.issue as any).findUniqueOrThrow = jest.fn<any>().mockResolvedValue(mockUpdatedIssue);
 
         const service = await import('./issue.service');
         const result = await service.recordDecision(teamId, issueId, userId, decisionText, currentVersion);
@@ -364,8 +364,8 @@ describe('recordDecision', () => {
         issueRepo.findById.mockResolvedValue(mockIssue); // exists check passes
 
         // updateMany returns count: 0 (version mismatch)
-        (prisma.issue as any).updateMany = jest.fn().mockResolvedValue({ count: 0 });
-        (prisma.issue as any).findUnique = jest.fn().mockResolvedValue({ version: currentVersion + 1 });
+        (prisma.issue as any).updateMany = jest.fn<any>().mockResolvedValue({ count: 0 });
+        (prisma.issue as any).findUnique = jest.fn<any>().mockResolvedValue({ version: currentVersion + 1 });
 
         const service = await import('./issue.service');
         await expect(service.recordDecision(teamId, issueId, userId, decisionText, currentVersion))
@@ -373,3 +373,96 @@ describe('recordDecision', () => {
     });
 });
 
+describe('evaluateIssue', () => {
+    const teamId = 1;
+    const issueId = 100;
+    const userId = 5;
+    const outcome = 'yes';
+    const comments = 'The adaptation worked well';
+    const currentVersion = 3;
+
+    it('should evaluate issue atomically, update status to EVALUATED, increment version and log event', async () => {
+        const mockIssue = { id: issueId, teamId, version: currentVersion, status: 'ADAPTATION_IN_PROGRESS' };
+        const mockUpdatedIssue = {
+            ...mockIssue,
+            evaluationOutcome: outcome,
+            evaluationComments: comments,
+            status: 'EVALUATED',
+            version: currentVersion + 1,
+            evaluationRecordedBy: userId,
+            evaluationRecordedAt: expect.any(Date),
+            createdByUser: { id: 1, name: 'Alice' },
+            decisionRecorder: { id: 2, name: 'Charlie' },
+            evaluationRecorder: { id: userId, name: 'Bob' },
+            linkedPractices: []
+        };
+
+        const issueRepo = require('../repositories/issue.repository');
+        issueRepo.findById.mockResolvedValue(mockIssue);
+
+        (prisma.issue as any).updateMany = jest.fn<any>().mockResolvedValue({ count: 1 });
+        (prisma.issue as any).findUniqueOrThrow = jest.fn<any>().mockResolvedValue(mockUpdatedIssue);
+
+        const service = await import('./issue.service');
+        const result = await service.evaluateIssue(teamId, issueId, userId, outcome, comments, currentVersion);
+
+        expect(issueRepo.findById).toHaveBeenCalledWith(issueId, teamId);
+        expect(prisma.$transaction).toHaveBeenCalled();
+        expect((prisma.issue as any).updateMany).toHaveBeenCalledWith({
+            where: { id: issueId, teamId, version: currentVersion },
+            data: expect.objectContaining({
+                evaluationOutcome: outcome,
+                evaluationComments: comments,
+                status: 'EVALUATED',
+                version: { increment: 1 },
+                evaluationRecordedBy: userId,
+            })
+        });
+        expect(eventService.logEvent).toHaveBeenCalledWith(
+            expect.objectContaining({
+                eventType: 'issue.evaluated',
+                teamId,
+                actorId: userId,
+                action: 'issue.evaluated',
+                payload: expect.objectContaining({
+                    outcome,
+                    comments,
+                })
+            }),
+            expect.anything()
+        );
+        expect(result).toEqual(mockUpdatedIssue);
+    });
+
+    it('should throw 404 if issue not found', async () => {
+        const issueRepo = require('../repositories/issue.repository');
+        issueRepo.findById.mockResolvedValue(null);
+
+        const service = await import('./issue.service');
+        await expect(service.evaluateIssue(teamId, issueId, userId, outcome, comments, currentVersion))
+            .rejects.toThrow('Issue not found');
+    });
+
+    it('should throw 400 if issue is not in ADAPTATION_IN_PROGRESS status', async () => {
+        const mockIssue = { id: issueId, teamId, version: currentVersion, status: 'OPEN' };
+        const issueRepo = require('../repositories/issue.repository');
+        issueRepo.findById.mockResolvedValue(mockIssue);
+
+        const service = await import('./issue.service');
+        await expect(service.evaluateIssue(teamId, issueId, userId, outcome, comments, currentVersion))
+            .rejects.toThrow('Only issues with status "Adaptation in Progress" can be evaluated');
+    });
+
+    it('should throw 409 if version mismatch (atomic check via updateMany count=0)', async () => {
+        const mockIssue = { id: issueId, teamId, version: currentVersion + 1, status: 'ADAPTATION_IN_PROGRESS' };
+        const issueRepo = require('../repositories/issue.repository');
+        issueRepo.findById.mockResolvedValue(mockIssue);
+
+        (prisma.issue as any).updateMany = jest.fn<any>().mockResolvedValue({ count: 0 });
+        (prisma.issue as any).findUnique = jest.fn<any>().mockResolvedValue({ version: currentVersion + 1 });
+
+        const service = await import('./issue.service');
+        await expect(service.evaluateIssue(teamId, issueId, userId, outcome, comments, currentVersion))
+            .rejects.toThrow('someone else');
+    });
+});

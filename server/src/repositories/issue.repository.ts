@@ -27,6 +27,12 @@ export const findById = async (id: number, teamId: number) => {
                     name: true,
                 },
             },
+            evaluationRecorder: {
+                select: {
+                    id: true,
+                    name: true,
+                },
+            },
             linkedPractices: {
                 include: {
                     practice: {

@@ -1,0 +1,56 @@
+src/App.test.tsx(39,7): error TS2741: Property 'hasCompletedBigFive' is missing in type '{ id: number; name: string; email: string; createdAt: string; }' but required in type 'User'.
+src/App.test.tsx(42,59): error TS2345: Argument of type '{ requestId: string; id: number; name: string; email: string; createdAt: string; }' is not assignable to parameter of type 'CurrentUserResponse'.
+  Property 'hasCompletedBigFive' is missing in type '{ requestId: string; id: number; name: string; email: string; createdAt: string; }' but required in type 'CurrentUserResponse'.
+src/App.test.tsx(71,59): error TS2345: Argument of type '{ requestId: string; id: number; name: string; email: string; createdAt: string; }' is not assignable to parameter of type 'CurrentUserResponse'.
+  Property 'hasCompletedBigFive' is missing in type '{ requestId: string; id: number; name: string; email: string; createdAt: string; }' but required in type 'CurrentUserResponse'.
+src/App.test.tsx(78,7): error TS2741: Property 'hasCompletedBigFive' is missing in type '{ id: number; name: string; email: string; createdAt: string; }' but required in type 'User'.
+src/App.test.tsx(94,59): error TS2345: Argument of type '{ requestId: string; id: number; name: string; email: string; createdAt: string; }' is not assignable to parameter of type 'CurrentUserResponse'.
+  Property 'hasCompletedBigFive' is missing in type '{ requestId: string; id: number; name: string; email: string; createdAt: string; }' but required in type 'CurrentUserResponse'.
+src/App.test.tsx(101,7): error TS2741: Property 'hasCompletedBigFive' is missing in type '{ id: number; name: string; email: string; createdAt: string; }' but required in type 'User'.
+src/features/auth/state/authSlice.test.ts(29,7): error TS2741: Property 'hasCompletedBigFive' is missing in type '{ id: number; name: string; email: string; createdAt: string; }' but required in type 'User'.
+src/features/auth/state/authSlice.test.ts(46,7): error TS2741: Property 'hasCompletedBigFive' is missing in type '{ id: number; name: string; email: string; createdAt: string; }' but required in type 'User'.
+src/features/auth/state/authSlice.test.ts(68,37): error TS2345: Argument of type '{ id: number; name: string; email: string; createdAt: string; }' is not assignable to parameter of type 'User'.
+  Property 'hasCompletedBigFive' is missing in type '{ id: number; name: string; email: string; createdAt: string; }' but required in type 'User'.
+src/features/auth/state/authSlice.test.ts(78,7): error TS2741: Property 'hasCompletedBigFive' is missing in type '{ id: number; name: string; email: string; createdAt: string; }' but required in type 'User'.
+src/features/issues/components/__tests__/IssueSubmissionModal.test.tsx(21,17): error TS2322: Type '{ isOpen: true; onClose: Mock<any, any>; teamId: number; practices: any; onSubmit: Mock<any, any>; }' is not assignable to type 'IntrinsicAttributes & IssueSubmissionModalProps'.
+  Property 'teamId' does not exist on type 'IntrinsicAttributes & IssueSubmissionModalProps'.
+src/features/issues/components/__tests__/IssueSubmissionModal.test.tsx(34,17): error TS2322: Type '{ isOpen: true; onClose: Mock<any, any>; teamId: number; practices: any; onSubmit: Mock<any, any>; }' is not assignable to type 'IntrinsicAttributes & IssueSubmissionModalProps'.
+  Property 'teamId' does not exist on type 'IntrinsicAttributes & IssueSubmissionModalProps'.
+src/features/issues/components/__tests__/IssueSubmissionModal.test.tsx(54,17): error TS2322: Type '{ isOpen: true; onClose: Mock<any, any>; teamId: number; practices: any; onSubmit: Mock<any, any>; }' is not assignable to type 'IntrinsicAttributes & IssueSubmissionModalProps'.
+  Property 'teamId' does not exist on type 'IntrinsicAttributes & IssueSubmissionModalProps'.
+src/features/issues/components/__tests__/IssueSubmissionModal.test.tsx(78,17): error TS1117: An object literal cannot have multiple properties with the same name.
+src/features/issues/components/__tests__/RecommendationWidget.test.tsx(1,35): error TS6133: 'fireEvent' is declared but its value is never read.
+src/features/issues/pages/IssuesDashboard.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/features/issues/pages/IssuesDashboard.tsx(103,21): error TS2322: Type '{ isOpen: true; onClose: () => void; teamId: number; practices: Practice[]; onSubmit: (data: CreateIssueDto) => Promise<void>; }' is not assignable to type 'IntrinsicAttributes & IssueSubmissionModalProps'.
+  Property 'teamId' does not exist on type 'IntrinsicAttributes & IssueSubmissionModalProps'.
+src/features/teams/components/InviteMembersPanel.test.tsx(17,43): error TS2503: Cannot find namespace 'vi'.
+src/features/teams/components/InviteMembersPanel.test.tsx(29,43): error TS2503: Cannot find namespace 'vi'.
+src/features/teams/components/InviteMembersPanel.test.tsx(44,43): error TS2503: Cannot find namespace 'vi'.
+src/features/teams/components/InviteMembersPanel.test.tsx(47,45): error TS2503: Cannot find namespace 'vi'.
+src/features/teams/components/TeamCard.test.tsx(11,5): error TS2698: Spread types may only be created from object types.
+src/features/teams/components/TeamCard.test.tsx(68,20): error TS2345: Argument of type '{ role: "member"; id: number; name: string; memberCount: number; practiceCount: number; coverage: number; createdAt: string; }' is not assignable to parameter of type '{ id: number; name: string; memberCount: number; practiceCount: number; coverage: number; role: "owner"; createdAt: string; }'.
+  Types of property 'role' are incompatible.
+    Type '"member"' is not assignable to type '"owner"'.
+src/features/teams/components/TeamCard.test.tsx(131,20): error TS2345: Argument of type '{ role: "member"; id: number; name: string; memberCount: number; practiceCount: number; coverage: number; createdAt: string; }' is not assignable to parameter of type '{ id: number; name: string; memberCount: number; practiceCount: number; coverage: number; role: "owner"; createdAt: string; }'.
+  Types of property 'role' are incompatible.
+    Type '"member"' is not assignable to type '"owner"'.
+src/features/teams/components/TeamCoverageCard.test.tsx(14,9): error TS2741: Property 'categoryBreakdown' is missing in type '{ overallCoveragePct: number; coveredCount: number; totalCount: number; coveredPillars: { id: number; name: string; category: string; description: string; }[]; gapPillars: { id: number; name: string; category: string; description: string; }[]; }' but required in type 'TeamPillarCoverage'.
+src/features/teams/components/TeamDashboard.test.tsx(12,5): error TS2698: Spread types may only be created from object types.
+src/features/teams/components/TeamDashboard.tsx(10,1): error TS6133: 'fetchPracticeDetail' is declared but its value is never read.
+src/features/teams/components/TeamDashboard.tsx(191,38): error TS6133: 'result' is declared but its value is never read.
+src/features/teams/components/TeamDashboard.tsx(369,13): error TS2322: Type '{ isOpen: boolean; onClose: () => void; teamId: number; practices: Practice[]; onSubmit: (data: { title: string; description: string; priority: "LOW" | "MEDIUM" | "HIGH"; practiceIds?: number[] | undefined; }) => Promise<...>; }' is not assignable to type 'IntrinsicAttributes & IssueSubmissionModalProps'.
+  Property 'teamId' does not exist on type 'IntrinsicAttributes & IssueSubmissionModalProps'.
+src/features/teams/components/TeamIssueStatsCard.test.tsx(17,9): error TS2698: Spread types may only be created from object types.
+src/features/teams/components/TeamPracticesPanel.click.test.tsx(37,81): error TS2353: Object literal may only specify known properties, and 'total' does not exist in type 'TeamPracticesResponse'.
+src/features/teams/components/TeamsList.test.tsx(2,26): error TS6133: 'waitFor' is declared but its value is never read.
+src/features/teams/pages/AddPracticesView.tsx(24,5): error TS6133: 'pageSize' is declared but its value is never read.
+src/features/teams/pages/AddPracticesView.tsx(314,19): error TS2322: Type '{ key: number; practice: Practice; onSelect: Dispatch<SetStateAction<Practice | null>>; onAction: (practice: Practice) => Promise<...>; actionLabel: string; actionAriaLabel: string; actionDisabled: boolean; highlightQuery: string; }' is not assignable to type 'IntrinsicAttributes & PracticeCardProps'.
+  Property 'actionDisabled' does not exist on type 'IntrinsicAttributes & PracticeCardProps'.
+src/features/teams/pages/ManagePracticesView.tsx(563,13): error TS2322: Type '(result: { practiceId?: number; practice?: Practice; }) => Promise<void>' is not assignable to type '(result: { practiceId?: number | undefined; practice?: { id: number; title: string; goal: string; categoryId: string; categoryName: string; method?: string | null | undefined; tags?: unknown; pillars: { id: number; name: string; category: string; description?: string | ... 1 more ... | undefined; }[]; isGlobal?: boo...'.
+  Types of parameters 'result' and 'result' are incompatible.
+    Type '{ practiceId?: number | undefined; practice?: { id: number; title: string; goal: string; categoryId: string; categoryName: string; method?: string | null | undefined; tags?: unknown; pillars: { id: number; name: string; category: string; description?: string | ... 1 more ... | undefined; }[]; isGlobal?: boolean | un...' is not assignable to type '{ practiceId?: number | undefined; practice?: Practice | undefined; }'.
+      Types of property 'practice' are incompatible.
+        Type '{ id: number; title: string; goal: string; categoryId: string; categoryName: string; method?: string | null | undefined; tags?: unknown; pillars: { id: number; name: string; category: string; description?: string | ... 1 more ... | undefined; }[]; isGlobal?: boolean | undefined; practiceVersion?: number | undefined;...' is not assignable to type 'Practice | undefined'.
+          Type '{ id: number; title: string; goal: string; categoryId: string; categoryName: string; method?: string | null | undefined; tags?: unknown; pillars: { id: number; name: string; category: string; description?: string | null | undefined; }[]; isGlobal?: boolean | undefined; practiceVersion?: number | undefined; usedByTea...' is not assignable to type 'Practice'.
+            Types of property 'tags' are incompatible.
+              Type 'unknown' is not assignable to type 'string[] | null | undefined'.

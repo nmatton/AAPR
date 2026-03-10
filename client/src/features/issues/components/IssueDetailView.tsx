@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import { getIssueDetails, IssueDetails, createComment, updateIssue, recordDecision } from '../api/issuesApi';
+import { getIssueDetails, IssueDetails, createComment, updateIssue, recordDecision, evaluateIssue } from '../api/issuesApi';
 import { IssueTimeline } from './IssueTimeline';
 import { CommentList } from './CommentList';
 import { CommentForm } from './CommentForm';
@@ -10,8 +10,15 @@ import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 import { formatDistanceToNow } from 'date-fns';
 import { DecisionModal } from './DecisionModal';
+import { EvaluationModal } from './EvaluationModal';
 import { StatusSelect, IssueStatus } from './StatusSelect';
 import { PrioritySelect, PriorityLevel } from './PrioritySelect';
+
+const outcomeLabels: Record<string, { label: string; emoji: string; className: string }> = {
+    yes: { label: 'Effective', emoji: '✅', className: 'bg-green-100 text-green-800' },
+    no: { label: 'Ineffective', emoji: '❌', className: 'bg-red-100 text-red-800' },
+    partial: { label: 'Partially Effective', emoji: '⚠️', className: 'bg-yellow-100 text-yellow-800' },
+};
 
 export const IssueDetailView = () => {
     const { teamId, issueId } = useParams<{ teamId: string; issueId: string }>();
@@ -22,6 +29,7 @@ export const IssueDetailView = () => {
     const [error, setError] = useState<string | null>(null);
     const [submittingComment, setSubmittingComment] = useState(false);
     const [isDecisionModalOpen, setIsDecisionModalOpen] = useState(false);
+    const [isEvaluationModalOpen, setIsEvaluationModalOpen] = useState(false);
     const [toast, setToast] = useState<{ type: 'success' | 'error' | 'warning'; message: string } | null>(null);
 
     const openPracticeId = searchParams.get('practiceId') ? Number(searchParams.get('practiceId')) : null;
@@ -66,12 +74,10 @@ export const IssueDetailView = () => {
             await createComment(Number(teamId), Number(issueId), content);
 
             // Refresh details to show new comment
-            // In a real app we might append confidently, but refresh ensures consistency
             const updatedData = await getIssueDetails(Number(teamId), Number(issueId));
             setDetails(updatedData);
         } catch (err) {
             console.error('Failed to post comment', err);
-            // Could show a toast here
         } finally {
             setSubmittingComment(false);
         }
@@ -89,11 +95,31 @@ export const IssueDetailView = () => {
             console.error('Failed to record decision', err);
             if (err.status === 409) {
                 setToast({ type: 'warning', message: 'Conflict: The issue was updated by someone else. Please refresh and try again.' });
-                // Refetch to get latest data
                 const updatedData = await getIssueDetails(Number(teamId), Number(issueId));
                 setDetails(updatedData);
             } else {
                 setToast({ type: 'error', message: 'Failed to record decision. Please try again.' });
+            }
+            throw err;
+        }
+    };
+
+    const handleEvaluateIssue = async (outcome: string, comments: string) => {
+        if (!teamId || !issueId || !details) return;
+        try {
+            await evaluateIssue(Number(teamId), Number(issueId), outcome, comments, details.issue.version);
+            const updatedData = await getIssueDetails(Number(teamId), Number(issueId));
+            setDetails(updatedData);
+            setIsEvaluationModalOpen(false);
+            setToast({ type: 'success', message: 'Evaluation recorded successfully.' });
+        } catch (err: any) {
+            console.error('Failed to evaluate issue', err);
+            if (err.status === 409) {
+                setToast({ type: 'warning', message: 'Conflict: The issue was updated by someone else. Please refresh and try again.' });
+                const updatedData = await getIssueDetails(Number(teamId), Number(issueId));
+                setDetails(updatedData);
+            } else {
+                setToast({ type: 'error', message: 'Failed to evaluate issue. Please try again.' });
             }
             throw err;
         }
@@ -106,7 +132,6 @@ export const IssueDetailView = () => {
             await updateIssue(Number(teamId), Number(issueId), { status: newStatus });
         } catch (error) {
             console.error('Failed to update status', error);
-            // Revert by fetching fresh data
             const data = await getIssueDetails(Number(teamId), Number(issueId));
             setDetails(data);
         }
@@ -154,7 +179,7 @@ export const IssueDetailView = () => {
 
     const { issue } = details;
 
-
+    const showEvaluateButton = issue.status === 'ADAPTATION_IN_PROGRESS';
 
     return (
         <div className="max-w-4xl mx-auto p-6 space-y-6">
@@ -173,6 +198,14 @@ export const IssueDetailView = () => {
                 <div className="flex justify-between items-start">
                     <h1 className="text-2xl font-bold text-gray-900">{issue.title}</h1>
                     <div className="flex gap-2 items-center">
+                        {showEvaluateButton && (
+                            <button
+                                onClick={() => setIsEvaluationModalOpen(true)}
+                                className="px-3 py-1 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm font-medium"
+                            >
+                                Evaluate
+                            </button>
+                        )}
                         <button
                             onClick={() => setIsDecisionModalOpen(true)}
                             className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-sm font-medium"
@@ -226,9 +259,38 @@ export const IssueDetailView = () => {
                             {issue.decisionRecordedAt && (
                                 <span>• {formatDistanceToNow(new Date(issue.decisionRecordedAt), { addSuffix: true })}</span>
                             )}
-                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
-                                Implementation in progress
+                            {!issue.evaluationOutcome && (
+                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    Implementation in progress
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Evaluation Result */}
+                {issue.evaluationOutcome && (
+                    <div className="mt-4 p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+                        <div className="flex justify-between items-start">
+                            <h3 className="text-lg font-bold text-indigo-900 flex items-center mb-2">
+                                📊 Evaluation Result
+                            </h3>
+                        </div>
+                        <div className="flex items-center gap-2 mb-2">
+                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${outcomeLabels[issue.evaluationOutcome]?.className || ''}`}>
+                                {outcomeLabels[issue.evaluationOutcome]?.emoji} {outcomeLabels[issue.evaluationOutcome]?.label || issue.evaluationOutcome}
                             </span>
+                        </div>
+                        {issue.evaluationComments && (
+                            <p className="text-indigo-800 whitespace-pre-wrap mt-2">{issue.evaluationComments}</p>
+                        )}
+                        <div className="mt-2 text-sm text-indigo-600 flex items-center gap-3">
+                            {issue.evaluationRecordedBy && (
+                                <span>Evaluated by <strong>{issue.evaluationRecordedBy.name}</strong></span>
+                            )}
+                            {issue.evaluationRecordedAt && (
+                                <span>• {formatDistanceToNow(new Date(issue.evaluationRecordedAt), { addSuffix: true })}</span>
+                            )}
                         </div>
                     </div>
                 )}
@@ -304,6 +366,12 @@ export const IssueDetailView = () => {
                 initialText={issue.decisionText || ''}
             />
 
+            <EvaluationModal
+                isOpen={isEvaluationModalOpen}
+                onClose={() => setIsEvaluationModalOpen(false)}
+                onSubmit={handleEvaluateIssue}
+            />
+
             {/* Toast notification */}
             {toast && (
                 <div className="fixed bottom-4 right-4 z-50 animate-fade-in">
@@ -325,4 +393,3 @@ export const IssueDetailView = () => {
         </div>
     );
 };
-

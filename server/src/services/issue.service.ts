@@ -17,7 +17,7 @@ export interface IssueInput {
 }
 
 export interface UpdateIssueInput {
-    status?: 'OPEN' | 'IN_PROGRESS' | 'DONE';
+    status?: 'OPEN' | 'IN_DISCUSSION' | 'ADAPTATION_IN_PROGRESS' | 'EVALUATED' | 'RESOLVED';
     priority?: 'LOW' | 'MEDIUM' | 'HIGH';
 }
 
@@ -230,6 +230,12 @@ export const getIssueDetails = async (teamId: number, issueId: number) => {
             decisionRecordedBy: issue.decisionRecorder
                 ? { id: issue.decisionRecorder.id, name: issue.decisionRecorder.name }
                 : null,
+            evaluationOutcome: issue.evaluationOutcome,
+            evaluationComments: issue.evaluationComments,
+            evaluationRecordedAt: issue.evaluationRecordedAt,
+            evaluationRecordedBy: issue.evaluationRecorder
+                ? { id: issue.evaluationRecorder.id, name: issue.evaluationRecorder.name }
+                : null,
             version: issue.version,
             priority: issue.priority,
             status: issue.status,
@@ -299,6 +305,7 @@ export const getIssueStats = async (teamId: number) => {
         open: 0,
         in_progress: 0,
         adaptation_in_progress: 0,
+        evaluated: 0,
         done: 0
     };
 
@@ -307,6 +314,7 @@ export const getIssueStats = async (teamId: number) => {
         if (stat.status === 'OPEN') key = 'open';
         else if (stat.status === 'IN_DISCUSSION') key = 'in_progress';
         else if (stat.status === 'ADAPTATION_IN_PROGRESS') key = 'adaptation_in_progress';
+        else if (stat.status === 'EVALUATED') key = 'evaluated';
         else if (stat.status === 'RESOLVED') key = 'done';
 
         if (key) {
@@ -392,4 +400,92 @@ export const recordDecision = async (
     });
 };
 
+export const evaluateIssue = async (
+    teamId: number,
+    issueId: number,
+    userId: number,
+    outcome: string,
+    comments: string,
+    version: number
+) => {
+    // 1. Verify issue exists and is in correct status (fast check before transaction)
+    const issue = await issueRepository.findById(issueId, teamId);
+    if (!issue) {
+        throw new AppError('not_found', 'Issue not found', { issueId, teamId }, 404);
+    }
+
+    // 1b. Enforce workflow: only ADAPTATION_IN_PROGRESS issues can be evaluated
+    if (issue.status !== 'ADAPTATION_IN_PROGRESS') {
+        throw new AppError('validation_error', 'Only issues with status "Adaptation in Progress" can be evaluated', {
+            currentStatus: issue.status,
+            expectedStatus: 'ADAPTATION_IN_PROGRESS'
+        }, 400);
+    }
+
+    return await prisma.$transaction(async (tx) => {
+        // 2. Atomic version-checked update (eliminates TOCTOU race)
+        //    Architecture Decision 5: WHERE id = ? AND version = ?
+        const now = new Date();
+        const updateResult = await tx.issue.updateMany({
+            where: { id: issueId, teamId, version },
+            data: {
+                evaluationOutcome: outcome,
+                evaluationComments: comments,
+                status: 'EVALUATED',
+                version: { increment: 1 },
+                evaluationRecordedBy: userId,
+                evaluationRecordedAt: now
+            }
+        });
+
+        if (updateResult.count === 0) {
+            // Re-fetch to get current version for error detail
+            const current = await tx.issue.findUnique({ where: { id: issueId }, select: { version: true } });
+            throw new AppError('conflict', 'Issue has been updated by someone else', {
+                currentVersion: current?.version,
+                providedVersion: version
+            }, 409);
+        }
+
+        // 3. Fetch the updated issue with relations for response
+        const updatedIssue = await tx.issue.findUniqueOrThrow({
+            where: { id: issueId },
+            include: {
+                createdByUser: {
+                    select: { id: true, name: true }
+                },
+                decisionRecorder: {
+                    select: { id: true, name: true }
+                },
+                evaluationRecorder: {
+                    select: { id: true, name: true }
+                },
+                linkedPractices: {
+                    include: {
+                        practice: {
+                            select: { id: true, title: true }
+                        }
+                    }
+                }
+            }
+        });
+
+        // 4. Log Event
+        await eventService.logEvent({
+            eventType: 'issue.evaluated',
+            teamId,
+            actorId: userId,
+            entityType: 'issue',
+            entityId: issueId,
+            action: 'issue.evaluated',
+            payload: {
+                outcome,
+                comments: comments || '',
+                timestamp: now.toISOString()
+            }
+        }, tx);
+        
+        return updatedIssue;
+    });
+};
 

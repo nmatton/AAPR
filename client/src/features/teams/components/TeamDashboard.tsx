@@ -366,12 +366,12 @@ export const TeamDashboard = () => {
           <IssueSubmissionModal
             isOpen={isIssueModalOpen}
             onClose={() => setIsIssueModalOpen(false)}
-            teamId={selectedTeam.id}
             practices={modalPractices}
             onSubmit={async (data) => {
               try {
                 await createIssue(selectedTeam.id, data);
                 setToastMessage('Issue created successfully');
+                setIsIssueModalOpen(false);
               } catch (e) {
                 console.error(e);
                 setToastMessage('Failed to create issue');

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { IssueFilters as FilterOptions, CreateIssueDto } from '../api/issuesApi';
 import { useIssues } from '../hooks/useIssues';
@@ -100,7 +100,6 @@ export const IssuesDashboard = () => {
                 <IssueSubmissionModal
                     isOpen={isIssueModalOpen}
                     onClose={() => setIsIssueModalOpen(false)}
-                    teamId={numericTeamId}
                     practices={practices}
                     onSubmit={async (data: CreateIssueDto) => {
                         try {

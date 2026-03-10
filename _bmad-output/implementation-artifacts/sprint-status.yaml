@@ -113,7 +113,7 @@ development_status:
   # Epic 5: Adaptation Decision & Tracking
   epic-5: in-progress
   5-1-record-adaptation-decision-on-issue: done
-  5-2-update-issue-status-to-evaluated-and-capture-outcome: backlog
+  5-2-update-issue-status-to-evaluated-and-capture-outcome: done
   5-3-view-system-recommendations-for-alternative-practices: backlog
   epic-5-retrospective: optional
 

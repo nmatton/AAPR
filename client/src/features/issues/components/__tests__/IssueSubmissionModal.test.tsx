@@ -18,7 +18,6 @@ describe('IssueSubmissionModal', () => {
             <IssueSubmissionModal
                 isOpen={true}
                 onClose={mockOnClose}
-                teamId={1}
                 practices={mockPractices as any}
                 onSubmit={mockCreateIssue}
             />
@@ -31,7 +30,6 @@ describe('IssueSubmissionModal', () => {
             <IssueSubmissionModal
                 isOpen={true}
                 onClose={mockOnClose}
-                teamId={1}
                 practices={mockPractices as any}
                 onSubmit={mockCreateIssue}
             />
@@ -51,7 +49,6 @@ describe('IssueSubmissionModal', () => {
             <IssueSubmissionModal
                 isOpen={true}
                 onClose={mockOnClose}
-                teamId={1}
                 practices={mockPractices as any}
                 onSubmit={mockCreateIssue}
             />
@@ -74,7 +71,6 @@ describe('IssueSubmissionModal', () => {
             expect(mockCreateIssue).toHaveBeenCalledWith(expect.objectContaining({
                 title: 'Test Issue Title',
                 description: 'Test Issue Description Content',
-                priority: 'MEDIUM',
                 priority: 'MEDIUM',
                 practiceIds: [1]
             }));

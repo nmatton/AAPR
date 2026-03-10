@@ -54,4 +54,10 @@ issuesRouter.post('/:issueId/comments', issuesController.createComment);
  */
 issuesRouter.post('/:issueId/decisions', issuesController.recordDecision);
 
+/**
+ * POST /api/v1/teams/:teamId/issues/:issueId/evaluations
+ * Record an evaluation for an issue
+ */
+issuesRouter.post('/:issueId/evaluations', issuesController.evaluateIssue);
+
 

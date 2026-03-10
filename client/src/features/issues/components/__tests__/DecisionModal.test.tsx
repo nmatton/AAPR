@@ -1,4 +1,4 @@
-import React from 'react';
+// Removed unused React import
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { DecisionModal } from '../DecisionModal';
