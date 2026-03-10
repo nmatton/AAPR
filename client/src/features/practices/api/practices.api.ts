@@ -246,3 +246,32 @@ export const logPillarDetailViewed = async (params: {
   }
 }
 
+export const logAffinityDisplayed = async (params: {
+  context: 'catalog' | 'dashboard'
+  teamId: number
+  userId: number | null
+  practiceCount: number
+  timestamp: string
+}): Promise<void> => {
+  try {
+    await fetch(`${API_BASE_URL}/api/v1/events`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Request-Id': generateRequestId()
+      },
+      credentials: 'include',
+      body: JSON.stringify({
+        action: 'affinity.displayed',
+        context: params.context,
+        teamId: params.teamId,
+        userId: params.userId,
+        practiceCount: params.practiceCount,
+        timestamp: params.timestamp
+      })
+    })
+  } catch (error) {
+    console.warn('affinity.displayed event logging failed', error)
+  }
+}
+

@@ -17,13 +17,24 @@ const practice = {
 describe('PracticeCard', () => {
   it('renders practice content and handles select', () => {
     const onSelect = vi.fn()
-    render(<PracticeCard practice={practice as any} onSelect={onSelect} />)
+    render(
+      <PracticeCard
+        practice={practice as any}
+        onSelect={onSelect}
+        affinity={{
+          individual: { score: 0.55, status: 'ok' },
+          team: { score: null, status: 'insufficient_profile_data' }
+        }}
+      />
+    )
 
     expect(screen.getByText(/Daily Standup/)).toBeInTheDocument()
     expect(screen.getByText(/FEEDBACK & APPRENTISSAGE/)).toBeInTheDocument()
     expect(screen.getByText(/Communication/)).toBeInTheDocument()
+    expect(screen.getByText(/0.55/)).toBeInTheDocument()
+    expect(screen.getByText(/N\/A/)).toBeInTheDocument()
 
-    fireEvent.click(screen.getByRole('button'))
+    fireEvent.click(screen.getByText(/Daily Standup/))
     expect(onSelect).toHaveBeenCalledWith(practice)
   })
 })

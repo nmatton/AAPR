@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { usePracticesStore } from '../state/practices.slice'
-import { fetchPracticeDetail } from '../api/practices.api'
+import { fetchPracticeDetail, logAffinityDisplayed } from '../api/practices.api'
 import { PracticeCard } from '../components/PracticeCard'
 import { PracticeCardSkeleton } from '../components/PracticeCardSkeleton'
 import { PracticeEmptyState } from '../components/PracticeEmptyState'
@@ -15,13 +15,16 @@ import { ActiveFilters } from '../components/ActiveFilters'
 import { PracticeEditForm } from '../../teams/components/PracticeEditForm'
 import type { Practice } from '../types'
 import { useAuthStore } from '../../auth/state/authSlice'
+import { usePracticeAffinities } from '../hooks/usePracticeAffinities'
+import { useTeamsStore } from '../../teams/state/teamsSlice'
 
 const PAGE_SIZE = 100
 
 export const PracticeCatalog = () => {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
-  const { logout, isLoading: isAuthLoading } = useAuthStore()
+  const { logout, isLoading: isAuthLoading, user } = useAuthStore()
+  const { teams, fetchTeams } = useTeamsStore()
   const {
     practices,
     availablePillars,
@@ -48,6 +51,7 @@ export const PracticeCatalog = () => {
   const [toastMessage, setToastMessage] = useState<string | null>(null)
   const [isDebouncing, setIsDebouncing] = useState(false)
   const lastResultsSignature = useRef<string | null>(null)
+  const lastAffinityEventSignature = useRef<string | null>(null)
   const lastScrollPosition = useRef(0)
   const [practiceToEdit, setPracticeToEdit] = useState<Practice | null>(null)
 
@@ -77,10 +81,26 @@ export const PracticeCatalog = () => {
   const teamIdParam = searchParams.get('teamId')
   const teamId = teamIdParam ? Number(teamIdParam) : null
   const canEdit = Number.isFinite(teamId)
+  
+  // Use explicit teamId from URL, or fallback to first team for individual affinity calculation
+  const explicitTeamContext = Number.isFinite(teamId)
+  const fallbackTeamId = teams.length > 0 ? teams[0].id : null
+  const affinityTeamId = teamId ?? fallbackTeamId
+
+  const { getForPractice } = usePracticeAffinities(
+    affinityTeamId,
+    practices.map((practice) => practice.id)
+  )
 
   useEffect(() => {
     void loadAvailablePillars()
   }, [loadAvailablePillars])
+
+  useEffect(() => {
+    if (user && teams.length === 0) {
+      void fetchTeams()
+    }
+  }, [user, teams.length, fetchTeams])
 
   useEffect(() => {
     if (currentDetail) {
@@ -138,6 +158,31 @@ export const PracticeCatalog = () => {
       window.scrollTo(0, lastScrollPosition.current)
     }
   }, [isLoading])
+
+  useEffect(() => {
+    if (!affinityTeamId || practices.length === 0 || isLoading) {
+      return
+    }
+
+    const affinityReady = practices.every((practice) => !getForPractice(practice.id).isLoading)
+    if (!affinityReady) {
+      return
+    }
+
+    const signature = `${affinityTeamId}:${practices.map((p) => p.id).join(',')}:${practices.length}`
+    if (lastAffinityEventSignature.current === signature) {
+      return
+    }
+
+    lastAffinityEventSignature.current = signature
+    void logAffinityDisplayed({
+      context: 'catalog',
+      teamId: affinityTeamId,
+      userId: user?.id ?? null,
+      practiceCount: practices.length,
+      timestamp: new Date().toISOString()
+    })
+  }, [affinityTeamId, getForPractice, isLoading, practices, user?.id])
 
   const handleNavigateToPractice = async (practiceId: number) => {
     console.log('[PracticeCatalog] handleNavigateToPractice called with:', practiceId)
@@ -290,16 +335,25 @@ export const PracticeCatalog = () => {
               <div
                 className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 transition-opacity ${isDebouncing ? 'opacity-60' : 'opacity-100'}`}
               >
-                {practices.map((practice) => (
-                  <PracticeCard
-                    key={practice.id}
-                    practice={practice}
-                    onSelect={setCurrentDetail}
-                    highlightQuery={searchQuery}
-                    onEdit={canEdit ? setPracticeToEdit : undefined}
-                    editLabel="Edit"
-                  />
-                ))}
+                {practices.map((practice) => {
+                  const affinity = getForPractice(practice.id)
+                  return (
+                    <PracticeCard
+                      key={practice.id}
+                      practice={practice}
+                      onSelect={setCurrentDetail}
+                      highlightQuery={searchQuery}
+                      onEdit={canEdit ? setPracticeToEdit : undefined}
+                      editLabel="Edit"
+                      affinity={{
+                        individual: affinity.individual,
+                        team: affinity.team
+                      }}
+                      isAffinityLoading={affinity.isLoading}
+                      showTeamAffinity={explicitTeamContext}
+                    />
+                  )
+                })}
               </div>
             </div>
 

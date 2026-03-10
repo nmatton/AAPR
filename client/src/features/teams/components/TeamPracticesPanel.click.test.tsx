@@ -1,9 +1,19 @@
 import { render, screen, fireEvent } from '@testing-library/react'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { TeamPracticesPanel } from './TeamPracticesPanel'
 import * as api from '../api/teamPracticesApi'
 import type { Practice } from '../../practices/types'
 
 vi.mock('../api/teamPracticesApi')
+vi.mock('../../practices/hooks/usePracticeAffinities', () => ({
+  usePracticeAffinities: () => ({
+    getForPractice: () => ({
+      individual: { score: null, status: 'insufficient_profile_data' },
+      team: { score: null, status: 'insufficient_profile_data' },
+      isLoading: false
+    })
+  })
+}))
 
 const mockPractices: Practice[] = [
   {

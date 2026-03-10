@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { fetchPractices, logCatalogSearched, ApiError } from './practices.api'
+import { fetchPractices, logCatalogSearched, logAffinityDisplayed, ApiError } from './practices.api'
 
 declare const global: typeof globalThis
 
@@ -83,5 +83,31 @@ describe('logCatalogSearched', () => {
       expect.stringContaining('/api/v1/events'),
       expect.objectContaining({ method: 'POST' })
     )
+  })
+})
+
+describe('logAffinityDisplayed', () => {
+  it('posts affinity.displayed event payload', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: () => Promise.resolve('')
+    })
+
+    await logAffinityDisplayed({
+      context: 'catalog',
+      teamId: 1,
+      userId: 42,
+      practiceCount: 10,
+      timestamp: '2026-03-09T00:00:00.000Z'
+    })
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      expect.stringContaining('/api/v1/events'),
+      expect.objectContaining({ method: 'POST' })
+    )
+
+    const [, init] = mockFetch.mock.calls[0] as [string, RequestInit]
+    expect(init.body as string).toContain('affinity.displayed')
   })
 })

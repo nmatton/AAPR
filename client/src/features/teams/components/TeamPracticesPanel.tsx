@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { fetchTeamPractices, removePracticeFromTeam } from '../api/teamPracticesApi'
 import type { Practice, Pillar } from '../../practices/types'
+import { AffinityBadge } from '../../practices/components/AffinityBadge'
+import { usePracticeAffinities } from '../../practices/hooks/usePracticeAffinities'
+import { logAffinityDisplayed } from '../../practices/api/practices.api'
+import { useAuthStore } from '../../auth/state/authSlice'
 
 interface TeamPracticesPanelProps {
   teamId: number
@@ -35,6 +39,7 @@ const computeGapPillars = (target: Practice, allPractices: Practice[]): Pillar[]
 }
 
 export const TeamPracticesPanel = ({ teamId, onPracticeRemoved, onPracticeClick, onEditClick }: TeamPracticesPanelProps) => {
+  const { user } = useAuthStore()
   const [practices, setPractices] = useState<Practice[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -42,6 +47,10 @@ export const TeamPracticesPanel = ({ teamId, onPracticeRemoved, onPracticeClick,
   const [removeTarget, setRemoveTarget] = useState<Practice | null>(null)
   const [gapPillars, setGapPillars] = useState<Pillar[]>([])
   const [isRemoving, setIsRemoving] = useState(false)
+  const [lastAffinitySignature, setLastAffinitySignature] = useState<string | null>(null)
+
+  const practiceIds = useMemo(() => practices.map((practice) => practice.id), [practices])
+  const { getForPractice } = usePracticeAffinities(teamId, practiceIds)
 
   const loadPractices = useCallback(async () => {
     setIsLoading(true)
@@ -91,6 +100,31 @@ export const TeamPracticesPanel = ({ teamId, onPracticeRemoved, onPracticeClick,
   }
 
   const suggestion = gapPillars.length > 0 ? `Consider adding a practice that covers ${gapPillars[0].name}` : null
+
+  useEffect(() => {
+    if (practices.length === 0) {
+      return
+    }
+
+    const affinityReady = practices.every((practice) => !getForPractice(practice.id).isLoading)
+    if (!affinityReady) {
+      return
+    }
+
+    const signature = `${teamId}:${practices.map((practice) => practice.id).join(',')}:${practices.length}`
+    if (lastAffinitySignature === signature) {
+      return
+    }
+
+    setLastAffinitySignature(signature)
+    void logAffinityDisplayed({
+      context: 'dashboard',
+      teamId,
+      userId: user?.id ?? null,
+      practiceCount: practices.length,
+      timestamp: new Date().toISOString()
+    })
+  }, [getForPractice, lastAffinitySignature, practices, teamId, user?.id])
 
   return (
     <div className="bg-white border rounded-lg p-6">
@@ -155,6 +189,7 @@ export const TeamPracticesPanel = ({ teamId, onPracticeRemoved, onPracticeClick,
                 }
               }}
               role="button"
+              aria-label={`Open details for ${practice.title}`}
               tabIndex={0}
               className="rounded-lg border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow cursor-pointer group focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
@@ -202,6 +237,13 @@ export const TeamPracticesPanel = ({ teamId, onPracticeRemoved, onPracticeClick,
                       Remove
                     </button>
                   </div>
+                </div>
+                <div className="flex justify-end">
+                  <AffinityBadge
+                    individual={getForPractice(practice.id).individual}
+                    team={getForPractice(practice.id).team}
+                    isLoading={getForPractice(practice.id).isLoading}
+                  />
                 </div>
               </div>
             </li>

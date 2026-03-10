@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { Practice } from '../types'
+import { AffinityBadge, type AffinityBadgeValue } from './AffinityBadge'
 
 const CATEGORY_COLORS: Record<string, string> = {
   TECHNICAL_QUALITY: 'bg-purple-100 text-purple-700 border-purple-200',
@@ -59,6 +60,12 @@ interface PracticeCardProps {
   onEdit?: (practice: Practice) => void
   editLabel?: string
   editAriaLabel?: string
+  affinity?: {
+    individual: AffinityBadgeValue
+    team: AffinityBadgeValue
+  }
+  isAffinityLoading?: boolean
+  showTeamAffinity?: boolean
 }
 
 export const PracticeCard = ({
@@ -71,7 +78,10 @@ export const PracticeCard = ({
   actionIcon,
   onEdit,
   editLabel = 'Edit',
-  editAriaLabel
+  editAriaLabel,
+  affinity,
+  isAffinityLoading = false,
+  showTeamAffinity = true
 }: PracticeCardProps) => {
   return (
     <div
@@ -109,6 +119,14 @@ export const PracticeCard = ({
           </div>
         </div>
         <div className="flex flex-col items-end gap-2">
+          {affinity && (
+            <AffinityBadge
+              individual={affinity.individual}
+              team={affinity.team}
+              isLoading={isAffinityLoading}
+              showTeam={showTeamAffinity}
+            />
+          )}
           {onEdit && (
             <button
               type="button"

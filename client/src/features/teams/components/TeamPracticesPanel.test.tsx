@@ -4,6 +4,15 @@ import { TeamPracticesPanel } from './TeamPracticesPanel'
 import * as teamPracticesApi from '../api/teamPracticesApi'
 
 vi.mock('../api/teamPracticesApi')
+vi.mock('../../practices/hooks/usePracticeAffinities', () => ({
+  usePracticeAffinities: () => ({
+    getForPractice: () => ({
+      individual: { score: null, status: 'insufficient_profile_data' },
+      team: { score: null, status: 'insufficient_profile_data' },
+      isLoading: false
+    })
+  })
+}))
 
 describe('TeamPracticesPanel', () => {
   const teamId = 4
@@ -66,7 +75,7 @@ describe('TeamPracticesPanel', () => {
         }
       ]
     })
-    removeMock.mockResolvedValue({ teamPracticeId: 5, coverage: 58 })
+    removeMock.mockResolvedValue({ teamPracticeId: 5, coverage: 58, gapPillarIds: [], gapPillarNames: [] })
 
     render(<TeamPracticesPanel teamId={teamId} />)
 
@@ -130,7 +139,7 @@ describe('TeamPracticesPanel', () => {
         }
       ]
     })
-    removeMock.mockResolvedValue({ teamPracticeId: 12, coverage: 52 })
+    removeMock.mockResolvedValue({ teamPracticeId: 12, coverage: 52, gapPillarIds: [], gapPillarNames: [] })
 
     render(<TeamPracticesPanel teamId={teamId} onPracticeRemoved={onPracticeRemoved} />)
 
