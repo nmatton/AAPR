@@ -12,7 +12,7 @@ const issueSchema = z.object({
     priority: z.enum(['LOW', 'MEDIUM', 'HIGH'], {
         message: 'Please select a priority'
     }),
-    practiceIds: z.array(z.number()).optional(),
+    practiceIds: z.array(z.coerce.number()).optional(),
 });
 
 type IssueFormData = z.infer<typeof issueSchema>;
@@ -53,6 +53,10 @@ export const IssueSubmissionModal: React.FC<IssueSubmissionModalProps> = ({
         }
     };
 
+    const onFormInvalid = (formErrors: typeof errors) => {
+        console.warn('Issue submission blocked by validation errors', formErrors);
+    };
+
     return (
         <Dialog open={isOpen} onClose={onClose} className="relative z-50">
             <div className="fixed inset-0 bg-black/30" aria-hidden="true" />
@@ -66,7 +70,7 @@ export const IssueSubmissionModal: React.FC<IssueSubmissionModalProps> = ({
                         </button>
                     </div>
 
-                    <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
+                    <form onSubmit={handleSubmit(onFormSubmit, onFormInvalid)} className="space-y-4">
                         <div>
                             <label htmlFor="title" className="block text-sm font-medium text-gray-700">
                                 Title
@@ -138,6 +142,9 @@ export const IssueSubmissionModal: React.FC<IssueSubmissionModalProps> = ({
                                     <p className="text-sm text-gray-500">No practices available to link.</p>
                                 )}
                             </div>
+                            {errors.practiceIds?.message && (
+                                <p className="mt-1 text-sm text-red-600">{errors.practiceIds.message}</p>
+                            )}
                         </div>
 
                         <div className="flex justify-end pt-4">
