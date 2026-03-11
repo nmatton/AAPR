@@ -409,6 +409,25 @@ So that **I know who's on the team and can fix invite issues**.
 
 ---
 
+#### Story 1.7: Remove Pending Team Invitations
+
+As a **team member**,
+I want to **remove an invited member who has not yet created an account**,
+So that **I can manage pending invitations effectively and correct mistakes**.
+
+**Acceptance Criteria:**
+
+- **Given** I am on the Team Members panel
+  **When** I see a member with "Pending" (invited but not accepted) status
+  **Then** I see a [Remove/Cancel Invite] button next to their name
+
+- **Given** I click the [Cancel Invite] button for a pending member
+  **When** the action completes
+  **Then** the invitation is revoked and removed from the list
+  **And** an event is logged: `{ action: "invite.cancelled", inviteId, teamId, timestamp }`
+
+---
+
 ### Epic 2: Practice Catalog & Coverage
 
 **Epic Goal:** Provide transparent visibility into agile practice portfolio and coverage gaps based on pillar mapping.
@@ -1477,6 +1496,82 @@ So that **the schema only stores category information as part of the JSON practi
 
 ---
 
+#### Story 2.1.13: Practice Selection Advanced Filters
+
+As a **user**,
+I want to **use advanced filters on the initial team practice selection and Manage Practices pages**,
+So that **I can easily find the right practices beyond basic search**.
+
+**Acceptance Criteria:**
+
+- **Given** I am on the Team Creation (practice selection step) or Add Practices page
+  **When** I view the filters
+  **Then** I see the same advanced filtering options built in Story 2.1.6 (Tag, Method, Category, Pillar)
+
+- **Given** I apply filters
+  **When** the list updates
+  **Then** the practices consistently reflect the filter logic exactly as they do in the Catalog
+
+---
+
+#### Story 2.1.14: Extended Practice Editor (Activities, Roles, Resources, Links)
+
+As a **team member**,
+I want to **edit the full details of a practice including activities, roles, completion criteria, metrics, resources, and associated practices**,
+So that **our practice definition completely aligns with the reference guide schema**.
+
+**Acceptance Criteria:**
+
+- **Given** I am creating or editing a practice
+  **When** the form opens
+  **Then** I see inputs for Activities (ordered list), Roles (RACI), Completion Criteria, Metrics (name, unit, formula), Resources (guidelines, pitfalls, benefits), and Associated Practices
+
+- **Given** I fill in the extended inputs
+  **When** I save the practice
+  **Then** all structured data is preserved in the database JSON schema
+
+- **Given** I link associated practices
+  **When** saved
+  **Then** the relationships are saved correctly with association types (Configuration, Equivalence, etc.)
+
+---
+
+#### Story 2.1.15: Extended Practice Detail View
+
+As a **team member**,
+I want to **see the complete practice schema details cleanly presented in the sidebar/modal**,
+So that **I can understand every aspect of the practice before using it**.
+
+**Acceptance Criteria:**
+
+- **Given** I view a practice detail
+  **When** the sidebar/modal loads
+  **Then** it smoothly renders the new rich fields: Activities, Roles, Completion Criteria, Metrics, Resources, and Associated Practices without overwhelming the UI
+
+- **Given** associated practices are listed
+  **When** I click one
+  **Then** I can navigate directly to the related practice
+
+---
+
+#### Story 2.1.16: Practice Taxonomy Contextual Tooltips
+
+As a **user**,
+I want to **see tooltips explaining Tags and Pillars when creating a practice**,
+So that **I accurately classify our practices using the standard taxonomy**.
+
+**Acceptance Criteria:**
+
+- **Given** I am selecting Tags or Pillars in the practice editor
+  **When** I hover over an option
+  **Then** a tooltip appears showing the official description from the taxonomy guides
+
+- **Given** I am viewing the practice detail
+  **When** I hover over a tag
+  **Then** I see the descriptive tooltip
+
+---
+
 ---
 
 ### Epic 3: Big Five Personality Profiling
@@ -2123,6 +2218,25 @@ So that **I can discuss evidence-informed adaptations with my team**.
 
 ---
 
+#### Story 5.4: Team Dashboard Issue Status Visualization Fix
+
+As a **team member**,
+I want to **see the "Adaptation in progress" and "Evaluated" statuses correctly rendered on the Dashboard**,
+So that **the issue status bar and legend accurately reflect reality**.
+
+**Acceptance Criteria:**
+
+- **Given** I view the Team Dashboard
+  **When** the issue status bar renders
+  **Then** the legend includes "Adaptation in progress" and "Evaluated"
+  **And** the bar correctly colors these sections instead of leaving them gray
+
+- **Given** an issue transitions to "Evaluated"
+  **When** I view the dashboard
+  **Then** the aggregation logic correctly counts and displays it
+
+---
+
 ### Epic 6: Research Data Integrity & Event Logging
 
 **Epic Goal:** Capture immutable, queryable event logs of all DB-affecting actions for research analysis.
@@ -2203,7 +2317,7 @@ So that the data is research-grade valid.
 
 #### Story 6.3: Event Export & Filtering Capability (Research Use)
 
-As a **team member**,
+As a **researcher**,
 I want to **export events filtered by type, date range, and team**,
 So that **I can analyze specific periods or events for research**.
 
@@ -2251,17 +2365,17 @@ So that **I can analyze specific periods or events for research**.
 **Total FRs covered:** 20 functional requirements
 **Total NFRs covered:** 18 non-functional requirements
 **Epics:** 8 major epics (including Epic 2.1 UX refinement and Epic 4.1 affinity scoring)
-**Stories:** 46 detailed user stories
+**Stories:** 52 detailed user stories
 
 **Story Breakdown by Epic:**
-- Epic 1 (Authentication & Team Onboarding): 8 stories
+- Epic 1 (Authentication & Team Onboarding): 9 stories
 - Epic 2 (Practice Catalog & Coverage): 9 stories
-- Epic 2.1 (Team Dashboard & Catalog UX Refinement + Database Normalization): 12 stories
+- Epic 2.1 (Team Dashboard & Catalog UX Refinement + Database Normalization): 16 stories
 - Epic 3 (Big Five Personality Profiling): 4 stories
 - Epic 4 (Issue Submission & Discussion): 5 stories
 - Epic 4.1 (Affinity Scoring Foundation): 2 stories
-- Epic 4.2 (Practice Recommendations on Issues): X stories
-- Epic 5 (Adaptation Decision & Tracking): 3 stories
+- Epic 4.2 (Practice Recommendations on Issues): 2 stories
+- Epic 5 (Adaptation Decision & Tracking): 4 stories
 - Epic 6 (Research Data Integrity & Event Logging): 3 stories
 
 **Delivery Sequence:** Epic 1 → Epic 2 → Epic 2.1 → Epic 3 → Epic 4 → Epic 4.1 → Epic 4.2 → Epic 5 (Epic 6 runs in parallel)

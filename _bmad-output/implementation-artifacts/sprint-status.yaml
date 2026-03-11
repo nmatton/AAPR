@@ -49,6 +49,7 @@ development_status:
   1-4-team-creation-with-practice-selection: done
   1-5-email-based-team-member-invitations: done
   1-6-invite-status-management-and-membership-view: done
+  1-7-remove-pending-team-invitations: backlog
   epic-1-retrospective: done
 
   # Epic 2: Practice Catalog & Coverage
@@ -79,6 +80,10 @@ development_status:
   2-1-10-database-schema-create-practice-association-table: done
   2-1-11-database-migration-migrate-associated-practices-from-json-to-relational: done
   2-1-12-database-cleanup-remove-category-id-from-practices-table: invalid  # Contradicts normalized data model (Architecture Decision 3)
+  2-1-13-practice-selection-advanced-filters: backlog
+  2-1-14-extended-practice-editor: backlog
+  2-1-15-extended-practice-detail-view: backlog
+  2-1-16-practice-taxonomy-contextual-tooltips: backlog
   epic-2-1-retrospective: done
 
   # Epic 3: Big Five Personality Profiling
@@ -115,6 +120,7 @@ development_status:
   5-1-record-adaptation-decision-on-issue: done
   5-2-update-issue-status-to-evaluated-and-capture-outcome: done
   5-3-view-system-recommendations-for-alternative-practices: backlog
+  5-4-team-dashboard-issue-status-visualization-fix: backlog
   epic-5-retrospective: optional
 
   # Epic 6: Research Data Integrity & Event Logging
