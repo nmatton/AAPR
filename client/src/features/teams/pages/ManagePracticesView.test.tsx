@@ -208,4 +208,40 @@ describe('ManagePracticesView', () => {
       expect(screen.getByText('New practice created: New Practice')).toBeInTheDocument();
     });
   });
+
+  it('adds practice and shows success message', async () => {
+    const mockAddPractice = vi.fn().mockResolvedValue(true);
+    (useAddPracticesStore as any).mockReturnValue({
+      practices: [mockPractice],
+      isLoading: false,
+      error: null,
+      total: 1,
+      page: 1,
+      pageSize: 20,
+      searchQuery: '',
+      selectedPillars: [],
+      loadAvailablePractices: vi.fn(),
+      addPractice: mockAddPractice,
+      setSearchQuery: vi.fn(),
+      togglePillar: vi.fn(),
+      clearFilters: vi.fn()
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/teams/1/practices/manage']}>
+        <Routes>
+          <Route path="/teams/:teamId/practices/manage" element={<ManagePracticesView />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    const addButton = await screen.findByRole('button', { name: /add to team/i });
+    fireEvent.click(addButton);
+
+    await waitFor(() => {
+      expect(mockAddPractice).toHaveBeenCalledWith(1, 5);
+      expect(screen.getByText(/"Sprint Planning" added to team portfolio/i)).toBeInTheDocument();
+    });
+  });
 });
+

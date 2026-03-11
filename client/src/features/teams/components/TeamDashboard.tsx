@@ -7,7 +7,6 @@ import { updateTeamName as updateTeamNameApi } from '../api/teamsApi';
 import { TeamPracticesPanel } from './TeamPracticesPanel';
 import { CoverageSidebar } from './CoverageSidebar';
 import { PracticeDetailSidebar } from '../../practices/components/PracticeDetailSidebar';
-import { fetchPracticeDetail } from '../../practices/api/practices.api';
 import { TeamNameEditor } from './TeamNameEditor';
 import { TeamIssueStatsCard } from './TeamIssueStatsCard';
 
@@ -188,7 +187,7 @@ export const TeamDashboard = () => {
     setPracticeToEdit(practice);
   };
 
-  const handlePracticeSaved = async (result: { practiceId?: number; practice?: any }) => {
+  const handlePracticeSaved = async () => {
     setToastMessage('Practice updated successfully');
     await refreshCoverage();
     // Refresh sidebar if open (re-fetching detail handled by sidebar component if we close/reopen or force update, 
@@ -235,10 +234,10 @@ export const TeamDashboard = () => {
                 Members
               </button>
               <button
-                onClick={() => navigate(`/teams/${selectedTeam.id}/practices/add`)}
+                onClick={() => navigate(`/teams/${selectedTeam.id}/practices/manage`)}
                 className="rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
               >
-                Add Practices
+                Manage Practices
               </button>
               {/* New Issue Button */}
               <button

@@ -204,7 +204,7 @@ export const ManagePracticesView = () => {
     setSearchParams(nextParams);
   };
 
-  const handlePracticeSaved = async (result: { practiceId?: number; practice?: Practice }) => {
+  const handlePracticeSaved = async (result: { practiceId?: number; practice?: any }) => {
     showSuccessMessage('Practice updated successfully');
     await fetchTeams();
     // Always refresh both lists because:
@@ -277,7 +277,7 @@ export const ManagePracticesView = () => {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
           <div>
             <h2 className="text-3xl font-bold text-gray-700 mb-2">
-              Manage Practices - {selectedTeam?.name || 'Team'}
+              Practices - {selectedTeam?.name || 'Team'}
             </h2>
             <p className="text-gray-600">
               Add practices from the catalog or remove practices from your team portfolio
