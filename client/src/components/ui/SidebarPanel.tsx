@@ -96,7 +96,7 @@ export const SidebarPanel: React.FC<SidebarPanelProps> = ({
                 ref={sidebarRef}
                 role="dialog"
                 aria-modal="true"
-                className="fixed top-0 right-0 h-full bg-white shadow-xl z-50 transition-transform duration-300"
+                className="fixed top-0 right-0 h-full bg-white shadow-xl z-50 transition-transform duration-300 flex flex-col"
                 style={{ width: `${width}px` }}
             >
                 {/* Resize handle */}
@@ -133,7 +133,7 @@ export const SidebarPanel: React.FC<SidebarPanelProps> = ({
                         </svg>
                     </button>
                 </div>
-                <div className="p-4 overflow-y-auto h-[calc(100%-64px)]">
+                <div className="flex-1 min-h-0 overflow-y-auto p-4 pb-8 [padding-bottom:calc(theme(spacing.8)+env(safe-area-inset-bottom))]">
                     {children}
                 </div>
             </div>
