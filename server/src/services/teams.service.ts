@@ -147,6 +147,8 @@ export const updateTeamName = async (
         entityId: teamId,
         action: 'updated',
         payload: {
+          teamId,
+          actorId: userId,
           oldName: currentTeam.name,
           newName: trimmedName,
           timestamp: new Date().toISOString()
@@ -294,9 +296,11 @@ export const createTeam = async (
         entityId: newTeam.id,
         action: 'created',
         payload: {
+          teamId: newTeam.id,
           teamName: name,
           practiceCount: practiceIds.length,
-          creatorId: userId
+          creatorId: userId,
+          timestamp: new Date().toISOString(),
         },
         createdAt: new Date()
       }

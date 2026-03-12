@@ -105,9 +105,17 @@ describe('IssueService', () => {
                 expect.objectContaining({
                     eventType: 'issue.created',
                     teamId: validInput.teamId,
+                    actorId: validInput.createdBy,
                     payload: expect.objectContaining({
+                        issueId: 1,
                         title: validInput.title,
+                        descriptionSummary: validInput.description,
+                        priority: validInput.priority,
+                        status: 'OPEN',
                         linkedPracticeIds: validInput.practiceIds,
+                        actorId: validInput.createdBy,
+                        teamId: validInput.teamId,
+                        timestamp: expect.any(String),
                     }),
                 }),
                 expect.anything() // Transaction client
@@ -125,6 +133,22 @@ describe('IssueService', () => {
             (prisma.teamPractice.findFirst as jest.Mock<any>).mockResolvedValue(null); // Practice NOT linked to team
 
             await expect(createIssue(validInput)).rejects.toThrow('One or more practices are not valid for this team');
+        });
+
+        it('should propagate error and maintain transactional integrity if event logging fails', async () => {
+            (prisma.team.findUnique as jest.Mock<any>).mockResolvedValue({ id: 1 });
+            (prisma.teamPractice.findFirst as jest.Mock<any>).mockResolvedValue({ id: 1 });
+            (prisma.issue.create as jest.Mock<any>).mockResolvedValue({
+                id: 1,
+                ...validInput,
+                status: 'OPEN',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+                version: 1,
+            });
+            (eventService.logEvent as jest.Mock<any>).mockRejectedValueOnce(new Error('Event logging failed'));
+
+            await expect(createIssue(validInput)).rejects.toThrow('Event logging failed');
         });
     });
 
@@ -148,7 +172,20 @@ describe('IssueService', () => {
                 expect.anything()
             );
             expect(eventService.logEvent).toHaveBeenCalledWith(
-                expect.objectContaining({ eventType: 'issue.comment_added' }),
+                expect.objectContaining({
+                    eventType: 'issue.comment_added',
+                    teamId: mockIssue.teamId,
+                    actorId: 5,
+                    action: 'issue.comment_added',
+                    payload: expect.objectContaining({
+                        issueId: 100,
+                        commentId: 999,
+                        commentText: 'My comment',
+                        actorId: 5,
+                        teamId: mockIssue.teamId,
+                        timestamp: expect.any(String),
+                    }),
+                }),
                 expect.anything()
             );
         });
@@ -353,7 +390,11 @@ describe('recordDecision', () => {
                 actorId: userId,
                 action: 'issue.decision_recorded',
                 payload: expect.objectContaining({
-                    decision_text: decisionText
+                    issueId,
+                    teamId,
+                    actorId: userId,
+                    decisionText,
+                    timestamp: expect.any(String),
                 })
             }),
             expect.anything()
@@ -437,8 +478,12 @@ describe('evaluateIssue', () => {
                 actorId: userId,
                 action: 'issue.evaluated',
                 payload: expect.objectContaining({
+                    issueId,
+                    teamId,
+                    actorId: userId,
                     outcome,
                     comments,
+                    timestamp: expect.any(String),
                 })
             }),
             expect.anything()

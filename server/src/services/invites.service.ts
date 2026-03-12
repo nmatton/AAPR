@@ -452,7 +452,9 @@ export const autoResolveInvitesOnSignup = async (
         action: 'resolved',
         payload: {
           inviteId: invite.id,
-          userId
+          teamId: invite.teamId,
+          userId,
+          timestamp: new Date().toISOString(),
         },
         schemaVersion: 'v1'
       }

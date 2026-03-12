@@ -3,13 +3,15 @@ process.env.JWT_SECRET = 'test_secret_for_unit_tests_12345678901234567890'
 import { describe, it, expect, beforeEach, jest } from '@jest/globals'
 import * as bigFiveService from './big-five.service'
 import { prisma } from '../lib/prisma'
+import * as eventServiceModule from './events.service'
 
 // Define mock structure factory for hoisting
 const createMockPrisma = () => ({
     bigFiveResponse: {
         createMany: jest.fn(),
         findMany: jest.fn(),
-        deleteMany: jest.fn()
+        deleteMany: jest.fn(),
+        count: jest.fn()
     },
     bigFiveScore: {
         upsert: jest.fn(),
@@ -27,7 +29,8 @@ jest.mock('../lib/prisma', () => {
         bigFiveResponse: {
             createMany: jest.fn(),
             findMany: jest.fn(),
-            deleteMany: jest.fn()
+            deleteMany: jest.fn(),
+            count: jest.fn()
         },
         bigFiveScore: {
             upsert: jest.fn(),
@@ -46,8 +49,13 @@ jest.mock('../lib/prisma', () => {
     };
 });
 
+jest.mock('./events.service', () => ({
+    logEvent: jest.fn(),
+}));
+
 // Use this for type-safe(ish) access in tests
 const prismaMock = prisma as any
+const eventServiceMock = eventServiceModule as any
 
 describe('bigFiveService.calculateScores', () => {
     beforeEach(() => {
@@ -161,6 +169,7 @@ describe('bigFiveService.calculateScores', () => {
 describe('bigFiveService.saveResponses', () => {
     beforeEach(() => {
         jest.clearAllMocks()
+        prismaMock.bigFiveResponse.count.mockResolvedValue(0)
     })
 
     it('saves responses and calculates scores in a transaction', async () => {
@@ -206,6 +215,103 @@ describe('bigFiveService.saveResponses', () => {
         }))
 
         await expect(bigFiveService.saveResponses(0, responses)).rejects.toThrow()
+    })
+
+    it('logs big_five.completed event on first-time submission', async () => {
+        const userId = 1
+        const teamId = 42
+        const responses = Array.from({ length: 44 }, (_, i) => ({
+            itemNumber: i + 1,
+            response: 3
+        }))
+
+        prismaMock.bigFiveResponse.count.mockResolvedValue(0)
+        prismaMock.bigFiveResponse.deleteMany.mockResolvedValue({ count: 0 })
+        prismaMock.bigFiveResponse.createMany.mockResolvedValue({ count: 44 })
+        prismaMock.bigFiveScore.upsert.mockResolvedValue({
+            id: 1, userId, extraversion: 24, agreeableness: 27,
+            conscientiousness: 27, neuroticism: 24, openness: 30,
+            createdAt: new Date(), updatedAt: new Date()
+        })
+
+        await bigFiveService.saveResponses(userId, responses, teamId)
+
+        expect(eventServiceMock.logEvent).toHaveBeenCalledWith(
+            expect.objectContaining({
+                eventType: 'big_five.completed',
+                actorId: userId,
+                teamId,
+                payload: expect.objectContaining({
+                    userId,
+                    teamId,
+                    responses: expect.arrayContaining([
+                        expect.objectContaining({ itemNumber: 1, response: 3 }),
+                        expect.objectContaining({ itemNumber: 44, response: 3 }),
+                    ]),
+                    scores: expect.objectContaining({ extraversion: 24 }),
+                    responseCount: 44,
+                    itemIds: expect.arrayContaining([1, 44]),
+                    schemaVersion: '1.0',
+                }),
+            }),
+            expect.anything()
+        )
+    })
+
+    it('logs big_five.retaken event when prior responses exist', async () => {
+        const userId = 2
+        const responses = Array.from({ length: 44 }, (_, i) => ({
+            itemNumber: i + 1,
+            response: 4
+        }))
+
+        prismaMock.bigFiveResponse.count.mockResolvedValue(44)
+        prismaMock.bigFiveResponse.deleteMany.mockResolvedValue({ count: 44 })
+        prismaMock.bigFiveResponse.createMany.mockResolvedValue({ count: 44 })
+        prismaMock.bigFiveScore.upsert.mockResolvedValue({
+            id: 1, userId, extraversion: 28, agreeableness: 30,
+            conscientiousness: 30, neuroticism: 26, openness: 34,
+            createdAt: new Date(), updatedAt: new Date()
+        })
+
+        await bigFiveService.saveResponses(userId, responses)
+
+        expect(eventServiceMock.logEvent).toHaveBeenCalledWith(
+            expect.objectContaining({
+                eventType: 'big_five.retaken',
+                actorId: userId,
+                payload: expect.objectContaining({
+                    userId,
+                    teamId: null,
+                    responses: expect.arrayContaining([
+                        expect.objectContaining({ itemNumber: 1, response: 4 }),
+                        expect.objectContaining({ itemNumber: 44, response: 4 }),
+                    ]),
+                    schemaVersion: '1.0',
+                }),
+            }),
+            expect.anything()
+        )
+    })
+
+    it('propagates error when event logging fails, maintaining transactional integrity', async () => {
+        const userId = 3
+        const responses = Array.from({ length: 44 }, (_, i) => ({
+            itemNumber: i + 1,
+            response: 3
+        }))
+
+        prismaMock.bigFiveResponse.count.mockResolvedValue(0)
+        prismaMock.bigFiveResponse.deleteMany.mockResolvedValue({ count: 0 })
+        prismaMock.bigFiveResponse.createMany.mockResolvedValue({ count: 44 })
+        prismaMock.bigFiveScore.upsert.mockResolvedValue({
+            id: 1, userId, extraversion: 24, agreeableness: 27,
+            conscientiousness: 27, neuroticism: 24, openness: 30,
+            createdAt: new Date(), updatedAt: new Date()
+        })
+        eventServiceMock.logEvent.mockRejectedValueOnce(new Error('Event logging failed'))
+
+        await expect(bigFiveService.saveResponses(userId, responses)).rejects.toThrow('Event logging failed')
     })
 })
 

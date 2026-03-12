@@ -82,8 +82,15 @@ export const createIssue = async (input: IssueInput) => {
             entityId: issue.id,
             action: 'created',
             payload: {
+                issueId: issue.id,
                 title: issue.title,
-                linkedPracticeIds: practiceIds || []
+                descriptionSummary: issue.description.substring(0, 100) + (issue.description.length > 100 ? '...' : ''),
+                priority: issue.priority,
+                status: issue.status,
+                linkedPracticeIds: practiceIds || [],
+                actorId: createdBy,
+                teamId,
+                timestamp: new Date().toISOString(),
             }
         }, tx); // Pass transaction client
 
@@ -132,10 +139,14 @@ export const addComment = async (issueId: number, userId: number, content: strin
             actorId: userId,
             entityType: 'issue',
             entityId: issueId,
-            action: 'updated',
+            action: 'issue.comment_added',
             payload: {
+                issueId,
                 commentId: comment.id,
-                contentSnippet: content.substring(0, 50) + (content.length > 50 ? '...' : '')
+                commentText: content.substring(0, 200) + (content.length > 200 ? '...' : ''),
+                actorId: userId,
+                teamId: issue.teamId,
+                timestamp: new Date().toISOString(),
             }
         }, tx);
 
@@ -163,6 +174,7 @@ export const updateIssue = async (teamId: number, issueId: number, userId: numbe
 
     // 3. Log Events
     if (updates.status && updates.status !== issue.status) {
+        const statusChangedAt = new Date().toISOString();
         await eventService.logEvent({
             eventType: 'issue.status_changed',
             teamId,
@@ -171,13 +183,18 @@ export const updateIssue = async (teamId: number, issueId: number, userId: numbe
             entityId: issueId,
             action: 'updated',
             payload: {
+                issueId,
+                teamId,
+                actorId: userId,
                 oldStatus: issue.status,
-                newStatus: updates.status
+                newStatus: updates.status,
+                timestamp: statusChangedAt,
             }
         });
     }
 
     if (updates.priority && updates.priority !== issue.priority) {
+        const priorityChangedAt = new Date().toISOString();
         await eventService.logEvent({
             eventType: 'issue.priority_changed',
             teamId,
@@ -186,8 +203,12 @@ export const updateIssue = async (teamId: number, issueId: number, userId: numbe
             entityId: issueId,
             action: 'updated',
             payload: {
+                issueId,
+                teamId,
+                actorId: userId,
                 oldPriority: issue.priority,
-                newPriority: updates.priority
+                newPriority: updates.priority,
+                timestamp: priorityChangedAt,
             }
         });
     }
@@ -398,7 +419,10 @@ export const recordDecision = async (
             entityId: issueId,
             action: 'issue.decision_recorded',
             payload: {
-                decision_text: decisionText,
+                issueId,
+                teamId,
+                actorId: userId,
+                decisionText,
                 timestamp: now.toISOString()
             }
         }, tx);
@@ -486,6 +510,9 @@ export const evaluateIssue = async (
             entityId: issueId,
             action: 'issue.evaluated',
             payload: {
+                issueId,
+                teamId,
+                actorId: userId,
                 outcome,
                 comments: comments || '',
                 timestamp: now.toISOString()

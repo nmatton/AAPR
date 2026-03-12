@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma'
 import { AppError } from './auth.service'
+import * as eventService from './events.service'
 
 /**
  * Big Five trait scoring configuration
@@ -111,11 +112,13 @@ export function calculateScores(responses: QuestionnaireResponse[]): BigFiveScor
  * 
  * @param userId - User identifier
  * @param responses - Array of 44 item responses
+ * @param teamId - Optional team context for event traceability
  * @returns Calculated and saved scores
  */
 export async function saveResponses(
     userId: number,
-    responses: QuestionnaireResponse[]
+    responses: QuestionnaireResponse[],
+    teamId?: number
 ) {
     if (!userId || userId <= 0) {
         throw new AppError('invalid_user_id', 'User ID is required', {}, 400)
@@ -126,6 +129,10 @@ export async function saveResponses(
 
     // Save responses and scores in transaction
     const result = await prisma.$transaction(async (tx) => {
+        // Detect first completion vs retake before deletion
+        const existingCount = await tx.bigFiveResponse.count({ where: { userId } })
+        const isRetake = existingCount > 0
+
         // Delete existing responses (allows retaking questionnaire)
         await tx.bigFiveResponse.deleteMany({
             where: { userId }
@@ -151,6 +158,36 @@ export async function saveResponses(
                 ...scores
             }
         })
+
+        // Log event inside transaction for atomicity
+        const eventType = isRetake ? 'big_five.retaken' : 'big_five.completed'
+        await eventService.logEvent({
+            eventType,
+            teamId,
+            actorId: userId,
+            entityType: 'big_five',
+            entityId: userId,
+            action: isRetake ? 'retaken' : 'completed',
+            payload: {
+                userId,
+                teamId: teamId ?? null,
+                responses: responses.map(r => ({
+                    itemNumber: r.itemNumber,
+                    response: r.response,
+                })),
+                scores: {
+                    extraversion: scores.extraversion,
+                    agreeableness: scores.agreeableness,
+                    conscientiousness: scores.conscientiousness,
+                    neuroticism: scores.neuroticism,
+                    openness: scores.openness,
+                },
+                responseCount: responses.length,
+                itemIds: responses.map(r => r.itemNumber),
+                timestamp: new Date().toISOString(),
+                schemaVersion: '1.0',
+            },
+        }, tx)
 
         return savedScores
     })

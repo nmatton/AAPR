@@ -7,7 +7,9 @@ export type EventType =
     | 'user.login'
     | 'team.created'
     | 'team.joined'
-    | 'issue.created';
+    | 'issue.created'
+    | 'big_five.completed'
+    | 'big_five.retaken';
 
 export interface EventPayload {
     [key: string]: any;

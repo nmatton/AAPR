@@ -51,6 +51,8 @@ It maps implemented user actions to:
 - `issue.priority_changed`
 - `issue.decision_recorded`
 - `issue.evaluated`
+- `big_five.completed`
+- `big_five.retaken`
 
 ## Metadata Completeness Rules Checked
 
@@ -92,13 +94,13 @@ Important:
 
 | User Action | Endpoint / Flow | Service | Event Type(s) | Payload Fields (Current) | Metadata Check | Status | Notes | Evidence |
 |---|---|---|---|---|---|---|---|---|
-| Create team | `POST /api/v1/teams` | `createTeam` | `team.created` | `teamName`, `practiceCount`, `creatorId` | actor: yes, team: top-level yes / payload no, timestamp: DB only | Partial | Payload does not include `teamId` explicitly. | `server/src/services/teams.service.ts` |
-| Rename team | `PATCH /api/v1/teams/:teamId` | `updateTeam` | `team.name_updated` | `oldName`, `newName`, `timestamp` | actor: yes, team: top-level yes / payload no, timestamp: payload + DB | Partial | Payload should include `teamId` for consistency. | `server/src/services/teams.service.ts` |
+| Create team | `POST /api/v1/teams` | `createTeam` | `team.created` | `teamId`, `teamName`, `practiceCount`, `creatorId`, `timestamp` | actor: yes, team: top-level yes / payload yes, timestamp: payload + DB | Logged | Payload now includes explicit team metadata and timestamp. | `server/src/services/teams.service.ts` |
+| Rename team | `PATCH /api/v1/teams/:teamId` | `updateTeam` | `team.name_updated` | `teamId`, `actorId`, `oldName`, `newName`, `timestamp` | actor: yes, team: top-level yes / payload yes, timestamp: payload + DB | Logged | Payload now includes explicit team metadata. | `server/src/services/teams.service.ts` |
 | Invite existing user | `POST /api/v1/teams/:teamId/invites` (existing-user branch) | `createInvite` | `team_member.added` | `teamId`, `userId` | actor: yes, team: top-level yes / payload yes, timestamp: DB only | Logged | Good team scoping in payload. | `server/src/services/invites.service.ts` |
 | Invite new user | `POST /api/v1/teams/:teamId/invites` (new-user branch) | `createInvite` | `invite.created` | `inviteId`, `teamId`, `email`, `isNewUser` | actor: yes, team: top-level yes / payload yes, timestamp: DB only | Logged | Good team scoping in payload. | `server/src/services/invites.service.ts` |
 | Resend invite email | `POST /api/v1/teams/:teamId/invites/:inviteId/resend` | `resendInvite` | `invite.email_failed` on failure only | `inviteId`, `teamId`, `error` | actor: yes, team: top-level yes / payload yes, timestamp: DB only | Partial | Success path has no event. | `server/src/services/invites.service.ts` |
 | Cancel invite | `DELETE /api/v1/teams/:teamId/invites/:inviteId` | `cancelInvite` | `invite.cancelled` | `inviteId`, `teamId`, `email`, `timestamp` | actor: yes, team: top-level yes / payload yes, timestamp: payload + DB | Logged | Complete metadata. | `server/src/services/invites.service.ts` |
-| Auto-resolve invite on signup | registration side-effect | `autoResolveInvitesOnSignup` | `invite.auto_resolved` | `inviteId`, `userId` | actor: yes, team: top-level yes / payload no, timestamp: DB only | Partial | Payload should include `teamId`. | `server/src/services/invites.service.ts` |
+| Auto-resolve invite on signup | registration side-effect | `autoResolveInvitesOnSignup` | `invite.auto_resolved` | `inviteId`, `teamId`, `userId`, `timestamp` | actor: yes, team: top-level yes / payload yes, timestamp: payload + DB | Logged | Payload now includes explicit team metadata. | `server/src/services/invites.service.ts` |
 | Remove team member | `DELETE /api/v1/teams/:teamId/members/:userId` | `removeMember` | `team_member.removed` | `teamId`, `userId`, `removedBy` | actor: yes, team: top-level yes / payload yes, timestamp: DB only | Logged | Complete team scoping. | `server/src/services/members.service.ts` |
 
 ### Practices
@@ -117,20 +119,20 @@ Important:
 
 | User Action | Endpoint / Flow | Service | Event Type(s) | Payload Fields (Current) | Metadata Check | Status | Notes | Evidence |
 |---|---|---|---|---|---|---|---|---|
-| Submit issue | `POST /api/v1/teams/:teamId/issues` | `createIssue` | `issue.created` | `title`, `linkedPracticeIds` | actor: yes, team: top-level yes / payload no, timestamp: DB only | Partial | Payload should include `teamId`. | `server/src/services/issue.service.ts` |
-| Add issue comment | `POST /api/v1/teams/:teamId/issues/:issueId/comments` | `addComment` | `issue.comment_added` | `commentId`, `contentSnippet` | actor: yes, team: top-level yes / payload no, timestamp: DB only | Partial | Payload should include `teamId`. | `server/src/services/issue.service.ts` |
-| Change issue status | `PATCH /api/v1/teams/:teamId/issues/:issueId` | `updateIssue` | `issue.status_changed` | `oldStatus`, `newStatus` | actor: yes, team: top-level yes / payload no, timestamp: DB only | Partial | Payload should include `teamId` and timestamp. | `server/src/services/issue.service.ts` |
-| Change issue priority | `PATCH /api/v1/teams/:teamId/issues/:issueId` | `updateIssue` | `issue.priority_changed` | `oldPriority`, `newPriority` | actor: yes, team: top-level yes / payload no, timestamp: DB only | Partial | Payload should include `teamId` and timestamp. | `server/src/services/issue.service.ts` |
-| Record adaptation decision | `POST /api/v1/teams/:teamId/issues/:issueId/decisions` | `recordDecision` | `issue.decision_recorded` | `decision_text`, `timestamp` | actor: yes, team: top-level yes / payload no, timestamp: payload + DB | Partial | Payload should include `teamId`; field naming is inconsistent. | `server/src/services/issue.service.ts` |
+| Submit issue | `POST /api/v1/teams/:teamId/issues` | `createIssue` | `issue.created` | `issueId`, `title`, `descriptionSummary`, `priority`, `status`, `linkedPracticeIds`, `actorId`, `teamId`, `timestamp` | actor: yes, team: top-level yes / payload yes, timestamp: payload + DB | Logged | Story 6.1: Enriched payload with full creation context and explicit metadata. | `server/src/services/issue.service.ts` |
+| Add issue comment | `POST /api/v1/teams/:teamId/issues/:issueId/comments` | `addComment` | `issue.comment_added` | `issueId`, `commentId`, `commentText`, `actorId`, `teamId`, `timestamp` | actor: yes, team: top-level yes / payload yes, timestamp: payload + DB | Logged | Story 6.1: Enriched payload with explicit issueId, actorId, teamId, and bounded commentText. | `server/src/services/issue.service.ts` |
+| Change issue status | `PATCH /api/v1/teams/:teamId/issues/:issueId` | `updateIssue` | `issue.status_changed` | `issueId`, `teamId`, `actorId`, `oldStatus`, `newStatus`, `timestamp` | actor: yes, team: top-level yes / payload yes, timestamp: payload + DB | Logged | Payload now includes explicit metadata and timestamp. | `server/src/services/issue.service.ts` |
+| Change issue priority | `PATCH /api/v1/teams/:teamId/issues/:issueId` | `updateIssue` | `issue.priority_changed` | `issueId`, `teamId`, `actorId`, `oldPriority`, `newPriority`, `timestamp` | actor: yes, team: top-level yes / payload yes, timestamp: payload + DB | Logged | Payload now includes explicit metadata and timestamp. | `server/src/services/issue.service.ts` |
+| Record adaptation decision | `POST /api/v1/teams/:teamId/issues/:issueId/decisions` | `recordDecision` | `issue.decision_recorded` | `issueId`, `teamId`, `actorId`, `decisionText`, `timestamp` | actor: yes, team: top-level yes / payload yes, timestamp: payload + DB | Logged | Payload naming normalized to camelCase and metadata completed. | `server/src/services/issue.service.ts` |
 | Modify/update adaptation decision | not implemented endpoint/flow | N/A | None | None | N/A | Missing | Confirmed missing action-specific event and endpoint semantics. | `server/src/routes/issues.routes.ts` |
-| Record evaluation outcome | `POST /api/v1/teams/:teamId/issues/:issueId/evaluations` | `evaluateIssue` | `issue.evaluated` | `outcome`, `comments`, `timestamp` | actor: yes, team: top-level yes / payload no, timestamp: payload + DB | Partial | Payload should include `teamId`. | `server/src/services/issue.service.ts` |
+| Record evaluation outcome | `POST /api/v1/teams/:teamId/issues/:issueId/evaluations` | `evaluateIssue` | `issue.evaluated` | `issueId`, `teamId`, `actorId`, `outcome`, `comments`, `timestamp` | actor: yes, team: top-level yes / payload yes, timestamp: payload + DB | Logged | Payload now includes explicit team metadata. | `server/src/services/issue.service.ts` |
 
 ### Big Five
 
 | User Action | Endpoint / Flow | Service | Event Type(s) | Payload Fields (Current) | Metadata Check | Status | Notes | Evidence |
 |---|---|---|---|---|---|---|---|---|
-| Submit questionnaire for first completion | `POST /api/v1/big-five/submit` | `saveResponses` | None | None | N/A | Missing | DB mutation occurs with no event. | `server/src/services/big-five.service.ts` |
-| Retake questionnaire | same endpoint, overwrite path | `saveResponses` | None | None | N/A | Missing | Delete+rewrite occurs with no retake event. | `server/src/services/big-five.service.ts` |
+| Submit questionnaire for first completion | `POST /api/v1/big-five/submit` | `saveResponses` | `big_five.completed` | `userId`, `teamId`, `scores` (all 5 traits), `responseCount`, `itemIds`, `timestamp`, `schemaVersion` | actor: yes, team: top-level optional / payload yes, timestamp: payload + DB | Logged | Story 6.1: Event logged inside transaction; teamId included when provided. | `server/src/services/big-five.service.ts` |
+| Retake questionnaire | same endpoint, overwrite path | `saveResponses` | `big_five.retaken` | `userId`, `teamId`, `scores` (all 5 traits), `responseCount`, `itemIds`, `timestamp`, `schemaVersion` | actor: yes, team: top-level optional / payload yes, timestamp: payload + DB | Logged | Story 6.1: Retake detected by checking existing response count before deletion; atomic with transaction. | `server/src/services/big-five.service.ts` |
 | View current scores | `GET /api/v1/big-five/me` | `getUserScores` | None | None | N/A | Missing | Optional read telemetry only. | `server/src/routes/big-five.routes.ts` |
 
 ### Export
@@ -160,16 +162,18 @@ Important:
 
 | Status | Count |
 |---|---:|
-| Logged | 8 |
-| Partial | 15 |
-| Missing | 19 |
+| Logged | 19 |
+| Partial | 6 |
+| Missing | 17 |
 | Out of Scope | 2 |
 
 Coverage for in-scope actions is:
 
 $$
-\frac{8 + 15}{8 + 15 + 19} = \frac{23}{42} \approx 54.8\%
+\frac{19 + 6}{19 + 6 + 17} = \frac{25}{42} \approx 59.5\%
 $$
+
+**Story 6.1 changes (vs Story 6.0 baseline):** `big_five.completed` Missing→Logged, `big_five.retaken` Missing→Logged, `issue.created` Partial→Logged, `issue.comment_added` Partial→Logged, `team.created` Partial→Logged, `team.name_updated` Partial→Logged, `invite.auto_resolved` Partial→Logged, `issue.status_changed` Partial→Logged, `issue.priority_changed` Partial→Logged, `issue.decision_recorded` Partial→Logged, `issue.evaluated` Partial→Logged.
 
 ## Prioritized Implementation Recommendations
 
@@ -189,12 +193,9 @@ $$
 
 ### Story 6.2 Priorities
 
-1. Standardize payload metadata across all mutation events:
-   - always include payload `teamId` when team-scoped,
-   - include actor/user reference in payload where relevant,
-   - include payload timestamp consistently.
-2. Resolve naming consistency (`decision_text` vs camelCase).
-3. Keep append-only integrity checks and schema-version discipline.
+1. Keep append-only integrity checks and schema-version discipline.
+2. Add explicit event for adaptation decision modify/update flow when endpoint is implemented.
+3. Implement export request/download telemetry as part of Story 6.3.
 
 ## Source Index
 

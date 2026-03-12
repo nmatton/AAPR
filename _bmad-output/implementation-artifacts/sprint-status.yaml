@@ -126,7 +126,7 @@ development_status:
   # Epic 6: Research Data Integrity & Event Logging
   epic-6: in-progress
   6-0-produce-complete-event-coverage-documentation-before-event-logging-implementation: done
-  6-1-log-all-db-affecting-events-excluding-auth-composition: backlog
+  6-1-log-all-db-affecting-events-excluding-auth-composition: in-progress
   6-2-ensure-event-immutability-and-audit-trail-completeness: backlog
   6-3-event-export-and-filtering-capability-research-use: backlog
   epic-6-retrospective: optional
