@@ -32,6 +32,7 @@ describe('PracticeDetailSidebar', () => {
         description: 'Detailed description',
         categoryId: 'cat1',
         categoryName: 'Category 1',
+        tags: ['Remote-Friendly'],
         pillars: [{ id: 101, name: 'Pillar 1' }, { id: 102, name: 'Pillar 2' }],
         step: '1. Do this',
         benefits: ['Fast'],
@@ -354,5 +355,41 @@ describe('PracticeDetailSidebar', () => {
         expect(screen.queryByRole('link', { name: 'Internal Ref' })).not.toBeInTheDocument();
         expect(screen.queryByRole('button', { name: /Daily Standup/i })).not.toBeInTheDocument();
         expect(screen.getAllByText('Not specified').length).toBeGreaterThan(0);
+    });
+
+    it('shows tag tooltip description for a known valid tag', async () => {
+        (api.fetchPracticeDetail as any).mockResolvedValue({ practice: mockPractice });
+
+        render(
+            <PracticeDetailSidebar
+                isOpen={true}
+                onClose={() => { }}
+                practiceId={1}
+            />
+        );
+
+        await waitFor(() => expect(screen.getByText('Remote-Friendly')).toBeInTheDocument());
+
+        expect(screen.getByText('Well suited for remote work')).toBeInTheDocument();
+    });
+
+    it('does not crash and does not show tooltip text for unknown tag', async () => {
+        const practiceWithUnknownTag = {
+            ...mockPractice,
+            tags: ['unknown-tag-xyz']
+        };
+        (api.fetchPracticeDetail as any).mockResolvedValue({ practice: practiceWithUnknownTag });
+
+        render(
+            <PracticeDetailSidebar
+                isOpen={true}
+                onClose={() => { }}
+                practiceId={1}
+            />
+        );
+
+        await waitFor(() => expect(screen.getByText('unknown-tag-xyz')).toBeInTheDocument());
+
+        expect(screen.queryByText('Well suited for remote work')).not.toBeInTheDocument();
     });
 });

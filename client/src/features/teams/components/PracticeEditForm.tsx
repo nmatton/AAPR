@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CategorizedTagSelector } from '../../../shared/components/CategorizedTagSelector'
+import { Tooltip } from '../../../shared/components/Tooltip'
 import { normalizeValidTags } from '../../../shared/constants/tags.constants'
 import { getTeamPillarCoverage } from '../api/coverageApi'
 import { fetchPracticeDetail } from '../../practices/api/practices.api'
@@ -435,7 +436,7 @@ export const PracticeEditForm = ({
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
-              <CategorizedTagSelector selectedTags={tags} onChange={setTags} disabled={isUpdating} />
+              <CategorizedTagSelector selectedTags={tags} onChange={setTags} disabled={isUpdating} showDescriptions />
             </div>
           </div>
 
@@ -453,7 +454,13 @@ export const PracticeEditForm = ({
                     onChange={() => handleTogglePillar(pillar.id)}
                     className="h-4 w-4 text-blue-600 border-gray-300 rounded"
                   />
-                  {pillar.name}
+                  {pillar.description ? (
+                    <Tooltip content={pillar.description}>
+                      <span>{pillar.name}</span>
+                    </Tooltip>
+                  ) : (
+                    <span>{pillar.name}</span>
+                  )}
                 </label>
               ))}
             </div>

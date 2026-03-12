@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { CategorizedTagSelector } from '../../../shared/components/CategorizedTagSelector';
+import { Tooltip } from '../../../shared/components/Tooltip';
 import { normalizeValidTags, type ValidTag } from '../../../shared/constants/tags.constants';
 import { fetchAvailablePractices, fetchTeamPractices } from '../api/teamPracticesApi';
 import { fetchPracticeDetail } from '../../practices/api/practices.api';
@@ -507,7 +508,13 @@ export const CreatePracticeModal = ({ teamId, onClose, onCreated }: CreatePracti
                         onChange={() => handleTogglePillar(pillar.id)}
                         className="mt-1"
                       />
-                      <span>{pillar.name}</span>
+                      {pillar.description ? (
+                        <Tooltip content={pillar.description}>
+                          <span>{pillar.name}</span>
+                        </Tooltip>
+                      ) : (
+                        <span>{pillar.name}</span>
+                      )}
                     </label>
                   ))}
                 </div>
@@ -546,6 +553,7 @@ export const CreatePracticeModal = ({ teamId, onClose, onCreated }: CreatePracti
                 <CategorizedTagSelector
                   selectedTags={formState.tags}
                   onChange={(tags) => setFormState({ ...formState, tags })}
+                  showDescriptions
                 />
               </div>
 

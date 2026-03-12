@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useIssues } from '../../issues/hooks/useIssues';
 import { SidebarPanel } from '../../../components/ui/SidebarPanel';
+import { Tooltip } from '../../../shared/components/Tooltip';
+import { TAG_DESCRIPTIONS, isValidTag } from '../../../shared/constants/tags.constants';
 
 import { fetchPracticeDetail, logPracticeDetailViewed } from '../api/practices.api';
 import { PillarContextPopover } from './PillarContextPopover';
@@ -115,10 +117,17 @@ export const PracticeDetailSidebar: React.FC<PracticeDetailSidebarProps> = ({
     };
 
     const renderBadge = (text: string, colorClass = 'bg-gray-100 text-gray-800') => (
-        <span key={text} className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mr-2 mb-2 ${colorClass}`}>
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mr-2 mb-2 ${colorClass}`}>
             {text}
         </span>
     );
+
+    const getTagDescription = (tag: string): string => {
+        if (!isValidTag(tag)) {
+            return '';
+        }
+        return TAG_DESCRIPTIONS[tag];
+    };
 
     const getAssociationBadgeClass = (associationType: string) => {
         const normalized = associationType.toLowerCase();
@@ -241,7 +250,11 @@ export const PracticeDetailSidebar: React.FC<PracticeDetailSidebarProps> = ({
                             <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Tags</h3>
                             <div className="flex flex-wrap">
                                 {practice.tags && Array.isArray(practice.tags) && practice.tags.length > 0 ? (
-                                    practice.tags.map(t => renderBadge(t, 'bg-emerald-50 text-emerald-700 border border-emerald-100'))
+                                    practice.tags.map((tag) => (
+                                        <Tooltip key={tag} content={getTagDescription(tag)}>
+                                            {renderBadge(tag, 'bg-emerald-50 text-emerald-700 border border-emerald-100')}
+                                        </Tooltip>
+                                    ))
                                 ) : (
                                     <span className="text-sm text-gray-500 italic">None</span>
                                 )}

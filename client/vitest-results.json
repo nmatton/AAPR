@@ -1,0 +1,4299 @@
+{
+  "numTotalTestSuites": 126,
+  "numPassedTestSuites": 126,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 340,
+  "numPassedTests": 334,
+  "numFailedTests": 6,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "startTime": 1773314563254,
+  "success": false,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "App auth flow integration"
+          ],
+          "fullName": " App auth flow integration login redirects to /teams",
+          "status": "failed",
+          "title": "login redirects to /teams",
+          "duration": 2151,
+          "failureMessages": [
+            "Unable to find an element with the text: My Teams. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<div\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"min-h-screen bg-gray-50\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<header\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"bg-white shadow\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"flex justify-between items-center\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-center\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<button\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"text-xl font-semibold text-gray-900 hover:text-teal-600 transition-colors\"\u001b[39m\n                \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mAAPR\u001b[0m\n              \u001b[36m</button>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<nav\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"hidden md:flex items-center gap-6\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<a\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm font-medium transition-colors text-gray-700 hover:text-teal-600\"\u001b[39m\n                \u001b[33mdata-discover\u001b[39m=\u001b[32m\"true\"\u001b[39m\n                \u001b[33mhref\u001b[39m=\u001b[32m\"/practices\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mPractice Catalog\u001b[0m\n              \u001b[36m</a>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-center gap-2 text-sm text-gray-700 ml-4 border-l pl-6 border-gray-200\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<span\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"text-teal-700 font-medium\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mT\u001b[0m\n                  \u001b[36m</span>\u001b[39m\n                \u001b[36m</div>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"hidden lg:inline\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mTest User\u001b[0m\n                \u001b[36m</span>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<button\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm font-medium text-indigo-600 hover:text-indigo-800 disabled:opacity-50 transition-colors\"\u001b[39m\n                \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mLogout\u001b[0m\n              \u001b[36m</button>\u001b[39m\n            \u001b[36m</nav>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-center md:hidden\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<button\u001b[39m\n                \u001b[33maria-expanded\u001b[39m=\u001b[32m\"false\"\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-teal-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500\"\u001b[39m\n                \u001b[33mdata-testid\u001b[39m=\u001b[32m\"mobile-menu-button\"\u001b[39m\n                \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"sr-only\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mOpen main menu\u001b[0m\n                \u001b[36m</span>\u001b[39m\n                \u001b[36m<svg\u001b[39m\n                  \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"block h-6 w-6\"\u001b[39m\n                  \u001b[33mfill\u001b[39m=\u001b[32m\"none\"\u001b[39m\n                  \u001b[33mstroke\u001b[39m=\u001b[32m\"currentColor\"\u001b[39m\n                  \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n                  \u001b[33mxmlns\u001b[39m=\u001b[32m\"http://www.w3.org/2000/svg\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<path\u001b[39m\n                    \u001b[33md\u001b[39m=\u001b[32m\"M4 6h16M4 12h16M4 18h16\"\u001b[39m\n                    \u001b[33mstroke-linecap\u001b[39m=\u001b[32m\"round\"\u001b[39m\n                    \u001b[33mstroke-linejoin\u001b[39m=\u001b[32m\"round\"\u001b[39m\n                    \u001b[33mstroke-width\u001b[39m=\u001b[32m\"2\"\u001b[39m\n                  \u001b[36m/>\u001b[39m\n                \u001b[36m</svg>\u001b[39m\n              \u001b[36m</button>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n        \u001b[36m</div>\u001b[39m\n      \u001b[36m</header>\u001b[39m\n      \u001b[36m<main>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-2xl mx-auto p-6\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"text-center mb-8\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<h1\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"text-3xl font-bold text-gray-900 mb-4\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mBig Five Personality Assessment\u001b[0m\n            \u001b[36m</h1>\u001b[39m\n            \u001b[36m<p\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"text-lg text-gray-600 mb-6\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mDiscover your personality profile to get personalized practice recommendations.\u001b[0m\n            \u001b[36m</p>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"bg-white border border-gray-200 rounded-lg p-6 mb-6\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<h2\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"text-xl font-semibold text-gray-900 mb-4\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mWhat you'll learn:\u001b[0m\n            \u001b[36m</h2>\u001b[39m\n            \u001b[36m<ul\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-3 text-gray-700\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<li\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-start\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text-blue-600 mr-2\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m✓\u001b[0m\n                \u001b[36m</span>\u001b[39m\n                \u001b[36m<span>\u001b[39m\n                  \u001b[36m<strong>\u001b[39m\n                    \u001b[0mExtraversion:\u001b[0m\n                  \u001b[36m</strong>\u001b[39m\n                  \u001b[0m Your sociability and energy levels\u001b[0m\n                \u001b[36m</span>\u001b[39m\n              \u001b[36m</li>\u001b[39m\n              \u001b[36m<li\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-start\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text-blue-600 mr-2\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m✓\u001b[0m\n                \u001b[36m</span>\u001b[39m\n                \u001b[36m<span>\u001b[39m\n                  \u001b[36m<strong>\u001b[39m\n                    \u001b[0mAgreeableness:\u001b[0m\n                  \u001b[36m</strong>\u001b[39m\n                  \u001b[0m Your cooperation and empathy\u001b[0m\n                \u001b[36m</span>\u001b[39m\n              \u001b[36m</li>\u001b[39m\n              \u001b[36m<li\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-start\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text-blue-600 mr-2\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m✓\u001b[0m\n                \u001b[36m</span>\u001b[39m\n                \u001b[36m<span>\u001b[39m\n                  \u001b[36m<strong>\u001b[39m\n                    \u001b[0mConscientiousness:\u001b[0m\n                  \u001b[36m</strong>\u001b[39m\n                  \u001b[0m Your organization and reliability\u001b[0m\n                \u001b[36m</span>\u001b[39m\n              \u001b[36m</li>\u001b[39m\n              \u001b[36m<li\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-start\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text-blue-600 mr-2\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m✓\u001b[0m\n                \u001b[36m</span>\u001b[39m\n                \u001b[36m<span>\u001b[39m\n                  \u001b[36m<strong>\u001b[39m\n                    \u001b[0mNeuroticism:\u001b[0m\n                  \u001b[36m</strong>\u001b[39m\n                  \u001b[0m Your emotional stability\u001b[0m\n                \u001b[36m</span>\u001b[39m\n              \u001b[36m</li>\u001b[39m\n              \u001b[36m<li\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-start\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text-blue-600 mr-2\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m✓\u001b[0m\n                \u001b[36m</span>\u001b[39m\n                \u001b[36m<span>\u001b[39m\n                  \u001b[36m<strong>\u001b[39m\n                    \u001b[0mOpenness:\u001b[0m\n                  \u001b[36m</strong>\u001b[39m\n                  \u001b[0m Your creativity and curiosity\u001b[0m\n                \u001b[36m</span>\u001b[39m\n              \u001b[36m</li>\u001b[39m\n            \u001b[36m</ul>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<p\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm text-blue-900\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<strong>\u001b[39m\n                \u001b[0mTime required:\u001b[0m\n              \u001b[36m</strong>\u001b[39m\n              \u001b[0m 5-10 minutes • \u001b[0m\n              \u001b[36m<strong>\u001b[39m\n                \u001b[0mQuestions:\u001b[0m\n              \u001b[36m</strong>\u001b[39m\n              \u001b[0m 44 items\u001b[0m\n            \u001b[36m</p>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n          \u001b[36m<button\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-lg\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mStart Questionnaire\u001b[0m\n          \u001b[36m</button>\u001b[39m\n        \u001b[36m</div>\u001b[39m\n      \u001b[36m</main>\u001b[39m\n    \u001b[36m</div>\u001b[39m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<div\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"min-h-screen bg-gray-50\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<header\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"bg-white shadow\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"flex justify-between items-center\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-center\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<button\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"text-xl font-semibold text-gray-900 hover:text-teal-600 transition-colors\"\u001b[39m\n                \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mAAPR\u001b[0m\n              \u001b[36m</button>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<nav\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"hidden md:flex items-center gap-6\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<a\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm font-medium transition-colors text-gray-700 hover:text-teal-600\"\u001b[39m\n                \u001b[33mdata-discover\u001b[39m=\u001b[32m\"true\"\u001b[39m\n                \u001b[33mhref\u001b[39m=\u001b[32m\"/practices\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mPractice Catalog\u001b[0m\n              \u001b[36m</a>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-center gap-2 text-sm text-gray-700 ml-4 border-l pl-6 border-gray-200\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<span\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"text-teal-700 font-medium\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mT\u001b[0m\n                  \u001b[36m</span>\u001b[39m\n                \u001b[36m</div>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"hidden lg:inline\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mTest User\u001b[0m\n                \u001b[36m</span>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<button\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm font-medium text-indigo-600 hover:text-indigo-800 disabled:opacity-50 transition-colors\"\u001b[39m\n                \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mLogout\u001b[0m\n              \u001b[36m</button>\u001b[39m\n            \u001b[36m</nav>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-center md:hidden\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<button\u001b[39m\n                \u001b[33maria-expanded\u001b[39m=\u001b[32m\"false\"\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-teal-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500\"\u001b[39m\n                \u001b[33mdata-testid\u001b[39m=\u001b[32m\"mobile-menu-button\"\u001b[39m\n                \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"sr-only\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mOpen main menu\u001b[0m\n                \u001b[36m</span>\u001b[39m\n                \u001b[36m<svg\u001b[39m\n                  \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"block h-6 w-6\"\u001b[39m\n                  \u001b[33mfill\u001b[39m=\u001b[32m\"none\"\u001b[39m\n                  \u001b[33mstroke\u001b[39m=\u001b[32m\"currentColor\"\u001b[39m\n                  \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n                  \u001b[33mxmlns\u001b[39m=\u001b[32m\"http://www.w3.org/2000/svg\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<path\u001b[39m\n                    \u001b[33md\u001b[39m=\u001b[32m\"M4 6h16M4 12h16M4 18h16\"\u001b[39m\n                    \u001b[33mstroke-linecap\u001b[39m=\u001b[32m\"round\"\u001b[39m\n                    \u001b[33mstroke-linejoin\u001b[39m=\u001b[32m\"round\"\u001b[39m\n                    \u001b[33mstroke-width\u001b[39m=\u001b[32m\"2\"\u001b[39m\n                  \u001b[36m/>\u001b[39m\n                \u001b[36m</svg>\u001b[39m\n              \u001b[36m</button>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n        \u001b[36m</div>\u001b[39m\n      \u001b[36m</header>\u001b[39m\n      \u001b[36m<main>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-2xl mx-auto p-6\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"text-center mb-8\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<h1\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"text-3xl font-bold text-gray-900 mb-4\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mBig Five Personality Assessment\u001b[0m\n            \u001b[36m</h1>\u001b[39m\n            \u001b[36m<p\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"text-lg text-gray-600 mb-6\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mDiscover your personality profile to get personalized practice recommendations.\u001b[0m\n            \u001b[36m</p>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"bg-white border border-gray-200 rounded-lg p-6 mb-6\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<h2\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"text-xl font-semibold text-gray-900 mb-4\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mWhat you'll learn:\u001b[0m\n            \u001b[36m</h2>\u001b[39m\n            \u001b[36m<ul\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-3 text-gray-700\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<li\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-start\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text-blue-600 mr-2\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m✓\u001b[0m\n                \u001b[36m</span>\u001b[39m\n                \u001b[36m<span>\u001b[39m\n                  \u001b[36m<strong>\u001b[39m\n                    \u001b[0mExtraversion:\u001b[0m\n                  \u001b[36m</strong>\u001b[39m\n                  \u001b[0m Your sociability and energy levels\u001b[0m\n                \u001b[36m</span>\u001b[39m\n              \u001b[36m</li>\u001b[39m\n              \u001b[36m<li\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-start\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text-blue-600 mr-2\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m✓\u001b[0m\n                \u001b[36m</span>\u001b[39m\n                \u001b[36m<span>\u001b[39m\n                  \u001b[36m<strong>\u001b[39m\n                    \u001b[0mAgreeableness:\u001b[0m\n                  \u001b[36m</strong>\u001b[39m\n                  \u001b[0m Your cooperation and empathy\u001b[0m\n                \u001b[36m</span>\u001b[39m\n              \u001b[36m</li>\u001b[39m\n              \u001b[36m<li\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-start\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text-blue-600 mr-2\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m✓\u001b[0m\n                \u001b[36m</span>\u001b[39m\n                \u001b[36m<span>\u001b[39m\n                  \u001b[36m<strong>\u001b[39m\n                    \u001b[0mConscientiousness:\u001b[0m\n                  \u001b[36m</strong>\u001b[39m\n                  \u001b[0m Your organization and reliability\u001b[0m\n                \u001b[36m</span>\u001b[39m\n              \u001b[36m</li>\u001b[39m\n              \u001b[36m<li\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-start\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text-blue-600 mr-2\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m✓\u001b[0m\n                \u001b[36m</span>\u001b[39m\n                \u001b[36m<span>\u001b[39m\n                  \u001b[36m<strong>\u001b[39m\n                    \u001b[0mNeuroticism:\u001b[0m\n                  \u001b[36m</strong>\u001b[39m\n                  \u001b[0m Your emotional stability\u001b[0m\n                \u001b[36m</span>\u001b[39m\n              \u001b[36m</li>\u001b[39m\n              \u001b[36m<li\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-start\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text-blue-600 mr-2\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m✓\u001b[0m\n                \u001b[36m</span>\u001b[39m\n                \u001b[36m<span>\u001b[39m\n                  \u001b[36m<strong>\u001b[39m\n                    \u001b[0mOpenness:\u001b[0m\n                  \u001b[36m</strong>\u001b[39m\n                  \u001b[0m Your creativity and curiosity\u001b[0m\n                \u001b[36m</span>\u001b[39m\n              \u001b[36m</li>\u001b[39m\n            \u001b[36m</ul>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<p\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm text-blue-900\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<strong>\u001b[39m\n                \u001b[0mTime required:\u001b[0m\n              \u001b[36m</strong>\u001b[39m\n              \u001b[0m 5-10 minutes • \u001b[0m\n              \u001b[36m<strong>\u001b[39m\n                \u001b[0mQuestions:\u001b[0m\n              \u001b[36m</strong>\u001b[39m\n              \u001b[0m 44 items\u001b[0m\n            \u001b[36m</p>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n          \u001b[36m<button\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-lg\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mStart Questionnaire\u001b[0m\n          \u001b[36m</button>\u001b[39m\n        \u001b[36m</div>\u001b[39m\n      \u001b[36m</main>\u001b[39m\n    \u001b[36m</div>\u001b[39m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m"
+          ],
+          "location": {
+            "line": 163,
+            "column": 27
+          }
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "App auth flow integration"
+          ],
+          "fullName": " App auth flow integration restores session on refresh and stays on /teams",
+          "status": "failed",
+          "title": "restores session on refresh and stays on /teams",
+          "duration": 1024,
+          "failureMessages": [
+            "Unable to find role=\"heading\" and name \"My Teams\"\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<div\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"min-h-screen bg-gray-50\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<header\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"bg-white shadow\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"flex justify-between items-center\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-center\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<button\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"text-xl font-semibold text-gray-900 hover:text-teal-600 transition-colors\"\u001b[39m\n                \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mAAPR\u001b[0m\n              \u001b[36m</button>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<nav\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"hidden md:flex items-center gap-6\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<a\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm font-medium transition-colors text-gray-700 hover:text-teal-600\"\u001b[39m\n                \u001b[33mdata-discover\u001b[39m=\u001b[32m\"true\"\u001b[39m\n                \u001b[33mhref\u001b[39m=\u001b[32m\"/practices\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mPractice Catalog\u001b[0m\n              \u001b[36m</a>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-center gap-2 text-sm text-gray-700 ml-4 border-l pl-6 border-gray-200\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<span\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"text-teal-700 font-medium\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mT\u001b[0m\n                  \u001b[36m</span>\u001b[39m\n                \u001b[36m</div>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"hidden lg:inline\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mTest User\u001b[0m\n                \u001b[36m</span>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<button\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm font-medium text-indigo-600 hover:text-indigo-800 disabled:opacity-50 transition-colors\"\u001b[39m\n                \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mLogout\u001b[0m\n              \u001b[36m</button>\u001b[39m\n            \u001b[36m</nav>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-center md:hidden\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<button\u001b[39m\n                \u001b[33maria-expanded\u001b[39m=\u001b[32m\"false\"\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-teal-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500\"\u001b[39m\n                \u001b[33mdata-testid\u001b[39m=\u001b[32m\"mobile-menu-button\"\u001b[39m\n                \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"sr-only\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mOpen main menu\u001b[0m\n                \u001b[36m</span>\u001b[39m\n                \u001b[36m<svg\u001b[39m\n                  \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"block h-6 w-6\"\u001b[39m\n                  \u001b[33mfill\u001b[39m=\u001b[32m\"none\"\u001b[39m\n                  \u001b[33mstroke\u001b[39m=\u001b[32m\"currentColor\"\u001b[39m\n                  \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n                  \u001b[33mxmlns\u001b[39m=\u001b[32m\"http://www.w3.org/2000/svg\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<path\u001b[39m\n                    \u001b[33md\u001b[39m=\u001b[32m\"M4 6h16M4 12h16M4 18h16\"\u001b[39m\n                    \u001b[33mstroke-linecap\u001b[39m=\u001b[32m\"round\"\u001b[39m\n                    \u001b[33mstroke-linejoin\u001b[39m=\u001b[32m\"round\"\u001b[39m\n                    \u001b[33mstroke-width\u001b[39m=\u001b[32m\"2\"\u001b[39m\n                  \u001b[36m/>\u001b[39m\n                \u001b[36m</svg>\u001b[39m\n              \u001b[36m</button>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n        \u001b[36m</div>\u001b[39m\n      \u001b[36m</header>\u001b[39m\n      \u001b[36m<main>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-2xl mx-auto p-6\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"text-center mb-8\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<h1\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"text-3xl font-bold text-gray-900 mb-4\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mBig Five Personality Assessment\u001b[0m\n            \u001b[36m</h1>\u001b[39m\n            \u001b[36m<p\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"text-lg text-gray-600 mb-6\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mDiscover your personality profile to get personalized practice recommendations.\u001b[0m\n            \u001b[36m</p>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"bg-white border border-gray-200 rounded-lg p-6 mb-6\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<h2\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"text-xl font-semibold text-gray-900 mb-4\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mWhat you'll learn:\u001b[0m\n            \u001b[36m</h2>\u001b[39m\n            \u001b[36m<ul\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-3 text-gray-700\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<li\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-start\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text-blue-600 mr-2\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m✓\u001b[0m\n                \u001b[36m</span>\u001b[39m\n                \u001b[36m<span>\u001b[39m\n                  \u001b[36m<strong>\u001b[39m\n                    \u001b[0mExtraversion:\u001b[0m\n                  \u001b[36m</strong>\u001b[39m\n                  \u001b[0m Your sociability and energy levels\u001b[0m\n                \u001b[36m</span>\u001b[39m\n              \u001b[36m</li>\u001b[39m\n              \u001b[36m<li\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-start\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text-blue-600 mr-2\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m✓\u001b[0m\n                \u001b[36m</span>\u001b[39m\n                \u001b[36m<span>\u001b[39m\n                  \u001b[36m<strong>\u001b[39m\n                    \u001b[0mAgreeableness:\u001b[0m\n                  \u001b[36m</strong>\u001b[39m\n                  \u001b[0m Your cooperation and empathy\u001b[0m\n                \u001b[36m</span>\u001b[39m\n              \u001b[36m</li>\u001b[39m\n              \u001b[36m<li\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-start\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text-blue-600 mr-2\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m✓\u001b[0m\n                \u001b[36m</span>\u001b[39m\n                \u001b[36m<span>\u001b[39m\n                  \u001b[36m<strong>\u001b[39m\n                    \u001b[0mConscientiousness:\u001b[0m\n                  \u001b[36m</strong>\u001b[39m\n                  \u001b[0m Your organization and reliability\u001b[0m\n                \u001b[36m</span>\u001b[39m\n              \u001b[36m</li>\u001b[39m\n              \u001b[36m<li\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-start\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text-blue-600 mr-2\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m✓\u001b[0m\n                \u001b[36m</span>\u001b[39m\n                \u001b[36m<span>\u001b[39m\n                  \u001b[36m<strong>\u001b[39m\n                    \u001b[0mNeuroticism:\u001b[0m\n                  \u001b[36m</strong>\u001b[39m\n                  \u001b[0m Your emotional stability\u001b[0m\n                \u001b[36m</span>\u001b[39m\n              \u001b[36m</li>\u001b[39m\n              \u001b[36m<li\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-start\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text-blue-600 mr-2\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0m✓\u001b[0m\n                \u001b[36m</span>\u001b[39m\n                \u001b[36m<span>\u001b[39m\n                  \u001b[36m<strong>\u001b[39m\n                    \u001b[0mOpenness:\u001b[0m\n                  \u001b[36m</strong>\u001b[39m\n                  \u001b[0m Your creativity and curiosity\u001b[0m\n                \u001b[36m</span>\u001b[39m\n              \u001b[36m</li>\u001b[39m\n            \u001b[36m</ul>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<p\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm text-blue-900\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<strong>\u001b[39m\n                \u001b[0mTime required:\u001b[0m\n              \u001b[36m</strong>\u001b[39m\n              \u001b[0m 5-10 minutes • \u001b[0m\n              \u001b[36m<strong>\u001b[39m\n                \u001b[0mQuestions:\u001b[0m\n              \u001b[36m</strong>\u001b[39m\n              \u001b[0m 44 items\u001b[0m\n            \u001b[36m</p>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n          \u001b[36m<button\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-lg\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mStart Questionnaire\u001b[0m\n          \u001b[36m</button>\u001b[39m\n        \u001b[36m</div>\u001b[39m\n      \u001b[36m</main>\u001b[39m\n    \u001b[36m</div>\u001b[39m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m\n\nIgnored nodes: comments, script, style\n\u001b[36m<html>\u001b[39m\n  \u001b[36m<head />\u001b[39m\n  \u001b[36m<body>\u001b[39m\n    \u001b[36m<div>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"min-h-screen bg-gray-50\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<header\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"bg-white shadow\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"flex justify-between items-center\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-center\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<button\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text-xl font-semibold text-gray-900 hover:text-teal-600 transition-colors\"\u001b[39m\n                  \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mAAPR\u001b[0m\n                \u001b[36m</button>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<nav\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"hidden md:flex items-center gap-6\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<a\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm font-medium transition-colors text-gray-700 hover:text-teal-600\"\u001b[39m\n                  \u001b[33mdata-discover\u001b[39m=\u001b[32m\"true\"\u001b[39m\n                  \u001b[33mhref\u001b[39m=\u001b[32m\"/practices\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mPractice Catalog\u001b[0m\n                \u001b[36m</a>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-center gap-2 text-sm text-gray-700 ml-4 border-l pl-6 border-gray-200\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<div\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[36m<span\u001b[39m\n                      \u001b[33mclass\u001b[39m=\u001b[32m\"text-teal-700 font-medium\"\u001b[39m\n                    \u001b[36m>\u001b[39m\n                      \u001b[0mT\u001b[0m\n                    \u001b[36m</span>\u001b[39m\n                  \u001b[36m</div>\u001b[39m\n                  \u001b[36m<span\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"hidden lg:inline\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mTest User\u001b[0m\n                  \u001b[36m</span>\u001b[39m\n                \u001b[36m</div>\u001b[39m\n                \u001b[36m<button\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm font-medium text-indigo-600 hover:text-indigo-800 disabled:opacity-50 transition-colors\"\u001b[39m\n                  \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mLogout\u001b[0m\n                \u001b[36m</button>\u001b[39m\n              \u001b[36m</nav>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-center md:hidden\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<button\u001b[39m\n                  \u001b[33maria-expanded\u001b[39m=\u001b[32m\"false\"\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-teal-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500\"\u001b[39m\n                  \u001b[33mdata-testid\u001b[39m=\u001b[32m\"mobile-menu-button\"\u001b[39m\n                  \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<span\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"sr-only\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mOpen main menu\u001b[0m\n                  \u001b[36m</span>\u001b[39m\n                  \u001b[36m<svg\u001b[39m\n                    \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"block h-6 w-6\"\u001b[39m\n                    \u001b[33mfill\u001b[39m=\u001b[32m\"none\"\u001b[39m\n                    \u001b[33mstroke\u001b[39m=\u001b[32m\"currentColor\"\u001b[39m\n                    \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n                    \u001b[33mxmlns\u001b[39m=\u001b[32m\"http://www.w3.org/2000/svg\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[36m<path\u001b[39m\n                      \u001b[33md\u001b[39m=\u001b[32m\"M4 6h16M4 12h16M4 18h16\"\u001b[39m\n                      \u001b[33mstroke-linecap\u001b[39m=\u001b[32m\"round\"\u001b[39m\n                      \u001b[33mstroke-linejoin\u001b[39m=\u001b[32m\"round\"\u001b[39m\n                      \u001b[33mstroke-width\u001b[39m=\u001b[32m\"2\"\u001b[39m\n                    \u001b[36m/>\u001b[39m\n                  \u001b[36m</svg>\u001b[39m\n                \u001b[36m</button>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n        \u001b[36m</header>\u001b[39m\n        \u001b[36m<main>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-2xl mx-auto p-6\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"text-center mb-8\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<h1\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"text-3xl font-bold text-gray-900 mb-4\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mBig Five Personality Assessment\u001b[0m\n              \u001b[36m</h1>\u001b[39m\n              \u001b[36m<p\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"text-lg text-gray-600 mb-6\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mDiscover your personality profile to get personalized practice recommendations.\u001b[0m\n              \u001b[36m</p>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"bg-white border border-gray-200 rounded-lg p-6 mb-6\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<h2\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"text-xl font-semibold text-gray-900 mb-4\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mWhat you'll learn:\u001b[0m\n              \u001b[36m</h2>\u001b[39m\n              \u001b[36m<ul\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-3 text-gray-700\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<li\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-start\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<span\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"text-blue-600 mr-2\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0m✓\u001b[0m\n                  \u001b[36m</span>\u001b[39m\n                  \u001b[36m<span>\u001b[39m\n                    \u001b[36m<strong>\u001b[39m\n                      \u001b[0mExtraversion:\u001b[0m\n                    \u001b[36m</strong>\u001b[39m\n                    \u001b[0m Your sociability and energy levels\u001b[0m\n                  \u001b[36m</span>\u001b[39m\n                \u001b[36m</li>\u001b[39m\n                \u001b[36m<li\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-start\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<span\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"text-blue-600 mr-2\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0m✓\u001b[0m\n                  \u001b[36m</span>\u001b[39m\n                  \u001b[36m<span>\u001b[39m\n                    \u001b[36m<strong>\u001b[39m\n                      \u001b[0mAgreeableness:\u001b[0m\n                    \u001b[36m</strong>\u001b[39m\n                    \u001b[0m Your cooperation and empathy\u001b[0m\n                  \u001b[36m</span>\u001b[39m\n                \u001b[36m</li>\u001b[39m\n                \u001b[36m<li\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-start\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<span\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"text-blue-600 mr-2\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0m✓\u001b[0m\n                  \u001b[36m</span>\u001b[39m\n                  \u001b[36m<span>\u001b[39m\n                    \u001b[36m<strong>\u001b[39m\n                      \u001b[0mConscientiousness:\u001b[0m\n                    \u001b[36m</strong>\u001b[39m\n                    \u001b[0m Your organization and reliability\u001b[0m\n                  \u001b[36m</span>\u001b[39m\n                \u001b[36m</li>\u001b[39m\n                \u001b[36m<li\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-start\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<span\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"text-blue-600 mr-2\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0m✓\u001b[0m\n                  \u001b[36m</span>\u001b[39m\n                  \u001b[36m<span>\u001b[39m\n                    \u001b[36m<strong>\u001b[39m\n                      \u001b[0mNeuroticism:\u001b[0m\n                    \u001b[36m</strong>\u001b[39m\n                    \u001b[0m Your emotional stability\u001b[0m\n                  \u001b[36m</span>\u001b[39m\n                \u001b[36m</li>\u001b[39m\n                \u001b[36m<li\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-start\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<span\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"text-blue-600 mr-2\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0m✓\u001b[0m\n                  \u001b[36m</span>\u001b[39m\n                  \u001b[36m<span>\u001b[39m\n                    \u001b[36m<strong>\u001b[39m\n                      \u001b[0mOpenness:\u001b[0m\n                    \u001b[36m</strong>\u001b[39m\n                    \u001b[0m Your creativity and curiosity\u001b[0m\n                  \u001b[36m</span>\u001b[39m\n                \u001b[36m</li>\u001b[39m\n              \u001b[36m</ul>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<p\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm text-blue-900\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<strong>\u001b[39m\n                  \u001b[0mTime required:\u001b[0m\n                \u001b[36m</strong>\u001b[39m\n                \u001b[0m 5-10 minutes • \u001b[0m\n                \u001b[36m<strong>\u001b[39m\n                  \u001b[0mQuestions:\u001b[0m\n                \u001b[36m</strong>\u001b[39m\n                \u001b[0m 44 items\u001b[0m\n              \u001b[36m</p>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<button\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"w-full px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium text-lg\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mStart Questionnaire\u001b[0m\n            \u001b[36m</button>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n        \u001b[36m</main>\u001b[39m\n      \u001b[36m</div>\u001b[39m\n    \u001b[36m</div>\u001b[39m\n  \u001b[36m</body>\u001b[39m\n\u001b[36m</html>\u001b[39m"
+          ],
+          "location": {
+            "line": 163,
+            "column": 27
+          }
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "App auth flow integration"
+          ],
+          "fullName": " App auth flow integration logout redirects to /login",
+          "status": "passed",
+          "title": "logout redirects to /login",
+          "duration": 144,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314579787,
+      "endTime": 1773314583106,
+      "status": "failed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/App.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "AuthenticatedLayout"
+          ],
+          "fullName": " AuthenticatedLayout renders AAPR logo/branding",
+          "status": "passed",
+          "title": "renders AAPR logo/branding",
+          "duration": 80,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "AuthenticatedLayout"
+          ],
+          "fullName": " AuthenticatedLayout renders Practice Catalog link",
+          "status": "passed",
+          "title": "renders Practice Catalog link",
+          "duration": 15,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "AuthenticatedLayout"
+          ],
+          "fullName": " AuthenticatedLayout renders user avatar with first letter of name",
+          "status": "passed",
+          "title": "renders user avatar with first letter of name",
+          "duration": 13,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "AuthenticatedLayout"
+          ],
+          "fullName": " AuthenticatedLayout renders Logout button",
+          "status": "passed",
+          "title": "renders Logout button",
+          "duration": 12,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "AuthenticatedLayout"
+          ],
+          "fullName": " AuthenticatedLayout calls logout and navigates to login when Logout is clicked",
+          "status": "passed",
+          "title": "calls logout and navigates to login when Logout is clicked",
+          "duration": 18,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "AuthenticatedLayout"
+          ],
+          "fullName": " AuthenticatedLayout navigates to /teams when AAPR logo is clicked",
+          "status": "passed",
+          "title": "navigates to /teams when AAPR logo is clicked",
+          "duration": 11,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "AuthenticatedLayout"
+          ],
+          "fullName": " AuthenticatedLayout does NOT render Team Dashboard link when not in team context",
+          "status": "passed",
+          "title": "does NOT render Team Dashboard link when not in team context",
+          "duration": 8,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "AuthenticatedLayout"
+          ],
+          "fullName": " AuthenticatedLayout does NOT render Members link when not in team context",
+          "status": "passed",
+          "title": "does NOT render Members link when not in team context",
+          "duration": 9,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "AuthenticatedLayout"
+          ],
+          "fullName": " AuthenticatedLayout renders Team Dashboard and Members links when in team context",
+          "status": "failed",
+          "title": "renders Team Dashboard and Members links when in team context",
+          "duration": 29,
+          "failureMessages": [
+            "Unable to find an element with the text: Team Dashboard. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<div\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"min-h-screen bg-gray-50\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<header\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"bg-white shadow\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<div\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"flex justify-between items-center\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-center\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<button\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"text-xl font-semibold text-gray-900 hover:text-teal-600 transition-colors\"\u001b[39m\n                \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mAAPR\u001b[0m\n              \u001b[36m</button>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n            \u001b[36m<nav\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"hidden md:flex items-center gap-6\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<a\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm font-medium transition-colors text-gray-700 hover:text-teal-600\"\u001b[39m\n                \u001b[33mdata-discover\u001b[39m=\u001b[32m\"true\"\u001b[39m\n                \u001b[33mhref\u001b[39m=\u001b[32m\"/practices\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mPractice Catalog\u001b[0m\n              \u001b[36m</a>\u001b[39m\n              \u001b[36m<div\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-center gap-2 text-sm text-gray-700 ml-4 border-l pl-6 border-gray-200\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<div\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<span\u001b[39m\n                    \u001b[33mclass\u001b[39m=\u001b[32m\"text-teal-700 font-medium\"\u001b[39m\n                  \u001b[36m>\u001b[39m\n                    \u001b[0mT\u001b[0m\n                  \u001b[36m</span>\u001b[39m\n                \u001b[36m</div>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"hidden lg:inline\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mTest User\u001b[0m\n                \u001b[36m</span>\u001b[39m\n              \u001b[36m</div>\u001b[39m\n              \u001b[36m<button\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm font-medium text-indigo-600 hover:text-indigo-800 disabled:opacity-50 transition-colors\"\u001b[39m\n                \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mLogout\u001b[0m\n              \u001b[36m</button>\u001b[39m\n            \u001b[36m</nav>\u001b[39m\n            \u001b[36m<div\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"flex items-center md:hidden\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[36m<button\u001b[39m\n                \u001b[33maria-expanded\u001b[39m=\u001b[32m\"false\"\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-teal-600 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-teal-500\"\u001b[39m\n                \u001b[33mdata-testid\u001b[39m=\u001b[32m\"mobile-menu-button\"\u001b[39m\n                \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[36m<span\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"sr-only\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[0mOpen main menu\u001b[0m\n                \u001b[36m</span>\u001b[39m\n                \u001b[36m<svg\u001b[39m\n                  \u001b[33maria-hidden\u001b[39m=\u001b[32m\"true\"\u001b[39m\n                  \u001b[33mclass\u001b[39m=\u001b[32m\"block h-6 w-6\"\u001b[39m\n                  \u001b[33mfill\u001b[39m=\u001b[32m\"none\"\u001b[39m\n                  \u001b[33mstroke\u001b[39m=\u001b[32m\"currentColor\"\u001b[39m\n                  \u001b[33mviewBox\u001b[39m=\u001b[32m\"0 0 24 24\"\u001b[39m\n                  \u001b[33mxmlns\u001b[39m=\u001b[32m\"http://www.w3.org/2000/svg\"\u001b[39m\n                \u001b[36m>\u001b[39m\n                  \u001b[36m<path\u001b[39m\n                    \u001b[33md\u001b[39m=\u001b[32m\"M4 6h16M4 12h16M4 18h16\"\u001b[39m\n                    \u001b[33mstroke-linecap\u001b[39m=\u001b[32m\"round\"\u001b[39m\n                    \u001b[33mstroke-linejoin\u001b[39m=\u001b[32m\"round\"\u001b[39m\n                    \u001b[33mstroke-width\u001b[39m=\u001b[32m\"2\"\u001b[39m\n                  \u001b[36m/>\u001b[39m\n                \u001b[36m</svg>\u001b[39m\n              \u001b[36m</button>\u001b[39m\n            \u001b[36m</div>\u001b[39m\n          \u001b[36m</div>\u001b[39m\n        \u001b[36m</div>\u001b[39m\n      \u001b[36m</header>\u001b[39m\n      \u001b[36m<main>\u001b[39m\n        \u001b[36m<div>\u001b[39m\n          \u001b[0mContent\u001b[0m\n        \u001b[36m</div>\u001b[39m\n      \u001b[36m</main>\u001b[39m\n    \u001b[36m</div>\u001b[39m\n  \u001b[36m</div>\u001b[39m\n\u001b[36m</body>\u001b[39m"
+          ],
+          "location": {
+            "line": 37,
+            "column": 19
+          }
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "AuthenticatedLayout"
+          ],
+          "fullName": " AuthenticatedLayout renders children content",
+          "status": "passed",
+          "title": "renders children content",
+          "duration": 15,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "AuthenticatedLayout"
+          ],
+          "fullName": " AuthenticatedLayout disables Logout button when loading",
+          "status": "passed",
+          "title": "disables Logout button when loading",
+          "duration": 21,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "AuthenticatedLayout"
+          ],
+          "fullName": " AuthenticatedLayout toggles mobile menu when hamburger button is clicked",
+          "status": "skipped",
+          "title": "toggles mobile menu when hamburger button is clicked",
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "AuthenticatedLayout"
+          ],
+          "fullName": " AuthenticatedLayout closes mobile menu when navigation link is clicked",
+          "status": "skipped",
+          "title": "closes mobile menu when navigation link is clicked",
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314566932,
+      "endTime": 1773314567164,
+      "status": "failed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/components/ui/AuthenticatedLayout.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "SidebarPanel"
+          ],
+          "fullName": " SidebarPanel does not render content when isOpen is false",
+          "status": "passed",
+          "title": "does not render content when isOpen is false",
+          "duration": 69,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "SidebarPanel"
+          ],
+          "fullName": " SidebarPanel renders content when isOpen is true",
+          "status": "passed",
+          "title": "renders content when isOpen is true",
+          "duration": 62,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "SidebarPanel"
+          ],
+          "fullName": " SidebarPanel calls onClose when close button is clicked",
+          "status": "passed",
+          "title": "calls onClose when close button is clicked",
+          "duration": 173,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "SidebarPanel"
+          ],
+          "fullName": " SidebarPanel calls onClose when overlay is clicked",
+          "status": "passed",
+          "title": "calls onClose when overlay is clicked",
+          "duration": 12,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "SidebarPanel"
+          ],
+          "fullName": " SidebarPanel renders with fixed positioning classes",
+          "status": "passed",
+          "title": "renders with fixed positioning classes",
+          "duration": 20,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314585404,
+      "endTime": 1773314585740,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/components/ui/SidebarPanel.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "CategorizedTagSelector"
+          ],
+          "fullName": " CategorizedTagSelector renders all category headings and toggles tag selection",
+          "status": "passed",
+          "title": "renders all category headings and toggles tag selection",
+          "duration": 528,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CategorizedTagSelector"
+          ],
+          "fullName": " CategorizedTagSelector honors disabled state",
+          "status": "passed",
+          "title": "honors disabled state",
+          "duration": 236,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CategorizedTagSelector"
+          ],
+          "fullName": " CategorizedTagSelector shows tag descriptions only when showDescriptions is enabled",
+          "status": "passed",
+          "title": "shows tag descriptions only when showDescriptions is enabled",
+          "duration": 48,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314575496,
+      "endTime": 1773314576308,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/shared/components/CategorizedTagSelector.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "ProfileRadarChart"
+          ],
+          "fullName": " ProfileRadarChart renders the radar chart components",
+          "status": "passed",
+          "title": "renders the radar chart components",
+          "duration": 77,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "ProfileRadarChart"
+          ],
+          "fullName": " ProfileRadarChart renders without crashing with zero scores",
+          "status": "passed",
+          "title": "renders without crashing with zero scores",
+          "duration": 13,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314585429,
+      "endTime": 1773314585519,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/big-five/components/ProfileRadarChart.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "ProfileView"
+          ],
+          "fullName": " ProfileView triggers onRetake when retake button is clicked",
+          "status": "passed",
+          "title": "triggers onRetake when retake button is clicked",
+          "duration": 155,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314588142,
+      "endTime": 1773314588297,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/big-five/components/ProfileView.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "TraitScoreCard"
+          ],
+          "fullName": " TraitScoreCard renders trait label and score correctly",
+          "status": "passed",
+          "title": "renders trait label and score correctly",
+          "duration": 98,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TraitScoreCard"
+          ],
+          "fullName": " TraitScoreCard displays high score interpretation correctly",
+          "status": "passed",
+          "title": "displays high score interpretation correctly",
+          "duration": 22,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TraitScoreCard"
+          ],
+          "fullName": " TraitScoreCard displays low score interpretation correctly",
+          "status": "passed",
+          "title": "displays low score interpretation correctly",
+          "duration": 29,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TraitScoreCard"
+          ],
+          "fullName": " TraitScoreCard displays neutral score interpretation correctly",
+          "status": "passed",
+          "title": "displays neutral score interpretation correctly",
+          "duration": 17,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314585730,
+      "endTime": 1773314585896,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/big-five/components/TraitScoreCard.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "Big Five Interpretation Utils",
+            "getScoreLevel"
+          ],
+          "fullName": " Big Five Interpretation Utils getScoreLevel returns \"low\" for scores < 45",
+          "status": "passed",
+          "title": "returns \"low\" for scores < 45",
+          "duration": 9,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "Big Five Interpretation Utils",
+            "getScoreLevel"
+          ],
+          "fullName": " Big Five Interpretation Utils getScoreLevel returns \"neutral\" for scores 45-55",
+          "status": "passed",
+          "title": "returns \"neutral\" for scores 45-55",
+          "duration": 2,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "Big Five Interpretation Utils",
+            "getScoreLevel"
+          ],
+          "fullName": " Big Five Interpretation Utils getScoreLevel returns \"high\" for scores > 55",
+          "status": "passed",
+          "title": "returns \"high\" for scores > 55",
+          "duration": 0,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "Big Five Interpretation Utils",
+            "getTraitLabel"
+          ],
+          "fullName": " Big Five Interpretation Utils getTraitLabel returns low label for low score",
+          "status": "passed",
+          "title": "returns low label for low score",
+          "duration": 1,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "Big Five Interpretation Utils",
+            "getTraitLabel"
+          ],
+          "fullName": " Big Five Interpretation Utils getTraitLabel returns high label for high score",
+          "status": "passed",
+          "title": "returns high label for high score",
+          "duration": 1,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "Big Five Interpretation Utils",
+            "getTraitLabel"
+          ],
+          "fullName": " Big Five Interpretation Utils getTraitLabel returns \"Balanced\" for neutral score",
+          "status": "passed",
+          "title": "returns \"Balanced\" for neutral score",
+          "duration": 1,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "Big Five Interpretation Utils",
+            "getTraitDescription"
+          ],
+          "fullName": " Big Five Interpretation Utils getTraitDescription returns low description for low score",
+          "status": "passed",
+          "title": "returns low description for low score",
+          "duration": 0,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "Big Five Interpretation Utils",
+            "getTraitDescription"
+          ],
+          "fullName": " Big Five Interpretation Utils getTraitDescription returns high description for high score",
+          "status": "passed",
+          "title": "returns high description for high score",
+          "duration": 2,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "Big Five Interpretation Utils",
+            "getTraitDescription"
+          ],
+          "fullName": " Big Five Interpretation Utils getTraitDescription returns balanced description for neutral score",
+          "status": "passed",
+          "title": "returns balanced description for neutral score",
+          "duration": 1,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "Big Five Interpretation Utils",
+            "getMarkedColor"
+          ],
+          "fullName": " Big Five Interpretation Utils getMarkedColor returns gray for neutral",
+          "status": "passed",
+          "title": "returns gray for neutral",
+          "duration": 0,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "Big Five Interpretation Utils",
+            "getMarkedColor"
+          ],
+          "fullName": " Big Five Interpretation Utils getMarkedColor returns trait color for non-neutral",
+          "status": "passed",
+          "title": "returns trait color for non-neutral",
+          "duration": 0,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314589554,
+      "endTime": 1773314589573,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/big-five/utils/traitInterpretation.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "useBigFiveProfile"
+          ],
+          "fullName": " useBigFiveProfile should start with loading state true",
+          "status": "passed",
+          "title": "should start with loading state true",
+          "duration": 47,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "useBigFiveProfile"
+          ],
+          "fullName": " useBigFiveProfile should return scores on successful fetch",
+          "status": "passed",
+          "title": "should return scores on successful fetch",
+          "duration": 99,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "useBigFiveProfile"
+          ],
+          "fullName": " useBigFiveProfile should handle API errors",
+          "status": "passed",
+          "title": "should handle API errors",
+          "duration": 136,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "useBigFiveProfile"
+          ],
+          "fullName": " useBigFiveProfile should handle non-Error objects thrown",
+          "status": "passed",
+          "title": "should handle non-Error objects thrown",
+          "duration": 111,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314585039,
+      "endTime": 1773314585434,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/big-five/hooks/useBigFiveProfile.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "CategoryCoverageBreakdown"
+          ],
+          "fullName": " CategoryCoverageBreakdown renders all 5 categories with percentages",
+          "status": "passed",
+          "title": "renders all 5 categories with percentages",
+          "duration": 184,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CategoryCoverageBreakdown"
+          ],
+          "fullName": " CategoryCoverageBreakdown renders grid layout with all 5 categories",
+          "status": "passed",
+          "title": "renders grid layout with all 5 categories",
+          "duration": 222,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CategoryCoverageBreakdown"
+          ],
+          "fullName": " CategoryCoverageBreakdown applies green color coding for 75%+ coverage",
+          "status": "passed",
+          "title": "applies green color coding for 75%+ coverage",
+          "duration": 25,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CategoryCoverageBreakdown"
+          ],
+          "fullName": " CategoryCoverageBreakdown applies yellow color coding for 50-74% coverage",
+          "status": "passed",
+          "title": "applies yellow color coding for 50-74% coverage",
+          "duration": 22,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CategoryCoverageBreakdown"
+          ],
+          "fullName": " CategoryCoverageBreakdown applies red color coding for <50% coverage",
+          "status": "passed",
+          "title": "applies red color coding for <50% coverage",
+          "duration": 28,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CategoryCoverageBreakdown"
+          ],
+          "fullName": " CategoryCoverageBreakdown displays warning icon for categories with <50% coverage",
+          "status": "passed",
+          "title": "displays warning icon for categories with <50% coverage",
+          "duration": 66,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CategoryCoverageBreakdown"
+          ],
+          "fullName": " CategoryCoverageBreakdown expands category to show detail view when clicked",
+          "status": "passed",
+          "title": "expands category to show detail view when clicked",
+          "duration": 80,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CategoryCoverageBreakdown"
+          ],
+          "fullName": " CategoryCoverageBreakdown supports keyboard activation (Enter and Space keys)",
+          "status": "passed",
+          "title": "supports keyboard activation (Enter and Space keys)",
+          "duration": 241,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CategoryCoverageBreakdown"
+          ],
+          "fullName": " CategoryCoverageBreakdown shows covered and gap pillars separately",
+          "status": "passed",
+          "title": "shows covered and gap pillars separately",
+          "duration": 82,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CategoryCoverageBreakdown"
+          ],
+          "fullName": " CategoryCoverageBreakdown displays warning badge for categories < 50%",
+          "status": "passed",
+          "title": "displays warning badge for categories < 50%",
+          "duration": 54,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CategoryCoverageBreakdown"
+          ],
+          "fullName": " CategoryCoverageBreakdown displays tiny pillar indicators for covered and gap pillars",
+          "status": "passed",
+          "title": "displays tiny pillar indicators for covered and gap pillars",
+          "duration": 21,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CategoryCoverageBreakdown"
+          ],
+          "fullName": " CategoryCoverageBreakdown renders compact progress bar with correct width",
+          "status": "passed",
+          "title": "renders compact progress bar with correct width",
+          "duration": 25,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CategoryCoverageBreakdown"
+          ],
+          "fullName": " CategoryCoverageBreakdown calls onViewPractices when View Available Practices button clicked",
+          "status": "passed",
+          "title": "calls onViewPractices when View Available Practices button clicked",
+          "duration": 105,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CategoryCoverageBreakdown"
+          ],
+          "fullName": " CategoryCoverageBreakdown only shows View Available Practices button for categories with <50% coverage",
+          "status": "passed",
+          "title": "only shows View Available Practices button for categories with <50% coverage",
+          "duration": 131,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CategoryCoverageBreakdown"
+          ],
+          "fullName": " CategoryCoverageBreakdown collapses category when clicked again",
+          "status": "passed",
+          "title": "collapses category when clicked again",
+          "duration": 89,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CategoryCoverageBreakdown"
+          ],
+          "fullName": " CategoryCoverageBreakdown only shows one category expanded at a time",
+          "status": "passed",
+          "title": "only shows one category expanded at a time",
+          "duration": 65,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CategoryCoverageBreakdown"
+          ],
+          "fullName": " CategoryCoverageBreakdown includes aria-labels for accessibility",
+          "status": "passed",
+          "title": "includes aria-labels for accessibility",
+          "duration": 57,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CategoryCoverageBreakdown"
+          ],
+          "fullName": " CategoryCoverageBreakdown includes progress bar with aria attributes",
+          "status": "passed",
+          "title": "includes progress bar with aria attributes",
+          "duration": 15,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314568864,
+      "endTime": 1773314570380,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/components/CategoryCoverageBreakdown.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "CreatePracticeModal"
+          ],
+          "fullName": " CreatePracticeModal shows two creation options",
+          "status": "passed",
+          "title": "shows two creation options",
+          "duration": 95,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CreatePracticeModal"
+          ],
+          "fullName": " CreatePracticeModal prefills fields and appends (Copy) for template flow",
+          "status": "passed",
+          "title": "prefills fields and appends (Copy) for template flow",
+          "duration": 779,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CreatePracticeModal"
+          ],
+          "fullName": " CreatePracticeModal shows validation errors and blocks submit when required fields are missing",
+          "status": "passed",
+          "title": "shows validation errors and blocks submit when required fields are missing",
+          "duration": 150,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CreatePracticeModal"
+          ],
+          "fullName": " CreatePracticeModal submits optional fields as normalized arrays",
+          "status": "passed",
+          "title": "submits optional fields as normalized arrays",
+          "duration": 623,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CreatePracticeModal",
+            "Template Duplication"
+          ],
+          "fullName": " CreatePracticeModal Template Duplication generates unique copy title when conflicts exist",
+          "status": "passed",
+          "title": "generates unique copy title when conflicts exist",
+          "duration": 158,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CreatePracticeModal",
+            "Template Duplication"
+          ],
+          "fullName": " CreatePracticeModal Template Duplication generates incrementing copy numbers for multiple conflicts",
+          "status": "passed",
+          "title": "generates incrementing copy numbers for multiple conflicts",
+          "duration": 168,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CreatePracticeModal",
+            "Template Duplication"
+          ],
+          "fullName": " CreatePracticeModal Template Duplication includes templatePracticeId when submitting duplicated practice",
+          "status": "passed",
+          "title": "includes templatePracticeId when submitting duplicated practice",
+          "duration": 203,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CreatePracticeModal",
+            "Template Duplication"
+          ],
+          "fullName": " CreatePracticeModal Template Duplication allows editing all fields after template pre-fill",
+          "status": "passed",
+          "title": "allows editing all fields after template pre-fill",
+          "duration": 301,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314568341,
+      "endTime": 1773314570818,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/components/CreatePracticeModal.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "EmptyState"
+          ],
+          "fullName": " EmptyState displays empty state message",
+          "status": "passed",
+          "title": "displays empty state message",
+          "duration": 120,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "EmptyState"
+          ],
+          "fullName": " EmptyState displays Create Team button",
+          "status": "passed",
+          "title": "displays Create Team button",
+          "duration": 315,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "EmptyState"
+          ],
+          "fullName": " EmptyState navigates to team creation form on button click",
+          "status": "passed",
+          "title": "navigates to team creation form on button click",
+          "duration": 88,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "EmptyState"
+          ],
+          "fullName": " EmptyState has proper accessibility attributes",
+          "status": "passed",
+          "title": "has proper accessibility attributes",
+          "duration": 35,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "EmptyState"
+          ],
+          "fullName": " EmptyState renders team icon",
+          "status": "passed",
+          "title": "renders team icon",
+          "duration": 66,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314585114,
+      "endTime": 1773314585739,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/components/EmptyState.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "InviteMembersPanel"
+          ],
+          "fullName": " InviteMembersPanel shows validation error for invalid email",
+          "status": "passed",
+          "title": "shows validation error for invalid email",
+          "duration": 397,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "InviteMembersPanel"
+          ],
+          "fullName": " InviteMembersPanel renders invite list with status chips",
+          "status": "passed",
+          "title": "renders invite list with status chips",
+          "duration": 73,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "InviteMembersPanel"
+          ],
+          "fullName": " InviteMembersPanel resend button calls resendInvite",
+          "status": "passed",
+          "title": "resend button calls resendInvite",
+          "duration": 98,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314577970,
+      "endTime": 1773314578538,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/components/InviteMembersPanel.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "InvitePanel"
+          ],
+          "fullName": " InvitePanel renders invite panel form",
+          "status": "passed",
+          "title": "renders invite panel form",
+          "duration": 236,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "InvitePanel"
+          ],
+          "fullName": " InvitePanel validates empty email",
+          "status": "passed",
+          "title": "validates empty email",
+          "duration": 40,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "InvitePanel"
+          ],
+          "fullName": " InvitePanel validates invalid email format",
+          "status": "passed",
+          "title": "validates invalid email format",
+          "duration": 456,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "InvitePanel"
+          ],
+          "fullName": " InvitePanel enables submit button with valid email",
+          "status": "passed",
+          "title": "enables submit button with valid email",
+          "duration": 364,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "InvitePanel"
+          ],
+          "fullName": " InvitePanel clears validation error when user corrects email",
+          "status": "passed",
+          "title": "clears validation error when user corrects email",
+          "duration": 566,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "InvitePanel"
+          ],
+          "fullName": " InvitePanel shows success message after successful invite",
+          "status": "passed",
+          "title": "shows success message after successful invite",
+          "duration": 368,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "InvitePanel"
+          ],
+          "fullName": " InvitePanel clears email input after successful submission",
+          "status": "passed",
+          "title": "clears email input after successful submission",
+          "duration": 321,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "InvitePanel"
+          ],
+          "fullName": " InvitePanel prevents multiple submissions",
+          "status": "passed",
+          "title": "prevents multiple submissions",
+          "duration": 444,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "InvitePanel"
+          ],
+          "fullName": " InvitePanel displays placeholder text",
+          "status": "passed",
+          "title": "displays placeholder text",
+          "duration": 22,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "InvitePanel"
+          ],
+          "fullName": " InvitePanel has proper accessibility attributes",
+          "status": "passed",
+          "title": "has proper accessibility attributes",
+          "duration": 15,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "InvitePanel"
+          ],
+          "fullName": " InvitePanel marks invalid email with aria-invalid",
+          "status": "passed",
+          "title": "marks invalid email with aria-invalid",
+          "duration": 318,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314568587,
+      "endTime": 1773314571738,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/components/InvitePanel.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "MembersList"
+          ],
+          "fullName": " MembersList renders list of members",
+          "status": "passed",
+          "title": "renders list of members",
+          "duration": 137,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "MembersList"
+          ],
+          "fullName": " MembersList displays join dates",
+          "status": "passed",
+          "title": "displays join dates",
+          "duration": 23,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "MembersList"
+          ],
+          "fullName": " MembersList shows empty state when no members",
+          "status": "passed",
+          "title": "shows empty state when no members",
+          "duration": 21,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "MembersList"
+          ],
+          "fullName": " MembersList opens confirmation dialog when remove button clicked",
+          "status": "passed",
+          "title": "opens confirmation dialog when remove button clicked",
+          "duration": 184,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "MembersList"
+          ],
+          "fullName": " MembersList closes confirmation dialog on cancel",
+          "status": "passed",
+          "title": "closes confirmation dialog on cancel",
+          "duration": 42,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "MembersList"
+          ],
+          "fullName": " MembersList calls onMemberRemoved when confirmed",
+          "status": "passed",
+          "title": "calls onMemberRemoved when confirmed",
+          "duration": 42,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "MembersList"
+          ],
+          "fullName": " MembersList shows removing state on confirm button",
+          "status": "passed",
+          "title": "shows removing state on confirm button",
+          "duration": 51,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "MembersList"
+          ],
+          "fullName": " MembersList displays remove button for each member",
+          "status": "passed",
+          "title": "displays remove button for each member",
+          "duration": 18,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314579925,
+      "endTime": 1773314580443,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/components/MembersList.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "PendingInvitesList"
+          ],
+          "fullName": " PendingInvitesList renders pending invites list",
+          "status": "passed",
+          "title": "renders pending invites list",
+          "duration": 169,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PendingInvitesList"
+          ],
+          "fullName": " PendingInvitesList displays invite status badges",
+          "status": "passed",
+          "title": "displays invite status badges",
+          "duration": 22,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PendingInvitesList"
+          ],
+          "fullName": " PendingInvitesList shows Pending status as yellow badge",
+          "status": "passed",
+          "title": "shows Pending status as yellow badge",
+          "duration": 22,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PendingInvitesList"
+          ],
+          "fullName": " PendingInvitesList shows Failed status as red badge",
+          "status": "passed",
+          "title": "shows Failed status as red badge",
+          "duration": 37,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PendingInvitesList"
+          ],
+          "fullName": " PendingInvitesList displays send dates",
+          "status": "passed",
+          "title": "displays send dates",
+          "duration": 25,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PendingInvitesList"
+          ],
+          "fullName": " PendingInvitesList shows empty state when no pending invites",
+          "status": "passed",
+          "title": "shows empty state when no pending invites",
+          "duration": 17,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PendingInvitesList"
+          ],
+          "fullName": " PendingInvitesList filters out accepted invites",
+          "status": "passed",
+          "title": "filters out accepted invites",
+          "duration": 26,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PendingInvitesList"
+          ],
+          "fullName": " PendingInvitesList displays Retry button for failed invites",
+          "status": "passed",
+          "title": "displays Retry button for failed invites",
+          "duration": 26,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PendingInvitesList"
+          ],
+          "fullName": " PendingInvitesList does not display Retry button for pending invites",
+          "status": "passed",
+          "title": "does not display Retry button for pending invites",
+          "duration": 34,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PendingInvitesList"
+          ],
+          "fullName": " PendingInvitesList calls onInviteRetried callback after retry",
+          "status": "passed",
+          "title": "calls onInviteRetried callback after retry",
+          "duration": 84,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PendingInvitesList"
+          ],
+          "fullName": " PendingInvitesList shows loading state on retry button",
+          "status": "passed",
+          "title": "shows loading state on retry button",
+          "duration": 30,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PendingInvitesList"
+          ],
+          "fullName": " PendingInvitesList displays created date for invites",
+          "status": "passed",
+          "title": "displays created date for invites",
+          "duration": 20,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PendingInvitesList"
+          ],
+          "fullName": " PendingInvitesList has proper table structure",
+          "status": "passed",
+          "title": "has proper table structure",
+          "duration": 182,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PendingInvitesList"
+          ],
+          "fullName": " PendingInvitesList displays invite email in table row",
+          "status": "passed",
+          "title": "displays invite email in table row",
+          "duration": 20,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PendingInvitesList"
+          ],
+          "fullName": " PendingInvitesList has proper accessibility labels",
+          "status": "passed",
+          "title": "has proper accessibility labels",
+          "duration": 20,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314577655,
+      "endTime": 1773314578390,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/components/PendingInvitesList.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeEditForm"
+          ],
+          "fullName": " PracticeEditForm renders pre-filled form fields",
+          "status": "passed",
+          "title": "renders pre-filled form fields",
+          "duration": 525,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeEditForm"
+          ],
+          "fullName": " PracticeEditForm blocks save when validation fails",
+          "status": "passed",
+          "title": "blocks save when validation fails",
+          "duration": 136,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeEditForm"
+          ],
+          "fullName": " PracticeEditForm shows global practice warning when multiple teams are affected",
+          "status": "passed",
+          "title": "shows global practice warning when multiple teams are affected",
+          "duration": 108,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeEditForm"
+          ],
+          "fullName": " PracticeEditForm supports save-as-copy flow",
+          "status": "passed",
+          "title": "supports save-as-copy flow",
+          "duration": 308,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeEditForm"
+          ],
+          "fullName": " PracticeEditForm prompts on close when there are unsaved changes",
+          "status": "passed",
+          "title": "prompts on close when there are unsaved changes",
+          "duration": 115,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeEditForm"
+          ],
+          "fullName": " PracticeEditForm prompts on refresh when there are unsaved changes",
+          "status": "passed",
+          "title": "prompts on refresh when there are unsaved changes",
+          "duration": 202,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314567863,
+      "endTime": 1773314569257,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/components/PracticeEditForm.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeSelectionStep"
+          ],
+          "fullName": " PracticeSelectionStep renders advanced filters and deduplicates trimmed method options",
+          "status": "passed",
+          "title": "renders advanced filters and deduplicates trimmed method options",
+          "duration": 177,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeSelectionStep"
+          ],
+          "fullName": " PracticeSelectionStep filters practices by category and method together",
+          "status": "passed",
+          "title": "filters practices by category and method together",
+          "duration": 113,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314570593,
+      "endTime": 1773314570884,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/components/PracticeSelectionStep.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "RemovePracticeModal"
+          ],
+          "fullName": " RemovePracticeModal renders gap pillar list when removal creates gaps",
+          "status": "passed",
+          "title": "renders gap pillar list when removal creates gaps",
+          "duration": 130,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "RemovePracticeModal"
+          ],
+          "fullName": " RemovePracticeModal renders safe message when removal creates no gaps",
+          "status": "passed",
+          "title": "renders safe message when removal creates no gaps",
+          "duration": 37,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "RemovePracticeModal"
+          ],
+          "fullName": " RemovePracticeModal calls onConfirm when Remove Practice clicked",
+          "status": "passed",
+          "title": "calls onConfirm when Remove Practice clicked",
+          "duration": 145,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314580716,
+      "endTime": 1773314581029,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/components/RemovePracticeModal.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "TeamCard"
+          ],
+          "fullName": " TeamCard displays all team stats correctly",
+          "status": "passed",
+          "title": "displays all team stats correctly",
+          "duration": 83,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamCard"
+          ],
+          "fullName": " TeamCard shows singular labels for count of 1",
+          "status": "passed",
+          "title": "shows singular labels for count of 1",
+          "duration": 13,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamCard"
+          ],
+          "fullName": " TeamCard displays Member role badge correctly",
+          "status": "passed",
+          "title": "displays Member role badge correctly",
+          "duration": 20,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamCard"
+          ],
+          "fullName": " TeamCard navigates to team dashboard on click",
+          "status": "passed",
+          "title": "navigates to team dashboard on click",
+          "duration": 95,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamCard"
+          ],
+          "fullName": " TeamCard navigates to team dashboard on Enter key",
+          "status": "passed",
+          "title": "navigates to team dashboard on Enter key",
+          "duration": 20,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamCard"
+          ],
+          "fullName": " TeamCard navigates to team dashboard on Space key",
+          "status": "passed",
+          "title": "navigates to team dashboard on Space key",
+          "duration": 17,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamCard"
+          ],
+          "fullName": " TeamCard does not navigate on other keys",
+          "status": "passed",
+          "title": "does not navigate on other keys",
+          "duration": 12,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamCard"
+          ],
+          "fullName": " TeamCard formats creation date correctly",
+          "status": "passed",
+          "title": "formats creation date correctly",
+          "duration": 10,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamCard"
+          ],
+          "fullName": " TeamCard applies correct styling for owner role",
+          "status": "passed",
+          "title": "applies correct styling for owner role",
+          "duration": 12,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamCard"
+          ],
+          "fullName": " TeamCard applies correct styling for member role",
+          "status": "passed",
+          "title": "applies correct styling for member role",
+          "duration": 8,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamCard"
+          ],
+          "fullName": " TeamCard has proper accessibility attributes",
+          "status": "passed",
+          "title": "has proper accessibility attributes",
+          "duration": 15,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314581562,
+      "endTime": 1773314581868,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/components/TeamCard.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "TeamCoverageCard"
+          ],
+          "fullName": " TeamCoverageCard renders coverage summary and progress bar",
+          "status": "passed",
+          "title": "renders coverage summary and progress bar",
+          "duration": 214,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamCoverageCard"
+          ],
+          "fullName": " TeamCoverageCard shows covered and gap pillars lists",
+          "status": "passed",
+          "title": "shows covered and gap pillars lists",
+          "duration": 76,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamCoverageCard"
+          ],
+          "fullName": " TeamCoverageCard opens detail modal when clicking covered pillar",
+          "status": "passed",
+          "title": "opens detail modal when clicking covered pillar",
+          "duration": 101,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamCoverageCard"
+          ],
+          "fullName": " TeamCoverageCard adds a practice from gap pillar suggestions and refreshes coverage",
+          "status": "passed",
+          "title": "adds a practice from gap pillar suggestions and refreshes coverage",
+          "duration": 118,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314570164,
+      "endTime": 1773314570674,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/components/TeamCoverageCard.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "TeamDashboard"
+          ],
+          "fullName": " TeamDashboard renders team name and edit button",
+          "status": "passed",
+          "title": "renders team name and edit button",
+          "duration": 359,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamDashboard"
+          ],
+          "fullName": " TeamDashboard activates edit mode when pencil icon is clicked",
+          "status": "passed",
+          "title": "activates edit mode when pencil icon is clicked",
+          "duration": 117,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamDashboard"
+          ],
+          "fullName": " TeamDashboard saves the team name and shows success toast",
+          "status": "passed",
+          "title": "saves the team name and shows success toast",
+          "duration": 157,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314576058,
+      "endTime": 1773314576691,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/components/TeamDashboard.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "TeamIssueStatsCard"
+          ],
+          "fullName": " TeamIssueStatsCard renders loading state initially",
+          "status": "passed",
+          "title": "renders loading state initially",
+          "duration": 89,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamIssueStatsCard"
+          ],
+          "fullName": " TeamIssueStatsCard renders stats correctly after loading",
+          "status": "passed",
+          "title": "renders stats correctly after loading",
+          "duration": 74,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamIssueStatsCard"
+          ],
+          "fullName": " TeamIssueStatsCard handles error state",
+          "status": "passed",
+          "title": "handles error state",
+          "duration": 59,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamIssueStatsCard"
+          ],
+          "fullName": " TeamIssueStatsCard navigates on button click",
+          "status": "passed",
+          "title": "navigates on button click",
+          "duration": 41,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314578910,
+      "endTime": 1773314579173,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/components/TeamIssueStatsCard.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "TeamMembersPanel"
+          ],
+          "fullName": " TeamMembersPanel renders member list with status chips",
+          "status": "passed",
+          "title": "renders member list with status chips",
+          "duration": 148,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamMembersPanel"
+          ],
+          "fullName": " TeamMembersPanel shows pending tooltip and resend action",
+          "status": "passed",
+          "title": "shows pending tooltip and resend action",
+          "duration": 245,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamMembersPanel"
+          ],
+          "fullName": " TeamMembersPanel opens remove confirmation and calls removeMember",
+          "status": "passed",
+          "title": "opens remove confirmation and calls removeMember",
+          "duration": 131,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamMembersPanel"
+          ],
+          "fullName": " TeamMembersPanel shows cancel invite button for pending/failed members and calls cancelInvite via modal",
+          "status": "passed",
+          "title": "shows cancel invite button for pending/failed members and calls cancelInvite via modal",
+          "duration": 78,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314574481,
+      "endTime": 1773314575084,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/components/TeamMembersPanel.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "TeamNameEditor Component"
+          ],
+          "fullName": " TeamNameEditor Component renders input field with current value",
+          "status": "passed",
+          "title": "renders input field with current value",
+          "duration": 109,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamNameEditor Component"
+          ],
+          "fullName": " TeamNameEditor Component displays character count",
+          "status": "passed",
+          "title": "displays character count",
+          "duration": 20,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamNameEditor Component"
+          ],
+          "fullName": " TeamNameEditor Component calls onChange when input changes",
+          "status": "passed",
+          "title": "calls onChange when input changes",
+          "duration": 152,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamNameEditor Component"
+          ],
+          "fullName": " TeamNameEditor Component calls onSave when checkmark button clicked with valid input",
+          "status": "passed",
+          "title": "calls onSave when checkmark button clicked with valid input",
+          "duration": 12,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamNameEditor Component"
+          ],
+          "fullName": " TeamNameEditor Component disables save button when name is too short",
+          "status": "passed",
+          "title": "disables save button when name is too short",
+          "duration": 21,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamNameEditor Component"
+          ],
+          "fullName": " TeamNameEditor Component disables save button when name exceeds 50 characters",
+          "status": "passed",
+          "title": "disables save button when name exceeds 50 characters",
+          "duration": 8,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamNameEditor Component"
+          ],
+          "fullName": " TeamNameEditor Component calls onCancel when X button clicked",
+          "status": "passed",
+          "title": "calls onCancel when X button clicked",
+          "duration": 17,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamNameEditor Component"
+          ],
+          "fullName": " TeamNameEditor Component calls onSave when Enter pressed and input is valid",
+          "status": "passed",
+          "title": "calls onSave when Enter pressed and input is valid",
+          "duration": 31,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamNameEditor Component"
+          ],
+          "fullName": " TeamNameEditor Component calls onCancel when Escape pressed",
+          "status": "passed",
+          "title": "calls onCancel when Escape pressed",
+          "duration": 25,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamNameEditor Component"
+          ],
+          "fullName": " TeamNameEditor Component disables buttons while saving",
+          "status": "passed",
+          "title": "disables buttons while saving",
+          "duration": 5,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamNameEditor Component"
+          ],
+          "fullName": " TeamNameEditor Component truncates input to 50 characters on client side",
+          "status": "passed",
+          "title": "truncates input to 50 characters on client side",
+          "duration": 5,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314579581,
+      "endTime": 1773314579988,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/components/TeamNameEditor.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "TeamPracticesPanel interactions"
+          ],
+          "fullName": " TeamPracticesPanel interactions calls onPracticeClick when title is clicked",
+          "status": "passed",
+          "title": "calls onPracticeClick when title is clicked",
+          "duration": 358,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamPracticesPanel interactions"
+          ],
+          "fullName": " TeamPracticesPanel interactions shows Remove action",
+          "status": "passed",
+          "title": "shows Remove action",
+          "duration": 47,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314580340,
+      "endTime": 1773314580745,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/components/TeamPracticesPanel.click.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "TeamPracticesPanel"
+          ],
+          "fullName": " TeamPracticesPanel shows impacted pillars in confirmation dialog",
+          "status": "passed",
+          "title": "shows impacted pillars in confirmation dialog",
+          "duration": 464,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamPracticesPanel"
+          ],
+          "fullName": " TeamPracticesPanel removes practice on confirm and updates list",
+          "status": "passed",
+          "title": "removes practice on confirm and updates list",
+          "duration": 180,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamPracticesPanel"
+          ],
+          "fullName": " TeamPracticesPanel shows error and keeps item on failure",
+          "status": "passed",
+          "title": "shows error and keeps item on failure",
+          "duration": 122,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamPracticesPanel"
+          ],
+          "fullName": " TeamPracticesPanel calls onPracticeRemoved after successful removal",
+          "status": "passed",
+          "title": "calls onPracticeRemoved after successful removal",
+          "duration": 183,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314570605,
+      "endTime": 1773314571554,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/components/TeamPracticesPanel.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "TeamsList"
+          ],
+          "fullName": " TeamsList renders 3 teams when loaded",
+          "status": "passed",
+          "title": "renders 3 teams when loaded",
+          "duration": 268,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamsList"
+          ],
+          "fullName": " TeamsList shows loading skeleton while fetching",
+          "status": "passed",
+          "title": "shows loading skeleton while fetching",
+          "duration": 78,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamsList"
+          ],
+          "fullName": " TeamsList shows empty state when teams array is empty",
+          "status": "passed",
+          "title": "shows empty state when teams array is empty",
+          "duration": 94,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamsList"
+          ],
+          "fullName": " TeamsList shows error message and retry button on fetch failure",
+          "status": "passed",
+          "title": "shows error message and retry button on fetch failure",
+          "duration": 274,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamsList"
+          ],
+          "fullName": " TeamsList calls fetchTeams on mount",
+          "status": "passed",
+          "title": "calls fetchTeams on mount",
+          "duration": 35,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamsList"
+          ],
+          "fullName": " TeamsList maintains loading skeleton for at least 300ms",
+          "status": "passed",
+          "title": "maintains loading skeleton for at least 300ms",
+          "duration": 16,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314585238,
+      "endTime": 1773314586006,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/components/TeamsList.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "teamPracticesApi",
+            "fetchAvailablePractices"
+          ],
+          "fullName": " teamPracticesApi fetchAvailablePractices fetches available practices with filters",
+          "status": "passed",
+          "title": "fetches available practices with filters",
+          "duration": 8,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "teamPracticesApi",
+            "fetchAvailablePractices"
+          ],
+          "fullName": " teamPracticesApi fetchAvailablePractices handles optional parameters correctly",
+          "status": "passed",
+          "title": "handles optional parameters correctly",
+          "duration": 2,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "teamPracticesApi",
+            "addPracticeToTeam"
+          ],
+          "fullName": " teamPracticesApi addPracticeToTeam adds practice to team successfully",
+          "status": "passed",
+          "title": "adds practice to team successfully",
+          "duration": 2,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "teamPracticesApi",
+            "fetchTeamPractices"
+          ],
+          "fullName": " teamPracticesApi fetchTeamPractices fetches team practices successfully",
+          "status": "passed",
+          "title": "fetches team practices successfully",
+          "duration": 1,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "teamPracticesApi",
+            "removePracticeFromTeam"
+          ],
+          "fullName": " teamPracticesApi removePracticeFromTeam removes practice from team successfully",
+          "status": "passed",
+          "title": "removes practice from team successfully",
+          "duration": 1,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "teamPracticesApi",
+            "createCustomPractice"
+          ],
+          "fullName": " teamPracticesApi createCustomPractice creates a custom practice successfully",
+          "status": "passed",
+          "title": "creates a custom practice successfully",
+          "duration": 1,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "teamPracticesApi",
+            "editPracticeForTeam"
+          ],
+          "fullName": " teamPracticesApi editPracticeForTeam patches practice edits successfully",
+          "status": "passed",
+          "title": "patches practice edits successfully",
+          "duration": 1,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314586614,
+      "endTime": 1773314586633,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/api/teamPracticesApi.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "teamsApi",
+            "getTeams"
+          ],
+          "fullName": " teamsApi getTeams fetches teams successfully",
+          "status": "passed",
+          "title": "fetches teams successfully",
+          "duration": 8,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "teamsApi",
+            "getTeams"
+          ],
+          "fullName": " teamsApi getTeams refreshes and retries on 401",
+          "status": "passed",
+          "title": "refreshes and retries on 401",
+          "duration": 2,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "teamsApi",
+            "getTeams"
+          ],
+          "fullName": " teamsApi getTeams throws ApiError on server error",
+          "status": "passed",
+          "title": "throws ApiError on server error",
+          "duration": 3,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "teamsApi",
+            "getTeams"
+          ],
+          "fullName": " teamsApi getTeams throws ApiError on network error",
+          "status": "passed",
+          "title": "throws ApiError on network error",
+          "duration": 1,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "teamsApi",
+            "getTeams"
+          ],
+          "fullName": " teamsApi getTeams includes request ID in headers",
+          "status": "passed",
+          "title": "includes request ID in headers",
+          "duration": 2,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "teamsApi",
+            "createTeam"
+          ],
+          "fullName": " teamsApi createTeam creates team successfully",
+          "status": "passed",
+          "title": "creates team successfully",
+          "duration": 1,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "teamsApi",
+            "createTeam"
+          ],
+          "fullName": " teamsApi createTeam refreshes and retries on 401",
+          "status": "passed",
+          "title": "refreshes and retries on 401",
+          "duration": 0,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "teamsApi",
+            "ApiError"
+          ],
+          "fullName": " teamsApi ApiError creates error with all properties",
+          "status": "passed",
+          "title": "creates error with all properties",
+          "duration": 1,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314587314,
+      "endTime": 1773314587334,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/api/teamsApi.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "ManagePracticesView"
+          ],
+          "fullName": " ManagePracticesView opens removal modal and shows impact preview",
+          "status": "passed",
+          "title": "opens removal modal and shows impact preview",
+          "duration": 384,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "ManagePracticesView"
+          ],
+          "fullName": " ManagePracticesView confirms removal and shows gap suggestions",
+          "status": "passed",
+          "title": "confirms removal and shows gap suggestions",
+          "duration": 192,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "ManagePracticesView"
+          ],
+          "fullName": " ManagePracticesView shows non-blocking error while keeping practice list visible",
+          "status": "passed",
+          "title": "shows non-blocking error while keeping practice list visible",
+          "duration": 64,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "ManagePracticesView"
+          ],
+          "fullName": " ManagePracticesView refreshes team practices and coverage after creation success",
+          "status": "passed",
+          "title": "refreshes team practices and coverage after creation success",
+          "duration": 189,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "ManagePracticesView"
+          ],
+          "fullName": " ManagePracticesView adds practice and shows success message",
+          "status": "passed",
+          "title": "adds practice and shows success message",
+          "duration": 129,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "ManagePracticesView"
+          ],
+          "fullName": " ManagePracticesView renders advanced filters and loads available methods on mount",
+          "status": "passed",
+          "title": "renders advanced filters and loads available methods on mount",
+          "duration": 55,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314568515,
+      "endTime": 1773314569528,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/pages/ManagePracticesView.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "TeamMembersView"
+          ],
+          "fullName": " TeamMembersView renders the team members page",
+          "status": "passed",
+          "title": "renders the team members page",
+          "duration": 410,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamMembersView"
+          ],
+          "fullName": " TeamMembersView loads members on mount",
+          "status": "passed",
+          "title": "loads members on mount",
+          "duration": 71,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamMembersView"
+          ],
+          "fullName": " TeamMembersView loads invites on mount",
+          "status": "passed",
+          "title": "loads invites on mount",
+          "duration": 53,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamMembersView"
+          ],
+          "fullName": " TeamMembersView displays the back button",
+          "status": "passed",
+          "title": "displays the back button",
+          "duration": 46,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamMembersView"
+          ],
+          "fullName": " TeamMembersView displays members list",
+          "status": "passed",
+          "title": "displays members list",
+          "duration": 59,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamMembersView"
+          ],
+          "fullName": " TeamMembersView displays invite panel",
+          "status": "passed",
+          "title": "displays invite panel",
+          "duration": 56,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamMembersView"
+          ],
+          "fullName": " TeamMembersView displays pending invites section",
+          "status": "passed",
+          "title": "displays pending invites section",
+          "duration": 49,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamMembersView"
+          ],
+          "fullName": " TeamMembersView shows loading state initially",
+          "status": "passed",
+          "title": "shows loading state initially",
+          "duration": 24,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "TeamMembersView"
+          ],
+          "fullName": " TeamMembersView handles member removal",
+          "status": "passed",
+          "title": "handles member removal",
+          "duration": 124,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314573352,
+      "endTime": 1773314574246,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/pages/TeamMembersView.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "addPracticesSlice"
+          ],
+          "fullName": " addPracticesSlice loads available practices successfully",
+          "status": "passed",
+          "title": "loads available practices successfully",
+          "duration": 7,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "addPracticesSlice"
+          ],
+          "fullName": " addPracticesSlice handles error when loading practices fails",
+          "status": "passed",
+          "title": "handles error when loading practices fails",
+          "duration": 3,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "addPracticesSlice"
+          ],
+          "fullName": " addPracticesSlice removes practice from list after successful add",
+          "status": "passed",
+          "title": "removes practice from list after successful add",
+          "duration": 2,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "addPracticesSlice"
+          ],
+          "fullName": " addPracticesSlice handles duplicate practice error",
+          "status": "passed",
+          "title": "handles duplicate practice error",
+          "duration": 2,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "addPracticesSlice"
+          ],
+          "fullName": " addPracticesSlice resets search query and page when setSearchQuery called",
+          "status": "passed",
+          "title": "resets search query and page when setSearchQuery called",
+          "duration": 1,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "addPracticesSlice"
+          ],
+          "fullName": " addPracticesSlice toggles pillar selection correctly",
+          "status": "passed",
+          "title": "toggles pillar selection correctly",
+          "duration": 2,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "addPracticesSlice"
+          ],
+          "fullName": " addPracticesSlice clears all filters",
+          "status": "passed",
+          "title": "clears all filters",
+          "duration": 0,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314586817,
+      "endTime": 1773314586836,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/state/addPracticesSlice.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "invitesSlice"
+          ],
+          "fullName": " invitesSlice initializes with empty state",
+          "status": "passed",
+          "title": "initializes with empty state",
+          "duration": 36,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "invitesSlice"
+          ],
+          "fullName": " invitesSlice fetches invites successfully",
+          "status": "passed",
+          "title": "fetches invites successfully",
+          "duration": 8,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "invitesSlice"
+          ],
+          "fullName": " invitesSlice sets loading state while fetching",
+          "status": "passed",
+          "title": "sets loading state while fetching",
+          "duration": 186,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "invitesSlice"
+          ],
+          "fullName": " invitesSlice handles fetch error",
+          "status": "passed",
+          "title": "handles fetch error",
+          "duration": 15,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "invitesSlice"
+          ],
+          "fullName": " invitesSlice creates invite successfully",
+          "status": "passed",
+          "title": "creates invite successfully",
+          "duration": 9,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "invitesSlice"
+          ],
+          "fullName": " invitesSlice sets creating state while creating invite",
+          "status": "passed",
+          "title": "sets creating state while creating invite",
+          "duration": 6,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "invitesSlice"
+          ],
+          "fullName": " invitesSlice handles create error",
+          "status": "passed",
+          "title": "handles create error",
+          "duration": 30,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "invitesSlice"
+          ],
+          "fullName": " invitesSlice handles invalid email error",
+          "status": "passed",
+          "title": "handles invalid email error",
+          "duration": 18,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "invitesSlice"
+          ],
+          "fullName": " invitesSlice resends invite successfully",
+          "status": "passed",
+          "title": "resends invite successfully",
+          "duration": 6,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "invitesSlice"
+          ],
+          "fullName": " invitesSlice sets resending state while resending",
+          "status": "passed",
+          "title": "sets resending state while resending",
+          "duration": 16,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "invitesSlice"
+          ],
+          "fullName": " invitesSlice handles resend error",
+          "status": "passed",
+          "title": "handles resend error",
+          "duration": 24,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "invitesSlice"
+          ],
+          "fullName": " invitesSlice resets state",
+          "status": "passed",
+          "title": "resets state",
+          "duration": 4,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "invitesSlice"
+          ],
+          "fullName": " invitesSlice calls API with correct parameters",
+          "status": "passed",
+          "title": "calls API with correct parameters",
+          "duration": 5,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "invitesSlice"
+          ],
+          "fullName": " invitesSlice handles session expired during create",
+          "status": "passed",
+          "title": "handles session expired during create",
+          "duration": 30,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "invitesSlice"
+          ],
+          "fullName": " invitesSlice maintains existing invites when adding new one",
+          "status": "passed",
+          "title": "maintains existing invites when adding new one",
+          "duration": 21,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314578233,
+      "endTime": 1773314578649,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/state/invitesSlice.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "membersSlice"
+          ],
+          "fullName": " membersSlice initializes with empty state",
+          "status": "passed",
+          "title": "initializes with empty state",
+          "duration": 31,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "membersSlice"
+          ],
+          "fullName": " membersSlice fetches members successfully",
+          "status": "passed",
+          "title": "fetches members successfully",
+          "duration": 9,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "membersSlice"
+          ],
+          "fullName": " membersSlice sets loading state while fetching",
+          "status": "passed",
+          "title": "sets loading state while fetching",
+          "duration": 164,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "membersSlice"
+          ],
+          "fullName": " membersSlice handles fetch error",
+          "status": "passed",
+          "title": "handles fetch error",
+          "duration": 15,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "membersSlice"
+          ],
+          "fullName": " membersSlice handles session expired error",
+          "status": "passed",
+          "title": "handles session expired error",
+          "duration": 12,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "membersSlice"
+          ],
+          "fullName": " membersSlice removes member successfully",
+          "status": "passed",
+          "title": "removes member successfully",
+          "duration": 6,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "membersSlice"
+          ],
+          "fullName": " membersSlice sets removing state while removing member",
+          "status": "passed",
+          "title": "sets removing state while removing member",
+          "duration": 4,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "membersSlice"
+          ],
+          "fullName": " membersSlice handles remove error",
+          "status": "passed",
+          "title": "handles remove error",
+          "duration": 5,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "membersSlice"
+          ],
+          "fullName": " membersSlice resets state",
+          "status": "passed",
+          "title": "resets state",
+          "duration": 9,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "membersSlice"
+          ],
+          "fullName": " membersSlice calls API with correct parameters",
+          "status": "passed",
+          "title": "calls API with correct parameters",
+          "duration": 5,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "membersSlice"
+          ],
+          "fullName": " membersSlice removes only the specified member",
+          "status": "passed",
+          "title": "removes only the specified member",
+          "duration": 5,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314581609,
+      "endTime": 1773314581878,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/state/membersSlice.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "teamsSlice",
+            "fetchTeams"
+          ],
+          "fullName": " teamsSlice fetchTeams sets isLoading true then updates teams on success",
+          "status": "passed",
+          "title": "sets isLoading true then updates teams on success",
+          "duration": 63,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "teamsSlice",
+            "fetchTeams"
+          ],
+          "fullName": " teamsSlice fetchTeams handles network errors and sets error message",
+          "status": "passed",
+          "title": "handles network errors and sets error message",
+          "duration": 10,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "teamsSlice",
+            "fetchTeams"
+          ],
+          "fullName": " teamsSlice fetchTeams handles 401 unauthorized errors",
+          "status": "passed",
+          "title": "handles 401 unauthorized errors",
+          "duration": 30,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "teamsSlice",
+            "fetchTeams"
+          ],
+          "fullName": " teamsSlice fetchTeams handles generic errors",
+          "status": "passed",
+          "title": "handles generic errors",
+          "duration": 31,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "teamsSlice",
+            "reset"
+          ],
+          "fullName": " teamsSlice reset clears all state",
+          "status": "passed",
+          "title": "clears all state",
+          "duration": 19,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "teamsSlice",
+            "createTeam"
+          ],
+          "fullName": " teamsSlice createTeam sets isCreating and refreshes teams on success",
+          "status": "passed",
+          "title": "sets isCreating and refreshes teams on success",
+          "duration": 4,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "teamsSlice",
+            "createTeam"
+          ],
+          "fullName": " teamsSlice createTeam sets error message on failure",
+          "status": "passed",
+          "title": "sets error message on failure",
+          "duration": 35,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314586462,
+      "endTime": 1773314586656,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/teams/state/teamsSlice.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "LoginForm"
+          ],
+          "fullName": " LoginForm disables submit until valid email and password are provided",
+          "status": "passed",
+          "title": "disables submit until valid email and password are provided",
+          "duration": 1086,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "LoginForm"
+          ],
+          "fullName": " LoginForm shows error on invalid email format",
+          "status": "passed",
+          "title": "shows error on invalid email format",
+          "duration": 454,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "LoginForm"
+          ],
+          "fullName": " LoginForm shows error on password shorter than 8 characters",
+          "status": "passed",
+          "title": "shows error on password shorter than 8 characters",
+          "duration": 238,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "LoginForm"
+          ],
+          "fullName": " LoginForm shows generic error on invalid credentials and keeps form values",
+          "status": "passed",
+          "title": "shows generic error on invalid credentials and keeps form values",
+          "duration": 775,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "LoginForm"
+          ],
+          "fullName": " LoginForm renders a link to the signup page",
+          "status": "passed",
+          "title": "renders a link to the signup page",
+          "duration": 32,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314568587,
+      "endTime": 1773314571172,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/auth/components/LoginForm.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "authApi race condition handling"
+          ],
+          "fullName": " authApi race condition handling should handle multiple simultaneous refresh calls without duplicate requests",
+          "status": "passed",
+          "title": "should handle multiple simultaneous refresh calls without duplicate requests",
+          "duration": 141,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "authApi race condition handling"
+          ],
+          "fullName": " authApi race condition handling should allow subsequent refresh after first completes",
+          "status": "passed",
+          "title": "should allow subsequent refresh after first completes",
+          "duration": 160,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "authApi race condition handling"
+          ],
+          "fullName": " authApi race condition handling should reset refreshPromise after failure",
+          "status": "passed",
+          "title": "should reset refreshPromise after failure",
+          "duration": 1,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314584694,
+      "endTime": 1773314584996,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/auth/api/authApi.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "affinityBadgeUtils"
+          ],
+          "fullName": " affinityBadgeUtils maps threshold boundaries correctly",
+          "status": "passed",
+          "title": "maps threshold boundaries correctly",
+          "duration": 2,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "affinityBadgeUtils"
+          ],
+          "fullName": " affinityBadgeUtils formats scores and N/A values",
+          "status": "passed",
+          "title": "formats scores and N/A values",
+          "duration": 0,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "AffinityBadge"
+          ],
+          "fullName": " AffinityBadge renders score rows and N/A state",
+          "status": "passed",
+          "title": "renders score rows and N/A state",
+          "duration": 137,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "AffinityBadge"
+          ],
+          "fullName": " AffinityBadge shows tooltip content when legend button is activated",
+          "status": "passed",
+          "title": "shows tooltip content when legend button is activated",
+          "duration": 231,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314583309,
+      "endTime": 1773314583680,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/practices/components/AffinityBadge.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "PillarContextPopover"
+          ],
+          "fullName": " PillarContextPopover renders pillar details correctly",
+          "status": "passed",
+          "title": "renders pillar details correctly",
+          "duration": 202,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PillarContextPopover"
+          ],
+          "fullName": " PillarContextPopover calls onClose when close button is clicked",
+          "status": "passed",
+          "title": "calls onClose when close button is clicked",
+          "duration": 240,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PillarContextPopover"
+          ],
+          "fullName": " PillarContextPopover displays related team practices and global discovery practices separately",
+          "status": "passed",
+          "title": "displays related team practices and global discovery practices separately",
+          "duration": 107,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PillarContextPopover"
+          ],
+          "fullName": " PillarContextPopover handles global fetching when teamId is missing",
+          "status": "passed",
+          "title": "handles global fetching when teamId is missing",
+          "duration": 59,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PillarContextPopover"
+          ],
+          "fullName": " PillarContextPopover calls onNavigateToPractice when a related practice is clicked",
+          "status": "passed",
+          "title": "calls onNavigateToPractice when a related practice is clicked",
+          "duration": 59,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PillarContextPopover"
+          ],
+          "fullName": " PillarContextPopover logs view event on mount",
+          "status": "passed",
+          "title": "logs view event on mount",
+          "duration": 23,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PillarContextPopover"
+          ],
+          "fullName": " PillarContextPopover applies correct color class based on category",
+          "status": "passed",
+          "title": "applies correct color class based on category",
+          "duration": 33,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314577089,
+      "endTime": 1773314577822,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/practices/components/PillarContextPopover.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeCard"
+          ],
+          "fullName": " PracticeCard renders practice content and handles select",
+          "status": "passed",
+          "title": "renders practice content and handles select",
+          "duration": 138,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314585397,
+      "endTime": 1773314585535,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/practices/components/PracticeCard.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeDetailSidebar"
+          ],
+          "fullName": " PracticeDetailSidebar opens pillar context popover when clicking a pillar",
+          "status": "passed",
+          "title": "opens pillar context popover when clicking a pillar",
+          "duration": 306,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeDetailSidebar"
+          ],
+          "fullName": " PracticeDetailSidebar calls onNavigateToPractice when triggered from popover",
+          "status": "passed",
+          "title": "calls onNavigateToPractice when triggered from popover",
+          "duration": 106,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeDetailSidebar"
+          ],
+          "fullName": " PracticeDetailSidebar fetches practice details when opened",
+          "status": "passed",
+          "title": "fetches practice details when opened",
+          "duration": 75,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeDetailSidebar"
+          ],
+          "fullName": " PracticeDetailSidebar shows Add to Team button when provided and not in team",
+          "status": "passed",
+          "title": "shows Add to Team button when provided and not in team",
+          "duration": 73,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeDetailSidebar"
+          ],
+          "fullName": " PracticeDetailSidebar shows Remove from Team button when provided and in team",
+          "status": "passed",
+          "title": "shows Remove from Team button when provided and in team",
+          "duration": 81,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeDetailSidebar"
+          ],
+          "fullName": " PracticeDetailSidebar shows Edit button when onEdit is provided",
+          "status": "passed",
+          "title": "shows Edit button when onEdit is provided",
+          "duration": 70,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeDetailSidebar"
+          ],
+          "fullName": " PracticeDetailSidebar renders activities in sequence order with name and description",
+          "status": "passed",
+          "title": "renders activities in sequence order with name and description",
+          "duration": 50,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeDetailSidebar"
+          ],
+          "fullName": " PracticeDetailSidebar renders completion criteria text",
+          "status": "passed",
+          "title": "renders completion criteria text",
+          "duration": 75,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeDetailSidebar"
+          ],
+          "fullName": " PracticeDetailSidebar renders metrics with name, unit, and formula",
+          "status": "passed",
+          "title": "renders metrics with name, unit, and formula",
+          "duration": 59,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeDetailSidebar"
+          ],
+          "fullName": " PracticeDetailSidebar renders metrics without unit or formula when only the metric name is provided",
+          "status": "passed",
+          "title": "renders metrics without unit or formula when only the metric name is provided",
+          "duration": 58,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeDetailSidebar"
+          ],
+          "fullName": " PracticeDetailSidebar renders guideline link when url is non-empty",
+          "status": "passed",
+          "title": "renders guideline link when url is non-empty",
+          "duration": 46,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeDetailSidebar"
+          ],
+          "fullName": " PracticeDetailSidebar renders associated practices and navigates to target practice when clicked",
+          "status": "passed",
+          "title": "renders associated practices and navigates to target practice when clicked",
+          "duration": 83,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeDetailSidebar"
+          ],
+          "fullName": " PracticeDetailSidebar renders associated practices as non-interactive content when navigation is unavailable",
+          "status": "passed",
+          "title": "renders associated practices as non-interactive content when navigation is unavailable",
+          "duration": 70,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeDetailSidebar"
+          ],
+          "fullName": " PracticeDetailSidebar renders fallback text for null and empty extended fields without crashing",
+          "status": "passed",
+          "title": "renders fallback text for null and empty extended fields without crashing",
+          "duration": 65,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeDetailSidebar"
+          ],
+          "fullName": " PracticeDetailSidebar shows tag tooltip description for a known valid tag",
+          "status": "passed",
+          "title": "shows tag tooltip description for a known valid tag",
+          "duration": 57,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeDetailSidebar"
+          ],
+          "fullName": " PracticeDetailSidebar does not crash and does not show tooltip text for unknown tag",
+          "status": "passed",
+          "title": "does not crash and does not show tooltip text for unknown tag",
+          "duration": 38,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314568124,
+      "endTime": 1773314569436,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/practices/components/PracticeDetailSidebar.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "TagFilter"
+          ],
+          "fullName": " TagFilter renders categorized selector and updates selected tags",
+          "status": "passed",
+          "title": "renders categorized selector and updates selected tags",
+          "duration": 578,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314573149,
+      "endTime": 1773314573727,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/practices/components/TagFilter.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "authSlice"
+          ],
+          "fullName": " authSlice login() calls authApi.loginUser and sets user",
+          "status": "passed",
+          "title": "login() calls authApi.loginUser and sets user",
+          "duration": 8,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "authSlice"
+          ],
+          "fullName": " authSlice logout() calls authApi.logoutUser and resets state",
+          "status": "passed",
+          "title": "logout() calls authApi.logoutUser and resets state",
+          "duration": 2,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "authSlice"
+          ],
+          "fullName": " authSlice refreshSession() calls authApi.refreshAccessToken",
+          "status": "failed",
+          "title": "refreshSession() calls authApi.refreshAccessToken",
+          "duration": 99,
+          "failureMessages": [
+            "Session expired. Please log in again."
+          ]
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "authSlice"
+          ],
+          "fullName": " authSlice persists user and isAuthenticated to localStorage",
+          "status": "passed",
+          "title": "persists user and isAuthenticated to localStorage",
+          "duration": 1,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "authSlice"
+          ],
+          "fullName": " authSlice reset() clears state",
+          "status": "passed",
+          "title": "reset() clears state",
+          "duration": 1,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314566663,
+      "endTime": 1773314566774,
+      "status": "failed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/auth/state/authSlice.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "affinity.api"
+          ],
+          "fullName": " affinity.api calls individual affinity route with request id header",
+          "status": "passed",
+          "title": "calls individual affinity route with request id header",
+          "duration": 12,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "affinity.api"
+          ],
+          "fullName": " affinity.api calls team affinity route and parses status payload",
+          "status": "passed",
+          "title": "calls team affinity route and parses status payload",
+          "duration": 2,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "affinity.api"
+          ],
+          "fullName": " affinity.api maps non-ok responses to ApiError",
+          "status": "passed",
+          "title": "maps non-ok responses to ApiError",
+          "duration": 3,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314589385,
+      "endTime": 1773314589402,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/practices/api/affinity.api.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "fetchPractices"
+          ],
+          "fullName": " fetchPractices returns parsed practices response",
+          "status": "passed",
+          "title": "returns parsed practices response",
+          "duration": 9,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "fetchPractices"
+          ],
+          "fullName": " fetchPractices throws ApiError on network failure",
+          "status": "passed",
+          "title": "throws ApiError on network failure",
+          "duration": 2,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "fetchPractices"
+          ],
+          "fullName": " fetchPractices throws ApiError on non-ok response",
+          "status": "passed",
+          "title": "throws ApiError on non-ok response",
+          "duration": 6,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "fetchPractices"
+          ],
+          "fullName": " fetchPractices adds search and pillar query params",
+          "status": "passed",
+          "title": "adds search and pillar query params",
+          "duration": 3,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "logCatalogSearched"
+          ],
+          "fullName": " logCatalogSearched posts catalog searched event",
+          "status": "passed",
+          "title": "posts catalog searched event",
+          "duration": 2,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "logAffinityDisplayed"
+          ],
+          "fullName": " logAffinityDisplayed posts affinity.displayed event payload",
+          "status": "passed",
+          "title": "posts affinity.displayed event payload",
+          "duration": 3,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314589478,
+      "endTime": 1773314589505,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/practices/api/practices.api.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeCatalog"
+          ],
+          "fullName": " PracticeCatalog shows skeleton while loading",
+          "status": "passed",
+          "title": "shows skeleton while loading",
+          "duration": 189,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeCatalog"
+          ],
+          "fullName": " PracticeCatalog renders practices list",
+          "status": "passed",
+          "title": "renders practices list",
+          "duration": 93,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeCatalog"
+          ],
+          "fullName": " PracticeCatalog shows empty state when no practices",
+          "status": "passed",
+          "title": "shows empty state when no practices",
+          "duration": 51,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeCatalog"
+          ],
+          "fullName": " PracticeCatalog shows search empty state message with query",
+          "status": "passed",
+          "title": "shows search empty state message with query",
+          "duration": 51,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeCatalog"
+          ],
+          "fullName": " PracticeCatalog debounces search input and updates query",
+          "status": "passed",
+          "title": "debounces search input and updates query",
+          "duration": 403,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeCatalog"
+          ],
+          "fullName": " PracticeCatalog clears search input when clicking the clear button",
+          "status": "passed",
+          "title": "clears search input when clicking the clear button",
+          "duration": 106,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeCatalog"
+          ],
+          "fullName": " PracticeCatalog shows pillar dropdown options and toggles selection",
+          "status": "passed",
+          "title": "shows pillar dropdown options and toggles selection",
+          "duration": 477,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeCatalog"
+          ],
+          "fullName": " PracticeCatalog allows multiple pillar selection",
+          "status": "passed",
+          "title": "allows multiple pillar selection",
+          "duration": 117,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeCatalog"
+          ],
+          "fullName": " PracticeCatalog clears filters from the active filters section",
+          "status": "passed",
+          "title": "clears filters from the active filters section",
+          "duration": 65,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeCatalog"
+          ],
+          "fullName": " PracticeCatalog shows toast when results update under active filters",
+          "status": "passed",
+          "title": "shows toast when results update under active filters",
+          "duration": 72,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "PracticeCatalog"
+          ],
+          "fullName": " PracticeCatalog shows error state with retry",
+          "status": "passed",
+          "title": "shows error state with retry",
+          "duration": 17,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314568517,
+      "endTime": 1773314570158,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/practices/pages/PracticeCatalog.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "practices.slice"
+          ],
+          "fullName": " practices.slice loads practices and marks catalog viewed",
+          "status": "passed",
+          "title": "loads practices and marks catalog viewed",
+          "duration": 6,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "practices.slice"
+          ],
+          "fullName": " practices.slice logs catalog searched when filters are active",
+          "status": "failed",
+          "title": "logs catalog searched when filters are active",
+          "duration": 16,
+          "failureMessages": [
+            "expected \"spy\" to be called with arguments: [ { teamId: 5, …(3) } ]\u001b[90m\n\nReceived: \n\n\u001b[1m  1st spy call:\n\n\u001b[22m\u001b[2m  Array [\u001b[22m\n\u001b[2m    Object {\u001b[22m\n\u001b[31m+     \"categoriesSelected\": Array [],\u001b[90m\n\u001b[31m+     \"methodsSelected\": Array [],\u001b[90m\n\u001b[2m      \"pillarsSelected\": Array [],\u001b[22m\n\u001b[2m      \"query\": \"standup\",\u001b[22m\n\u001b[31m+     \"tagsSelected\": Array [],\u001b[90m\n\u001b[2m      \"teamId\": 5,\u001b[22m\n\u001b[32m-     \"timestamp\": Any<String>,\u001b[90m\n\u001b[31m+     \"timestamp\": \"2026-03-12T11:22:46.763Z\",\u001b[90m\n\u001b[2m    },\u001b[22m\n\u001b[2m  ]\u001b[22m\n\u001b[39m\u001b[90m\n\nNumber of calls: \u001b[1m1\u001b[22m\n\u001b[39m"
+          ],
+          "location": {
+            "line": 86,
+            "column": 42
+          }
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "practices.slice"
+          ],
+          "fullName": " practices.slice sets error on failure",
+          "status": "passed",
+          "title": "sets error on failure",
+          "duration": 1,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "practices.slice"
+          ],
+          "fullName": " practices.slice retries with last page params and logs with teamId",
+          "status": "failed",
+          "title": "retries with last page params and logs with teamId",
+          "duration": 4,
+          "failureMessages": [
+            "expected 1st \"spy\" call to have been called with [ 2, 5, undefined, undefined ]"
+          ],
+          "location": {
+            "line": 111,
+            "column": 38
+          }
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "practices.slice"
+          ],
+          "fullName": " practices.slice updates search and pillar filters",
+          "status": "passed",
+          "title": "updates search and pillar filters",
+          "duration": 1,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "practices.slice"
+          ],
+          "fullName": " practices.slice setPillarFilters updates selected pillars",
+          "status": "passed",
+          "title": "setPillarFilters updates selected pillars",
+          "duration": 0,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "practices.slice"
+          ],
+          "fullName": " practices.slice clears filters",
+          "status": "passed",
+          "title": "clears filters",
+          "duration": 1,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "practices.slice"
+          ],
+          "fullName": " practices.slice selectFilteredPractices applies search and pillar filters",
+          "status": "passed",
+          "title": "selectFilteredPractices applies search and pillar filters",
+          "duration": 1,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "practices.slice"
+          ],
+          "fullName": " practices.slice selectHasActiveFilters returns true when search or pillar filters are set",
+          "status": "passed",
+          "title": "selectHasActiveFilters returns true when search or pillar filters are set",
+          "duration": 0,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "practices.slice"
+          ],
+          "fullName": " practices.slice selectResultCount returns total",
+          "status": "passed",
+          "title": "selectResultCount returns total",
+          "duration": 1,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "practices.slice"
+          ],
+          "fullName": " practices.slice loads available pillars from practices",
+          "status": "passed",
+          "title": "loads available pillars from practices",
+          "duration": 20,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314566756,
+      "endTime": 1773314566807,
+      "status": "failed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/practices/state/practices.slice.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "CommentForm"
+          ],
+          "fullName": " CommentForm renders correctly",
+          "status": "passed",
+          "title": "renders correctly",
+          "duration": 331,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CommentForm"
+          ],
+          "fullName": " CommentForm enables button when input is provided",
+          "status": "passed",
+          "title": "enables button when input is provided",
+          "duration": 69,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CommentForm"
+          ],
+          "fullName": " CommentForm loads draft from localStorage",
+          "status": "passed",
+          "title": "loads draft from localStorage",
+          "duration": 29,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CommentForm"
+          ],
+          "fullName": " CommentForm saves draft to localStorage on change",
+          "status": "passed",
+          "title": "saves draft to localStorage on change",
+          "duration": 18,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CommentForm"
+          ],
+          "fullName": " CommentForm calls onSubmit and clears localStorage on successful submission",
+          "status": "passed",
+          "title": "calls onSubmit and clears localStorage on successful submission",
+          "duration": 90,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "CommentForm"
+          ],
+          "fullName": " CommentForm disables input and button while submitting",
+          "status": "passed",
+          "title": "disables input and button while submitting",
+          "duration": 20,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314577188,
+      "endTime": 1773314577746,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/issues/components/__tests__/CommentForm.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "DecisionModal"
+          ],
+          "fullName": " DecisionModal renders correctly when open",
+          "status": "passed",
+          "title": "renders correctly when open",
+          "duration": 249,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "DecisionModal"
+          ],
+          "fullName": " DecisionModal does not render when closed",
+          "status": "passed",
+          "title": "does not render when closed",
+          "duration": 14,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "DecisionModal"
+          ],
+          "fullName": " DecisionModal shows validation error if text is too short",
+          "status": "passed",
+          "title": "shows validation error if text is too short",
+          "duration": 262,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "DecisionModal"
+          ],
+          "fullName": " DecisionModal submits successfully and closes modal on success",
+          "status": "passed",
+          "title": "submits successfully and closes modal on success",
+          "duration": 139,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314576336,
+      "endTime": 1773314577000,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/issues/components/__tests__/DecisionModal.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "IssueDetailView"
+          ],
+          "fullName": " IssueDetailView renders issue details after loading",
+          "status": "passed",
+          "title": "renders issue details after loading",
+          "duration": 456,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "IssueDetailView"
+          ],
+          "fullName": " IssueDetailView shows error if not found",
+          "status": "passed",
+          "title": "shows error if not found",
+          "duration": 31,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "IssueDetailView"
+          ],
+          "fullName": " IssueDetailView renders one RecommendationWidget per linked practice",
+          "status": "passed",
+          "title": "renders one RecommendationWidget per linked practice",
+          "duration": 98,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314582364,
+      "endTime": 1773314582950,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/issues/components/__tests__/IssueDetailView.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "IssueSubmissionModal"
+          ],
+          "fullName": " IssueSubmissionModal renders correctly when open",
+          "status": "passed",
+          "title": "renders correctly when open",
+          "duration": 288,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "IssueSubmissionModal"
+          ],
+          "fullName": " IssueSubmissionModal validates required fields",
+          "status": "passed",
+          "title": "validates required fields",
+          "duration": 157,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "IssueSubmissionModal"
+          ],
+          "fullName": " IssueSubmissionModal submits form with valid data",
+          "status": "passed",
+          "title": "submits form with valid data",
+          "duration": 1467,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314569029,
+      "endTime": 1773314570941,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/issues/components/__tests__/IssueSubmissionModal.test.tsx"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "",
+            "RecommendationWidget"
+          ],
+          "fullName": " RecommendationWidget displays loading skeleton initially",
+          "status": "passed",
+          "title": "displays loading skeleton initially",
+          "duration": 103,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "RecommendationWidget"
+          ],
+          "fullName": " RecommendationWidget renders recommendation cards after loading",
+          "status": "passed",
+          "title": "renders recommendation cards after loading",
+          "duration": 110,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "RecommendationWidget"
+          ],
+          "fullName": " RecommendationWidget displays at most 3 recommendations even if more are returned",
+          "status": "passed",
+          "title": "displays at most 3 recommendations even if more are returned",
+          "duration": 73,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "RecommendationWidget"
+          ],
+          "fullName": " RecommendationWidget shows empty state when no recommendations",
+          "status": "passed",
+          "title": "shows empty state when no recommendations",
+          "duration": 36,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "RecommendationWidget"
+          ],
+          "fullName": " RecommendationWidget shows error state when API fails",
+          "status": "passed",
+          "title": "shows error state when API fails",
+          "duration": 32,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "RecommendationWidget"
+          ],
+          "fullName": " RecommendationWidget calls onPracticeClick when a recommendation card is clicked",
+          "status": "passed",
+          "title": "calls onPracticeClick when a recommendation card is clicked",
+          "duration": 302,
+          "failureMessages": []
+        },
+        {
+          "ancestorTitles": [
+            "",
+            "RecommendationWidget"
+          ],
+          "fullName": " RecommendationWidget fetches recommendations with correct teamId and practiceId",
+          "status": "passed",
+          "title": "fetches recommendations with correct teamId and practiceId",
+          "duration": 12,
+          "failureMessages": []
+        }
+      ],
+      "startTime": 1773314578283,
+      "endTime": 1773314578952,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/nmatton/OneDrive - Université de Namur/PhD_Nicolas_Matton/AgilePractices/APR_proto/bmad_version/client/src/features/issues/components/__tests__/RecommendationWidget.test.tsx"
+    }
+  ]
+}

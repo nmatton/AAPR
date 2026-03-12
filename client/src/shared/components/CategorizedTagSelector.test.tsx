@@ -36,4 +36,27 @@ describe('CategorizedTagSelector', () => {
     const checkbox = screen.getByRole('checkbox', { name: 'Written / Async-Ready' })
     expect(checkbox).toBeDisabled()
   })
+
+  it('shows tag descriptions only when showDescriptions is enabled', () => {
+    const onChange = vi.fn()
+
+    const { rerender } = render(
+      <CategorizedTagSelector
+        selectedTags={[]}
+        onChange={onChange}
+      />
+    )
+
+    expect(screen.getByText('Remote-Friendly')).not.toHaveAttribute('title')
+
+    rerender(
+      <CategorizedTagSelector
+        selectedTags={[]}
+        onChange={onChange}
+        showDescriptions
+      />
+    )
+
+    expect(screen.getByText('Remote-Friendly')).toHaveAttribute('title', 'Well suited for remote work')
+  })
 })

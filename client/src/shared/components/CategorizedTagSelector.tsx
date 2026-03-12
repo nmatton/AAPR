@@ -1,15 +1,17 @@
-import { TAG_CATEGORIES, normalizeValidTags, type ValidTag } from '../constants/tags.constants'
+import { TAG_CATEGORIES, TAG_DESCRIPTIONS, normalizeValidTags, type ValidTag } from '../constants/tags.constants'
 
 interface CategorizedTagSelectorProps {
   selectedTags: string[]
   onChange: (tags: ValidTag[]) => void
   disabled?: boolean
+  showDescriptions?: boolean
 }
 
 export const CategorizedTagSelector = ({
   selectedTags,
   onChange,
-  disabled = false
+  disabled = false,
+  showDescriptions = false
 }: CategorizedTagSelectorProps) => {
   const normalizedSelectedTags = normalizeValidTags(selectedTags)
   const selectedSet = new Set<string>(normalizedSelectedTags)
@@ -38,7 +40,7 @@ export const CategorizedTagSelector = ({
                   disabled={disabled}
                   className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
                 />
-                <span>{tag}</span>
+                <span title={showDescriptions ? TAG_DESCRIPTIONS[tag] : undefined}>{tag}</span>
               </label>
             ))}
           </div>
