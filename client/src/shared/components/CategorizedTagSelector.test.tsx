@@ -37,7 +37,7 @@ describe('CategorizedTagSelector', () => {
     expect(checkbox).toBeDisabled()
   })
 
-  it('shows tag descriptions only when showDescriptions is enabled', () => {
+  it('shows tag descriptions on hover only when showDescriptions is enabled', () => {
     const onChange = vi.fn()
 
     const { rerender } = render(
@@ -47,7 +47,8 @@ describe('CategorizedTagSelector', () => {
       />
     )
 
-    expect(screen.getByText('Remote-Friendly')).not.toHaveAttribute('title')
+    fireEvent.mouseEnter(screen.getByText('Remote-Friendly'))
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
 
     rerender(
       <CategorizedTagSelector
@@ -57,6 +58,12 @@ describe('CategorizedTagSelector', () => {
       />
     )
 
-    expect(screen.getByText('Remote-Friendly')).toHaveAttribute('title', 'Well suited for remote work')
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
+
+    fireEvent.mouseEnter(screen.getByText('Remote-Friendly'))
+    expect(screen.getByRole('tooltip')).toHaveTextContent('Well suited for remote work')
+
+    fireEvent.mouseLeave(screen.getByText('Remote-Friendly'))
+    expect(screen.queryByRole('tooltip')).not.toBeInTheDocument()
   })
 })

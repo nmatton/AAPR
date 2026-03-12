@@ -1,4 +1,5 @@
 import { TAG_CATEGORIES, TAG_DESCRIPTIONS, normalizeValidTags, type ValidTag } from '../constants/tags.constants'
+import { Tooltip } from './Tooltip'
 
 interface CategorizedTagSelectorProps {
   selectedTags: string[]
@@ -40,7 +41,13 @@ export const CategorizedTagSelector = ({
                   disabled={disabled}
                   className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed"
                 />
-                <span title={showDescriptions ? TAG_DESCRIPTIONS[tag] : undefined}>{tag}</span>
+                {showDescriptions ? (
+                  <Tooltip content={TAG_DESCRIPTIONS[tag]}>
+                    <span>{tag}</span>
+                  </Tooltip>
+                ) : (
+                  <span>{tag}</span>
+                )}
               </label>
             ))}
           </div>

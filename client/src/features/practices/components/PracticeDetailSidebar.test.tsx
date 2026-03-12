@@ -370,7 +370,11 @@ describe('PracticeDetailSidebar', () => {
 
         await waitFor(() => expect(screen.getByText('Remote-Friendly')).toBeInTheDocument());
 
-        expect(screen.getByText('Well suited for remote work')).toBeInTheDocument();
+        expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
+        fireEvent.mouseEnter(screen.getByText('Remote-Friendly'));
+        expect(screen.getByRole('tooltip')).toHaveTextContent('Well suited for remote work');
+        fireEvent.mouseLeave(screen.getByText('Remote-Friendly'));
+        expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
     });
 
     it('does not crash and does not show tooltip text for unknown tag', async () => {
@@ -390,6 +394,8 @@ describe('PracticeDetailSidebar', () => {
 
         await waitFor(() => expect(screen.getByText('unknown-tag-xyz')).toBeInTheDocument());
 
+        fireEvent.mouseEnter(screen.getByText('unknown-tag-xyz'));
+        expect(screen.queryByRole('tooltip')).not.toBeInTheDocument();
         expect(screen.queryByText('Well suited for remote work')).not.toBeInTheDocument();
     });
 });
