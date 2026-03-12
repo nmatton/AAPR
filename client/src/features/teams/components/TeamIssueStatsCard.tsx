@@ -54,10 +54,39 @@ export const TeamIssueStatsCard = ({ teamId }: TeamIssueStatsCardProps) => {
     if (!stats) return null;
 
     const { total, byStatus } = stats;
-    // Calculate percentages
-    const openPct = total > 0 ? (byStatus.open / total) * 100 : 0;
-    const wipPct = total > 0 ? (byStatus.in_progress / total) * 100 : 0;
-    const donePct = total > 0 ? (byStatus.done / total) * 100 : 0;
+    const statusSegments = [
+        {
+            key: 'open',
+            label: 'Open',
+            count: byStatus.open,
+            colorClass: 'bg-blue-500',
+        },
+        {
+            key: 'in_progress',
+            label: 'In Progress',
+            count: byStatus.in_progress,
+            colorClass: 'bg-yellow-500',
+        },
+        {
+            key: 'adaptation_in_progress',
+            label: 'Adaptation in progress',
+            count: byStatus.adaptation_in_progress,
+            colorClass: 'bg-orange-500',
+        },
+        {
+            key: 'evaluated',
+            label: 'Evaluated',
+            count: byStatus.evaluated,
+            colorClass: 'bg-purple-500',
+        },
+        {
+            key: 'done',
+            label: 'Done',
+            count: byStatus.done,
+            colorClass: 'bg-green-500',
+        },
+    ] as const;
+    const segmentTotal = statusSegments.reduce((sum, segment) => sum + segment.count, 0);
 
     return (
         <aside className="bg-white border rounded-lg p-4 mt-4" data-testid="team-issue-stats-card">
@@ -70,24 +99,27 @@ export const TeamIssueStatsCard = ({ teamId }: TeamIssueStatsCardProps) => {
 
                 {/* Mini Bar Chart */}
                 <div className="mt-2 h-3 w-full rounded-full bg-gray-200 flex overflow-hidden">
-                    <div className="h-full bg-blue-500" style={{ width: `${openPct}%` }} title={`Open: ${byStatus.open}`} />
-                    <div className="h-full bg-yellow-500" style={{ width: `${wipPct}%` }} title={`In Progress: ${byStatus.in_progress}`} />
-                    <div className="h-full bg-green-500" style={{ width: `${donePct}%` }} title={`Done: ${byStatus.done}`} />
+                    {statusSegments.map(segment => {
+                        const width = segmentTotal > 0 ? (segment.count / segmentTotal) * 100 : 0;
+                        return (
+                            <div
+                                key={segment.key}
+                                data-testid={`issue-status-segment-${segment.key}`}
+                                className={`h-full ${segment.colorClass}`}
+                                style={{ width: `${width}%` }}
+                                title={`${segment.label}: ${segment.count}`}
+                            />
+                        );
+                    })}
                 </div>
 
-                <div className="mt-2 flex justify-between text-[10px] text-gray-500">
-                    <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                        <span>Op ({byStatus.open})</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                        <span>WIP ({byStatus.in_progress})</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                        <span>Dn ({byStatus.done})</span>
-                    </div>
+                <div className="mt-2 flex flex-wrap gap-2 text-[10px] text-gray-500">
+                    {statusSegments.map(segment => (
+                        <div key={`legend-${segment.key}`} className="flex items-center gap-1">
+                            <div className={`w-2 h-2 rounded-full ${segment.colorClass}`}></div>
+                            <span>{segment.label} ({segment.count})</span>
+                        </div>
+                    ))}
                 </div>
 
                 <button
