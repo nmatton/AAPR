@@ -120,3 +120,36 @@ export const resendInvite = async (
     next(error)
   }
 }
+
+export const cancelInvite = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const paramsResult = inviteIdSchema.safeParse(req.params)
+
+    if (!paramsResult.success) {
+      const details = toValidationError(paramsResult.error.issues)
+      throw new AppError('validation_error', 'Request validation failed', details, 400)
+    }
+
+    const { teamId, inviteId } = paramsResult.data
+    const userId = req.user!.userId
+
+    await invitesService.cancelInvite(teamId, inviteId, userId)
+
+    res.setHeader('x-request-id', req.id || 'unknown')
+    // Story says "Return structured response with requestId and 200/204 status."
+    res.status(200).json({
+      success: true,
+      requestId: req.id
+    })
+  } catch (error: any) {
+    if (error && req.id) {
+      error.requestId = req.id
+    }
+    next(error)
+  }
+}
+

@@ -17,6 +17,9 @@ jest.mock('../lib/prisma', () => ({
     team: {
       findUnique: jest.fn()
     },
+    event: {
+      create: jest.fn()
+    },
     $transaction: jest.fn()
   }
 }))
@@ -76,5 +79,84 @@ describe('invites.service resendInvite', () => {
         errorMessage: null
       })
     )
+  })
+})
+
+describe('invites.service cancelInvite', () => {
+  const teamId = 1
+  const inviteId = 33
+  const canceledBy = 7
+
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('cancels a pending invite successfully', async () => {
+    ;(invitesRepository.findInviteById as jest.MockedFunction<typeof invitesRepository.findInviteById>).mockResolvedValue({
+      id: inviteId,
+      teamId,
+      email: 'pending@example.com',
+      status: 'Pending',
+      invitedBy: 1,
+      invitedUserId: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      lastSentAt: new Date(),
+      errorMessage: null
+    })
+    ;(invitesRepository.deleteInvite as jest.MockedFunction<typeof invitesRepository.deleteInvite>).mockResolvedValue({
+      id: inviteId,
+      teamId,
+      email: 'pending@example.com',
+      status: 'Pending',
+      invitedBy: 1,
+      invitedUserId: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      lastSentAt: new Date(),
+      errorMessage: null
+    })
+    ;(prisma.$transaction as jest.MockedFunction<typeof prisma.$transaction>).mockImplementation(async (cb: any) => {
+      return cb(prisma)
+    })
+    ;(prisma.event.create as jest.MockedFunction<typeof prisma.event.create>).mockResolvedValue({} as any)
+
+    const { cancelInvite } = require('./invites.service')
+    await cancelInvite(teamId, inviteId, canceledBy)
+
+    expect(invitesRepository.deleteInvite).toHaveBeenCalledWith(inviteId, prisma)
+    expect(prisma.event.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          eventType: 'invite.cancelled',
+          entityType: 'team_invite',
+          entityId: inviteId,
+          action: 'cancelled',
+          teamId,
+          actorId: canceledBy,
+          payload: expect.objectContaining({
+            timestamp: expect.any(String)
+          })
+        })
+      })
+    )
+  })
+
+  it('throws error if invite is already Added', async () => {
+    ;(invitesRepository.findInviteById as jest.MockedFunction<typeof invitesRepository.findInviteById>).mockResolvedValue({
+      id: inviteId,
+      teamId,
+      email: 'added@example.com',
+      status: 'Added',
+      invitedBy: 1,
+      invitedUserId: 2,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      lastSentAt: new Date(),
+      errorMessage: null
+    })
+
+    const { cancelInvite } = require('./invites.service')
+    await expect(cancelInvite(teamId, inviteId, canceledBy)).rejects.toThrow('Cannot cancel an accepted invitation')
   })
 })

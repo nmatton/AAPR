@@ -97,3 +97,11 @@ export const resendInvite = async (teamId: number, inviteId: number): Promise<Te
   )
   return data.invite
 }
+
+export const cancelInvite = async (teamId: number, inviteId: number): Promise<void> => {
+  await requestWithRefresh<{ success: boolean }>(
+    `/api/v1/teams/${teamId}/invites/${inviteId}`,
+    { method: 'DELETE' }
+  )
+}
+

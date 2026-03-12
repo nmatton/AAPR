@@ -72,7 +72,15 @@ teamsRouter.get('/:teamId/invites', requireAuth, validateTeamMembership, invites
 teamsRouter.post('/:teamId/invites/:inviteId/resend', requireAuth, validateTeamMembership, invitesController.resendInvite);
 
 /**
+ * DELETE /api/v1/teams/:teamId/invites/:inviteId
+ * Cancel/remove a pending team invite
+ * Protected by requireAuth + team membership validation
+ */
+teamsRouter.delete('/:teamId/invites/:inviteId', requireAuth, validateTeamMembership, invitesController.cancelInvite);
+
+/**
  * GET /api/v1/teams/:teamId/members
+
  * List team members with invite status
  * Protected by requireAuth + team membership validation
  */

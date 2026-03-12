@@ -11,6 +11,7 @@ import { prisma } from '../lib/prisma'
 
 jest.mock('../services/members.service')
 jest.mock('../services/teams.service')
+jest.mock('../services/invites.service')
 jest.mock('../services/auth.service', () => {
   const actual = jest.requireActual('../services/auth.service') as typeof import('../services/auth.service')
   return {
@@ -95,6 +96,26 @@ describe('teams routes - members', () => {
     expect(response.status).toBe(200)
     expect(response.body.removed).toBe(true)
     expect(response.body.requestId).toBeDefined()
+  })
+
+  it('DELETE /api/v1/teams/:teamId/invites/:inviteId cancels an invite', async () => {
+    // We mock the invites controller since teams.routes imports invites.controller,
+    // wait, actually teams.routes.test.ts isn't mocking controllers, it's mocking services.
+    // Let me check if invites.service is mocked. It's not mocked in this file.
+    // I need to add jest.mock('../services/invites.service') at the top.
+    
+    // I'll add the test assuming I will mock it shortly.
+    const invitesService = require('../services/invites.service')
+    jest.spyOn(invitesService, 'cancelInvite').mockResolvedValue(undefined)
+
+    const response = await request(app)
+      .delete('/api/v1/teams/1/invites/33')
+      .set('Authorization', 'Bearer test-token')
+
+    expect(response.status).toBe(200)
+    expect(response.body.success).toBe(true)
+    expect(response.body.requestId).toBeDefined()
+    expect(invitesService.cancelInvite).toHaveBeenCalledWith(1, 33, 1) // teamId, inviteId, userId
   })
 })
 

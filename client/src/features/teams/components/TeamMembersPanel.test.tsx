@@ -139,4 +139,45 @@ describe('TeamMembersPanel', () => {
       expect(removeMemberMock).toHaveBeenCalledWith(teamId, 5)
     })
   })
+
+  it('shows cancel invite button for pending/failed members and calls cancelInvite via modal', async () => {
+    const getMembersMock = vi.mocked(membersApi.getMembers)
+    const cancelInviteMock = vi.mocked(invitesApi.cancelInvite)
+
+    getMembersMock.mockResolvedValue([
+      {
+        id: 7,
+        name: 'Pending Member',
+        email: 'pending@example.com',
+        joinDate: '2026-01-15T10:00:00.000Z',
+        inviteStatus: 'Pending',
+        bigFiveCompleted: false
+      }
+    ])
+    cancelInviteMock.mockResolvedValue(undefined)
+
+    render(
+      <BrowserRouter>
+        <TeamMembersPanel teamId={teamId} />
+      </BrowserRouter>
+    )
+
+    const cancelButtons = await screen.findAllByRole('button', { name: /Cancel Invite/i })
+    expect(cancelButtons).toHaveLength(1)
+
+    // Click cancel button to open modal
+    fireEvent.click(cancelButtons[0])
+
+    // Wait for modal text
+    expect(await screen.findByText(/Cancel Invitation\?/i)).toBeInTheDocument()
+    expect(screen.getByText(/Are you sure you want to cancel the invitation for pending@example.com\?/i)).toBeInTheDocument()
+
+    // Confirm cancel
+    const modalConfirmButtons = screen.getAllByRole('button', { name: 'Cancel Invite' })
+    fireEvent.click(modalConfirmButtons[modalConfirmButtons.length - 1])
+
+    await waitFor(() => {
+      expect(cancelInviteMock).toHaveBeenCalledWith(teamId, 7)
+    })
+  })
 })

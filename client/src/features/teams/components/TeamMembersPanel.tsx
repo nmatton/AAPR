@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getMembers, removeMember, ApiError } from '../api/membersApi'
-import { resendInvite } from '../api/invitesApi'
+import { resendInvite, cancelInvite as cancelInviteApi } from '../api/invitesApi'
 import type { TeamMemberSummary } from '../types/member.types'
 import type { InviteStatus } from '../types/invite.types'
 
@@ -28,6 +28,8 @@ export const TeamMembersPanel = ({ teamId }: TeamMembersPanelProps) => {
   const [hoveredMemberId, setHoveredMemberId] = useState<number | null>(null)
   const [removeTarget, setRemoveTarget] = useState<TeamMemberSummary | null>(null)
   const [isRemoving, setIsRemoving] = useState(false)
+  const [cancelTarget, setCancelTarget] = useState<{ id: number; email: string } | null>(null)
+  const [isCanceling, setIsCanceling] = useState(false)
 
   const addedMembersCount = useMemo(() => {
     return members.filter((member) => member.inviteStatus === 'Added').length
@@ -75,6 +77,22 @@ export const TeamMembersPanel = ({ teamId }: TeamMembersPanelProps) => {
       setToast({ type: 'success', message: 'Invite email resent.' })
     } catch (error) {
       setToast({ type: 'error', message: 'Failed to resend invite.' })
+    }
+  }
+
+  const handleCancelConfirm = async () => {
+    if (!cancelTarget) return
+    setIsCanceling(true)
+    
+    try {
+      await cancelInviteApi(teamId, cancelTarget.id)
+      setMembers((prev) => prev.filter((member) => member.id !== cancelTarget.id))
+      setToast({ type: 'success', message: 'Invitation cancelled successfully' })
+      setCancelTarget(null)
+    } catch (error) {
+      setToast({ type: 'error', message: 'Failed to cancel invitation.' })
+    } finally {
+      setIsCanceling(false)
     }
   }
 
@@ -204,6 +222,19 @@ export const TeamMembersPanel = ({ teamId }: TeamMembersPanelProps) => {
                 </button>
               )}
 
+              {(member.inviteStatus === 'Pending' || member.inviteStatus === 'Failed') && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    setCancelTarget({ id: member.id, email: member.email })
+                  }}
+                  className="text-sm font-medium text-red-600 hover:text-red-700"
+                >
+                  Cancel Invite
+                </button>
+              )}
+
               {member.inviteStatus === 'Added' && (
                 <button
                   type="button"
@@ -248,6 +279,34 @@ export const TeamMembersPanel = ({ teamId }: TeamMembersPanelProps) => {
                 className="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
               >
                 {isRemoving ? 'Removing...' : 'Remove'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {cancelTarget && (
+        <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-md rounded-lg bg-white p-6 shadow-xl">
+            <h4 className="text-lg font-semibold text-gray-800">Cancel Invitation?</h4>
+            <p className="mt-2 text-sm text-gray-600">
+              Are you sure you want to cancel the invitation for {cancelTarget.email}?
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setCancelTarget(null)}
+                className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700"
+              >
+                Go Back
+              </button>
+              <button
+                type="button"
+                onClick={handleCancelConfirm}
+                disabled={isCanceling}
+                className="rounded-md bg-red-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+              >
+                {isCanceling ? 'Canceling...' : 'Cancel Invite'}
               </button>
             </div>
           </div>

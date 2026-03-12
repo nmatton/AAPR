@@ -360,6 +360,52 @@ export const resendInvite = async (
 }
 
 /**
+ * Cancel an existing team invite (must be Pending or Failed)
+ * 
+ * @param teamId - Team identifier
+ * @param inviteId - Invite identifier
+ * @param canceledBy - User ID requesting the cancellation (for audit trail)
+ * @throws AppError with code 'invite_not_found' if invite doesn't exist (404)
+ * @throws AppError with code 'invalid_invite_status' if invite is already Added (400)
+ */
+export const cancelInvite = async (
+  teamId: number,
+  inviteId: number,
+  canceledBy: number
+): Promise<void> => {
+  const invite = await invitesRepository.findInviteById(teamId, inviteId)
+  if (!invite) {
+    throw new AppError('invite_not_found', 'Invite not found', { inviteId }, 404)
+  }
+
+  if (invite.status === 'Added') {
+    throw new AppError('invalid_invite_status', 'Cannot cancel an accepted invitation', { inviteId }, 400)
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await invitesRepository.deleteInvite(inviteId, tx)
+
+    await tx.event.create({
+      data: {
+        eventType: 'invite.cancelled',
+        actorId: canceledBy,
+        teamId,
+        entityType: 'team_invite',
+        entityId: inviteId,
+        action: 'cancelled',
+        payload: {
+          inviteId,
+          teamId,
+          email: invite.email,
+          timestamp: new Date().toISOString()
+        },
+        schemaVersion: 'v1'
+      }
+    })
+  })
+}
+
+/**
  * Auto-resolve pending invites when a user signs up with matching email
  * Called during user registration transaction
  * 

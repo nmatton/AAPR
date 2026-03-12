@@ -61,3 +61,14 @@ export const updateInvite = async (
     data
   })
 }
+
+export const deleteInvite = async (
+  inviteId: number,
+  db?: PrismaClientLike
+): Promise<TeamInvite> => {
+  return getDb(db).teamInvite.delete({
+    where: {
+      id: inviteId
+    }
+  })
+}
