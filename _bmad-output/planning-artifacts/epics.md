@@ -11,8 +11,8 @@ workflowType: 'epics-and-stories'
 project_name: 'bmad_version'
 user_name: 'nicolas'
 date: '2026-01-15'
-epicStructure: 'Sequential delivery (Epic 1 → 2 → 3 → 4 → 4.1 → 5, Epic 6 parallel)'
-totalEpics: 8
+epicStructure: 'Sequential delivery (Epic 1 → 2 → 3 → 4 → 4.1 → 5, Epic 6 parallel, Epic 7 future deployment track)'
+totalEpics: 9
 totalFRsCovered: 22
 totalNFRsCovered: 18
 ---
@@ -139,6 +139,7 @@ The platform is a research-grade web application enabling development teams to s
 | **Epic 4.1: Affinity Scoring Foundation** | Explainable personality-practice fit signals for individuals and teams before recommendation ranking | FR12A-12B | NFR6, NFR12-14 |
 | **Epic 5: Adaptation Decision & Tracking** | Recorded practice changes with coverage-aware and affinity-aware recommendations and full audit trail | FR15-18 | NFR5-6, NFR12-14 |
 | **Epic 6: Research Data Integrity** | Complete, queryable, immutable event logs for analysis | FR17 | NFR5-9, NFR12-14 |
+| **Epic 7: Deployment Architecture & CI/CD Automation** | Multi-instance Docker deployment on one server with isolated data and merge-triggered automated rollout | FR20 (extended operationalization) | NFR8-9, NFR12-14, NFR15-17 |
 
 ---
 
@@ -2247,6 +2248,39 @@ So that **the issue status bar and legend accurately reflect reality**.
 
 **Stories:**
 
+#### Story 6.0: Produce Complete Event Coverage Documentation Before Event Logging Implementation
+
+As a researcher,
+I want a complete and structured inventory of all user actions and corresponding logged events,
+So that I can validate research observability coverage before executing Epic 6 implementation stories.
+
+**Acceptance Criteria:**
+
+- **Given** the current codebase and planning artifacts
+  **When** I perform a full analysis of user interactions and system mutations
+  **Then** I produce an "Event Coverage Documentation" file in the docs folder
+  **And** it includes all user-facing actions grouped by domain (Auth, Teams, Practices, Issues, Big Five, Export)
+
+- **Given** each user action in scope
+  **When** I map it to backend behavior
+  **Then** the documentation states whether an event is currently logged
+  **And** includes the implemented event type(s) when present
+  **And** highlights coverage gaps when missing
+
+- **Given** the event coverage matrix
+  **When** I review the artifact
+  **Then** I can trace each action to endpoint, service, event type, and payload fields relevant to research
+
+- **Given** the analysis identifies gaps or inconsistencies
+  **When** the document is finalized
+  **Then** it includes prioritized recommendations for Story 6.1-6.3 implementation and validation
+
+- **Given** the documentation is completed
+  **When** I review Definition of Done for Story 6.0
+  **Then** the artifact is versioned in markdown, reproducible by another researcher, and explicitly references the source code locations used for the analysis
+
+---
+
 #### Story 6.1: Log All DB-Affecting Events (Excluding Auth/Composition)
 
 As a researcher,
@@ -2360,12 +2394,79 @@ So that **I can analyze specific periods or events for research**.
 
 ---
 
+### Epic 7: Deployment Architecture & CI/CD Automation
+
+**Epic Goal:** Provide a production-grade deployment architecture using Docker Compose with environment-variable-driven multi-instance operation and merge-triggered CI/CD rollout automation.
+
+**User Value:** Reliable, repeatable, and isolated deployments for multiple application instances on the same server with minimal manual intervention.
+
+**FRs Covered:** FR20 (extended from manual provisioning to scripted and automated operational deployment)
+
+**Scope:** Containerize frontend/backend for production → single compose architecture with per-instance env profiles → isolated DB/storage/network per instance → SSH-based deployment scripts → merge-triggered CI/CD deployment and smoke checks.
+
+**Stories:**
+
+#### Story 7.1: Containerize Frontend and Backend for Production Runtime
+
+As a developer,
+I want production-ready Dockerfiles for frontend and backend,
+So that both services can run consistently across environments.
+
+#### Story 7.2: Implement Parameterized Multi-Instance Docker Compose Architecture
+
+As an operator,
+I want one compose template driven by environment variables,
+So that I can run multiple isolated instances on the same server without duplicating compose files.
+
+#### Story 7.3: Provision Isolated Data, Storage, and Network per Instance
+
+As an operator,
+I want each instance to use dedicated database naming, volumes, and networks,
+So that data and runtime resources do not mix between instances.
+
+#### Story 7.4: Define and Validate Instance Environment Contracts (stu, hms, elia)
+
+As an operator,
+I want explicit env profiles for each instance,
+So that ports and identifiers are deterministic and validated before deployment.
+
+**Acceptance baseline for instance ports:**
+- `stu`: frontend `5173`, backend `3000`
+- `hms`: frontend `5174`, backend `3001`
+- `elia`: frontend `5175`, backend `3002`
+
+#### Story 7.5: Build SSH-Based Deployment Scripts for Merge-Triggered Updates
+
+As a release engineer,
+I want idempotent SSH deployment scripts,
+So that remote instances can be updated safely from CI after merges.
+
+#### Story 7.6: Add CI/CD Workflow for Deployment Validation and Rollout
+
+As a release engineer,
+I want a branch-merge-triggered deployment workflow,
+So that updates are validated and deployed automatically with controlled failure handling.
+
+#### Story 7.7: Add Server-Focused Smoke and Resilience Checks in Pipeline Scope
+
+As QA,
+I want CI checks focused on deployment/server behavior,
+So that pipeline coverage targets production risks while broader app tests remain local.
+
+#### Story 7.8: Update Infrastructure Runbook and Operational Documentation
+
+As a technical writer,
+I want complete deployment runbooks and environment documentation,
+So that the team can operate and troubleshoot multi-instance production deployments confidently.
+
+---
+
 ## Summary & Next Steps
 
 **Total FRs covered:** 20 functional requirements
 **Total NFRs covered:** 18 non-functional requirements
-**Epics:** 8 major epics (including Epic 2.1 UX refinement and Epic 4.1 affinity scoring)
-**Stories:** 52 detailed user stories
+**Epics:** 9 major epics (including Epic 2.1 UX refinement, Epic 4.1 affinity scoring, and Epic 7 deployment automation)
+**Stories:** 61 detailed user stories
 
 **Story Breakdown by Epic:**
 - Epic 1 (Authentication & Team Onboarding): 9 stories
@@ -2376,9 +2477,10 @@ So that **I can analyze specific periods or events for research**.
 - Epic 4.1 (Affinity Scoring Foundation): 2 stories
 - Epic 4.2 (Practice Recommendations on Issues): 2 stories
 - Epic 5 (Adaptation Decision & Tracking): 4 stories
-- Epic 6 (Research Data Integrity & Event Logging): 3 stories
+- Epic 6 (Research Data Integrity & Event Logging): 4 stories
+- Epic 7 (Deployment Architecture & CI/CD Automation): 8 stories
 
-**Delivery Sequence:** Epic 1 → Epic 2 → Epic 2.1 → Epic 3 → Epic 4 → Epic 4.1 → Epic 4.2 → Epic 5 (Epic 6 runs in parallel)
+**Delivery Sequence:** Epic 1 → Epic 2 → Epic 2.1 → Epic 3 → Epic 4 → Epic 4.1 → Epic 4.2 → Epic 5 (Epic 6 runs in parallel) → Epic 7 as future deployment track
 
 **Key Improvements in Epic 2.1:**
 - ✅ Team dashboard redesigned with practices as central focus

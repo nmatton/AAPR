@@ -298,6 +298,13 @@ export const getIssues = async (teamId: number, options: Omit<issueRepository.Fi
 
 export const getIssueStats = async (teamId: number) => {
     const statusCounts = await issueRepository.countByStatus(teamId);
+    const statusKeyMap = {
+        OPEN: 'open',
+        IN_DISCUSSION: 'in_progress',
+        ADAPTATION_IN_PROGRESS: 'adaptation_in_progress',
+        EVALUATED: 'evaluated',
+        RESOLVED: 'done'
+    } as const;
 
     const total = statusCounts.reduce((acc, curr) => acc + curr._count._all, 0);
 
@@ -310,16 +317,16 @@ export const getIssueStats = async (teamId: number) => {
     };
 
     statusCounts.forEach(stat => {
-        let key: keyof typeof byStatus | null = null;
-        if (stat.status === 'OPEN') key = 'open';
-        else if (stat.status === 'IN_DISCUSSION') key = 'in_progress';
-        else if (stat.status === 'ADAPTATION_IN_PROGRESS') key = 'adaptation_in_progress';
-        else if (stat.status === 'EVALUATED') key = 'evaluated';
-        else if (stat.status === 'RESOLVED') key = 'done';
+        const key = statusKeyMap[stat.status as keyof typeof statusKeyMap];
 
-        if (key) {
-            byStatus[key] = stat._count._all;
+        if (!key) {
+            throw new AppError('internal_error', 'Unsupported issue status in stats aggregation', {
+                status: stat.status,
+                teamId
+            }, 500);
         }
+
+        byStatus[key] = stat._count._all;
     });
 
     return { total, byStatus };

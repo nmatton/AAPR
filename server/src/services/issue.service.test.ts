@@ -289,6 +289,18 @@ describe('getIssueStats', () => {
             }
         });
     });
+
+    it('should throw if an unmapped issue status is returned by the repository', async () => {
+        const issueRepo = require('../repositories/issue.repository');
+        issueRepo.countByStatus.mockResolvedValue([
+            { status: 'OPEN', _count: { _all: 1 } },
+            { status: 'ARCHIVED', _count: { _all: 2 } }
+        ]);
+
+        const service = await import('./issue.service') as any;
+
+        await expect(service.getIssueStats(teamId)).rejects.toThrow('Unsupported issue status in stats aggregation');
+    });
 });
 
 describe('recordDecision', () => {
