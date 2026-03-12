@@ -1,0 +1,16 @@
+node_modules
+npm-debug.log*
+Dockerfile
+.git
+.gitignore
+coverage
+dist
+.env
+.env.*
+logs
+test_output.txt
+test_errors.txt
+test_errors_2.txt
+test_failure.txt
+jest_out.txt
+out.txt

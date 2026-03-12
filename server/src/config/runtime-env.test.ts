@@ -1,0 +1,53 @@
+import { validateRuntimeEnv } from './runtime-env'
+
+describe('validateRuntimeEnv', () => {
+  it('does not throw when NODE_ENV is not production', () => {
+    expect(() =>
+      validateRuntimeEnv({
+        NODE_ENV: 'development',
+      })
+    ).not.toThrow()
+  })
+
+  it('throws when mandatory production variables are missing', () => {
+    expect(() =>
+      validateRuntimeEnv({
+        NODE_ENV: 'production',
+        PORT: '3000',
+      })
+    ).toThrow('Missing mandatory production environment variables: DATABASE_URL, JWT_SECRET')
+  })
+
+  it('throws when PORT is not a positive integer', () => {
+    expect(() =>
+      validateRuntimeEnv({
+        NODE_ENV: 'production',
+        DATABASE_URL: 'postgresql://user:pass@db:5432/aapr',
+        JWT_SECRET: 'super-secret-value',
+        PORT: 'abc',
+      })
+    ).toThrow('PORT must be an integer between 1 and 65535 when provided')
+  })
+
+  it('throws when PORT is out of range', () => {
+    expect(() =>
+      validateRuntimeEnv({
+        NODE_ENV: 'production',
+        DATABASE_URL: 'postgresql://user:pass@db:5432/aapr',
+        JWT_SECRET: 'super-secret-value',
+        PORT: '0',
+      })
+    ).toThrow('PORT must be an integer between 1 and 65535 when provided')
+  })
+
+  it('accepts valid production configuration', () => {
+    expect(() =>
+      validateRuntimeEnv({
+        NODE_ENV: 'production',
+        DATABASE_URL: 'postgresql://user:pass@db:5432/aapr',
+        JWT_SECRET: 'super-secret-value',
+        PORT: '3000',
+      })
+    ).not.toThrow()
+  })
+})

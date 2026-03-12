@@ -338,6 +338,30 @@ const { user, login } = useAuthStore();
 
 ## Testing Strategy
 
+### Container Validation Workflow (Story 7.1)
+
+Use this workflow when validating production container baseline changes:
+
+```powershell
+# From repository root
+docker build -f server/Dockerfile -t aapr-backend:7.1 ./server
+docker build -f client/Dockerfile -t aapr-frontend:7.1 ./client
+
+docker run --rm -d --name aapr-backend-smoke -e NODE_ENV=production -e DATABASE_URL="postgresql://aapr_user:aapr_password@host.docker.internal:5432/aapr" -e JWT_SECRET="replace-with-strong-secret" -p 3000:3000 aapr-backend:7.1
+
+docker run --rm -d --name aapr-frontend-smoke -e VITE_API_URL="http://localhost:3000" -p 8080:80 aapr-frontend:7.1
+
+curl http://localhost:3000/api/v1/health
+curl http://localhost:8080/
+
+docker stop aapr-backend-smoke aapr-frontend-smoke
+```
+
+Validation boundaries:
+- Story 7.1 verifies image build/runtime contracts and health endpoints.
+- Story 7.2+ owns multi-instance compose wiring and per-instance isolation.
+- Story 7.6 and 7.7 can reuse the same smoke commands in CI pipelines.
+
 ### Backend Testing (Jest)
 
 **File:** `server/src/__tests__/teamService.test.ts`

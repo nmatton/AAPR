@@ -6,6 +6,44 @@ Last Updated: January 23, 2026
 
 ---
 
+## Story 7.1: Containerize Frontend and Backend for Production Runtime
+
+**Status:** ✅ COMPLETE  
+**Date:** March 12, 2026  
+**Developer:** Nicolas (via Dev Agent - GPT-5.3-Codex)
+
+**What Was Built:**
+
+- Added production multi-stage Dockerfile for backend with deterministic install (`npm ci`), TypeScript build, and minimal runtime layer.
+- Added production multi-stage Dockerfile for frontend with Vite static build and Nginx runtime layer.
+- Added backend production runtime env validation for mandatory variables (`DATABASE_URL`, `JWT_SECRET`) and `PORT` format checks.
+- Added container healthcheck strategy for backend (`/api/v1/health`) and frontend static serving.
+- Added service-specific `.dockerignore` files to keep build context clean and images deterministic.
+- Updated infrastructure and development documentation with reproducible root-level image build/run smoke commands.
+- Added runtime frontend API URL injection (`VITE_API_URL`) at container startup so one image can be reused across deployment environments.
+- Tightened backend explicit `PORT` contract to integer range `1-65535` across validation and startup.
+- Stabilized frontend test suite coverage impacted during review follow-ups; full client suite now passes.
+
+**Files Added:**
+
+- `server/Dockerfile`
+- `server/.dockerignore`
+- `server/src/config/runtime-env.ts`
+- `server/src/config/runtime-env.test.ts`
+- `client/Dockerfile`
+- `client/.dockerignore`
+- `client/nginx.default.conf`
+
+**Files Updated:**
+
+- `server/src/index.ts`
+- `client/package-lock.json`
+- `client/tailwind.config.js`
+- `docs/07-infrastructure.md`
+- `docs/08-development-guide.md`
+
+---
+
 ## Story 6.2: Ensure Event Immutability and Audit Trail Completeness
 
 **Status:** ✅ COMPLETE  

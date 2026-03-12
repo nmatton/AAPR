@@ -133,7 +133,7 @@ development_status:
 
   # Epic 7: Deployment Architecture & CI/CD Automation
   epic-7: in-progress
-  7-1-containerize-frontend-and-backend-for-production-runtime: ready-for-dev
+  7-1-containerize-frontend-and-backend-for-production-runtime: done
   7-2-implement-parameterized-multi-instance-docker-compose-architecture: backlog
   7-3-provision-isolated-data-storage-and-network-per-instance: backlog
   7-4-define-and-validate-instance-environment-contracts-stu-hms-elia: backlog

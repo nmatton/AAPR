@@ -1,7 +1,8 @@
 import { refreshAccessToken } from '../../auth/api/authApi'
 import type { TeamInvite } from '../types/invite.types'
+import { getApiBaseUrl } from '../../../lib/runtimeConfig'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+const API_BASE_URL = getApiBaseUrl()
 
 const generateRequestId = (): string => {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {

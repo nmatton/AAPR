@@ -40,6 +40,7 @@ beforeEach(() => {
   usePracticesStore.setState({
     practices: [],
     availablePillars: [],
+    availableMethods: [],
     isPillarsLoading: false,
     isLoading: false,
     error: null,
@@ -51,13 +52,20 @@ beforeEach(() => {
     lastTeamId: null,
     searchQuery: '',
     selectedPillars: [],
+    selectedCategories: [],
+    selectedMethods: [],
+    selectedTags: [],
     loadPractices: usePracticesStore.getState().loadPractices,
     loadAvailablePillars: usePracticesStore.getState().loadAvailablePillars,
+    loadAvailableMethods: usePracticesStore.getState().loadAvailableMethods,
     setCurrentDetail: usePracticesStore.getState().setCurrentDetail,
     setSearchQuery: usePracticesStore.getState().setSearchQuery,
     setSelectedPillars: usePracticesStore.getState().setSelectedPillars,
     setPillarFilters: usePracticesStore.getState().setPillarFilters,
     togglePillar: usePracticesStore.getState().togglePillar,
+    toggleCategory: usePracticesStore.getState().toggleCategory,
+    toggleMethod: usePracticesStore.getState().toggleMethod,
+    setTags: usePracticesStore.getState().setTags,
     clearFilters: usePracticesStore.getState().clearFilters,
     retry: usePracticesStore.getState().retry
   })
@@ -87,6 +95,9 @@ describe('practices.slice', () => {
       teamId: 5,
       query: 'standup',
       pillarsSelected: [],
+      categoriesSelected: [],
+      methodsSelected: [],
+      tagsSelected: [],
       timestamp: expect.any(String)
     })
   })
@@ -108,8 +119,10 @@ describe('practices.slice', () => {
 
     await usePracticesStore.getState().retry()
 
-    expect(mockedApi.fetchPractices).toHaveBeenNthCalledWith(1, 2, 5, undefined, undefined)
-    expect(mockedApi.fetchPractices).toHaveBeenNthCalledWith(2, 2, 5, undefined, undefined)
+    const firstCall = mockedApi.fetchPractices.mock.calls[0]
+    const secondCall = mockedApi.fetchPractices.mock.calls[1]
+    expect(firstCall.slice(0, 2)).toEqual([2, 5])
+    expect(secondCall.slice(0, 2)).toEqual([2, 5])
     expect(mockedApi.logCatalogViewed).toHaveBeenCalledWith(99, mockPractices.items.length)
   })
 

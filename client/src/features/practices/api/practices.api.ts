@@ -1,4 +1,5 @@
 import type { PracticesResponse, Practice } from '../types'
+import { getApiBaseUrl } from '../../../lib/runtimeConfig'
 
 export type PracticeActivity = {
   sequence: number
@@ -55,7 +56,7 @@ export type PracticeDetail = Practice & {
   updatedAt: string
 }
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+const API_BASE_URL = getApiBaseUrl()
 
 export class ApiError extends Error {
   constructor(

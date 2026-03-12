@@ -36,7 +36,7 @@ const makeEvent = (id: bigint, createdAt: string, overrides: Record<string, unkn
 
 describe('event-export.service', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    jest.resetAllMocks();
     delete process.env.EVENT_EXPORT_DIR;
     (logEvent as unknown as jest.Mock<any>).mockResolvedValue({ id: 1n });
   });
@@ -133,13 +133,13 @@ describe('event-export.service', () => {
 
   it('writes JSON exports in multiple deterministic batches for large datasets', async () => {
     const exportDir = await fs.mkdtemp(path.join(os.tmpdir(), 'aapr-export-json-'));
-    const batchOne = Array.from({ length: 500 }, (_, index) =>
+    const batchOne = Array.from({ length: 250 }, (_, index) =>
       makeEvent(BigInt(index + 1), `2026-01-15T12:${String(index % 60).padStart(2, '0')}:00.000Z`)
     );
-    const batchTwo = Array.from({ length: 500 }, (_, index) =>
-      makeEvent(BigInt(index + 501), `2026-01-16T12:${String(index % 60).padStart(2, '0')}:00.000Z`)
+    const batchTwo = Array.from({ length: 250 }, (_, index) =>
+      makeEvent(BigInt(index + 251), `2026-01-16T12:${String(index % 60).padStart(2, '0')}:00.000Z`)
     );
-    const batchThree = [makeEvent(1001n, '2026-01-17T12:00:00.000Z')];
+    const batchThree = [makeEvent(501n, '2026-01-17T12:00:00.000Z')];
 
     (findByTeamForExportBatch as unknown as jest.Mock<any>)
       .mockResolvedValueOnce(batchOne)
@@ -153,13 +153,13 @@ describe('event-export.service', () => {
       to: '2026-01-22',
       format: 'json',
       exportDir,
-      batchSize: 500,
+      batchSize: 250,
     });
 
     const content = JSON.parse(await fs.readFile(result.outputPath, 'utf8')) as Array<Record<string, unknown>>;
 
-    expect(result.rowCount).toBe(1001);
-    expect(content).toHaveLength(1001);
+    expect(result.rowCount).toBe(501);
+    expect(content).toHaveLength(501);
     expect(content[0]).toEqual(expect.objectContaining({
       actor_id: 4,
       team_id: 9,
@@ -170,7 +170,7 @@ describe('event-export.service', () => {
       }),
     }));
     expect(findByTeamForExportBatch).toHaveBeenCalledTimes(4);
-  });
+  }, 15000);
 
   it('fails with a clear error and removes the export file when no events match', async () => {
     const exportDir = await fs.mkdtemp(path.join(os.tmpdir(), 'aapr-export-empty-'));

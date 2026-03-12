@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter } from 'react-router-dom'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { AuthenticatedLayout } from './AuthenticatedLayout'
 import { useAuthStore } from '../../features/auth/state/authSlice'
 
@@ -154,9 +154,16 @@ describe('AuthenticatedLayout', () => {
     it('renders Team Dashboard and Members links when in team context', () => {
         render(
             <MemoryRouter initialEntries={['/teams/123']}>
-                <AuthenticatedLayout>
-                    <div>Content</div>
-                </AuthenticatedLayout>
+                <Routes>
+                    <Route
+                        path="/teams/:teamId"
+                        element={
+                            <AuthenticatedLayout>
+                                <div>Content</div>
+                            </AuthenticatedLayout>
+                        }
+                    />
+                </Routes>
             </MemoryRouter>
         )
 

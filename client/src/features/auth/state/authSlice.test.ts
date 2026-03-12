@@ -56,6 +56,13 @@ describe('authSlice', () => {
 
   it('refreshSession() calls authApi.refreshAccessToken', async () => {
     vi.spyOn(authApi, 'refreshAccessToken').mockResolvedValue()
+    vi.spyOn(authApi, 'getCurrentUser').mockResolvedValue({
+      id: 1,
+      name: 'User',
+      email: 'user@example.com',
+      createdAt: '2026-01-19T10:00:00.000Z',
+      hasCompletedBigFive: true,
+    })
 
     await useAuthStore.getState().refreshSession()
 

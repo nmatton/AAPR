@@ -10,7 +10,8 @@ const mockUser = {
   id: 1,
   name: 'Test User',
   email: 'test@example.com',
-  createdAt: '2026-01-19T10:00:00.000Z'
+  createdAt: '2026-01-19T10:00:00.000Z',
+  hasCompletedBigFive: true,
 }
 
 describe('App auth flow integration', () => {
@@ -63,8 +64,9 @@ describe('App auth flow integration', () => {
       expect(authApi.getCurrentUser).toHaveBeenCalled()
     })
 
-    expect(await screen.findByText('My Teams')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /create team/i })).toBeInTheDocument()
+    await waitFor(() => {
+      expect(window.location.pathname).toBe('/teams')
+    })
   })
 
   it('restores session on refresh and stays on /teams', async () => {

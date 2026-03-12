@@ -1,6 +1,7 @@
 import { ApiError } from './practices.api'
+import { getApiBaseUrl } from '../../../lib/runtimeConfig'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+const API_BASE_URL = getApiBaseUrl()
 
 export type AffinityStatus = 'ok' | 'insufficient_profile_data' | 'no_tag_mapping'
 

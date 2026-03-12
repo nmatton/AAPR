@@ -1,4 +1,6 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+import { getApiBaseUrl } from '../../../lib/runtimeConfig'
+
+const API_BASE_URL = getApiBaseUrl()
 const DEFAULT_HEADERS = {
   'Content-Type': 'application/json'
 }

@@ -147,11 +147,17 @@ describe('membersSlice', () => {
       useMembersStore.setState({ members: mockMembers })
     })
 
+    let removePromise: Promise<void> | undefined
     act(() => {
-      void result.current.removeTeamMember(1, 1)
+      removePromise = result.current.removeTeamMember(1, 1)
     })
 
     expect(result.current.isRemoving).toBe(true)
+
+    await act(async () => {
+      expect(removePromise).toBeDefined()
+      await removePromise
+    })
   })
 
   it('handles remove error', async () => {

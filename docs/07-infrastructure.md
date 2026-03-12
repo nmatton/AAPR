@@ -333,6 +333,44 @@ npm run test:email  # (if script exists)
 
 ## Build & Production
 
+### Container Images (Story 7.1 Baseline)
+
+Build both production images from repository root:
+
+```powershell
+docker build -f server/Dockerfile -t aapr-backend:7.1 ./server
+docker build -f client/Dockerfile -t aapr-frontend:7.1 ./client
+```
+
+Backend runtime contract:
+- image exposes internal port `3000`
+- startup command runs compiled app: `node dist/index.js`
+- production env validation enforces `DATABASE_URL` and `JWT_SECRET`
+- optional `PORT` must be an integer between `1` and `65535` when provided
+
+Frontend runtime contract:
+- image exposes internal port `80`
+- startup command runs Nginx in foreground
+- static assets served from `client/dist`
+- API endpoint is deployment-driven at container runtime via `VITE_API_URL`
+
+Run container smoke checks:
+
+```powershell
+docker run --rm -d --name aapr-backend-smoke -e NODE_ENV=production -e DATABASE_URL="postgresql://aapr_user:aapr_password@host.docker.internal:5432/aapr" -e JWT_SECRET="replace-with-strong-secret" -p 3000:3000 aapr-backend:7.1
+
+docker run --rm -d --name aapr-frontend-smoke -e VITE_API_URL="http://localhost:3000" -p 8080:80 aapr-frontend:7.1
+
+curl http://localhost:3000/api/v1/health
+curl http://localhost:8080/
+```
+
+Stop smoke containers:
+
+```powershell
+docker stop aapr-backend-smoke aapr-frontend-smoke
+```
+
 ### Build Frontend
 
 ```powershell
@@ -470,13 +508,13 @@ SELECT pg_size_pretty(pg_database_size('aapr'));
 
 **Backend Health Endpoint:**
 ```http
-GET http://localhost:3000/health
+GET http://localhost:3000/api/v1/health
 
 Response (200):
 {
   "status": "ok",
-  "database": "connected",
-  "timestamp": "2026-01-19T10:00:00.000Z"
+  "timestamp": "2026-01-19T10:00:00.000Z",
+  "version": "1.0.0"
 }
 ```
 
