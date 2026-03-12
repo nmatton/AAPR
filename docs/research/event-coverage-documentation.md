@@ -175,6 +175,25 @@ $$
 
 **Story 6.1 changes (vs Story 6.0 baseline):** `big_five.completed` Missing→Logged, `big_five.retaken` Missing→Logged, `issue.created` Partial→Logged, `issue.comment_added` Partial→Logged, `team.created` Partial→Logged, `team.name_updated` Partial→Logged, `invite.auto_resolved` Partial→Logged, `issue.status_changed` Partial→Logged, `issue.priority_changed` Partial→Logged, `issue.decision_recorded` Partial→Logged, `issue.evaluated` Partial→Logged.
 
+## Story 6.2 Integrity Controls (Implemented)
+
+- Event immutability is now enforced by guardrails at multiple layers:
+   - shared Prisma client blocks `Event` update/delete operations by default,
+   - controlled purge can only use batch delete with `ALLOW_EVENT_BATCH_PURGE=true`,
+   - explicit service-level mutation guard exists for future API/repository extensions.
+- Event retrieval for issue history is deterministic with stable ordering (`createdAt`, then `id`).
+- Export-oriented repository read path enforces deterministic ascending ordering for analysis consumers.
+- Event metadata validation is enforced at event service boundary:
+   - non-system events require `actorId`,
+   - team-scoped events require `teamId`,
+   - `entityType` and `entityId` must be provided together,
+   - payload/team and payload/actor mismatches are rejected.
+- Controlled purge workflow is implemented as a server-side batch process:
+   - explicit confirmation token required,
+   - reason required,
+   - emits `event.purged_batch` audit record with scope, actor, row count, and timestamp.
+- Backup/restore runbook now includes explicit events-table restore verification (`npm run events:verify-restore`).
+
 ## Prioritized Implementation Recommendations
 
 ### Story 6.1 Priorities
@@ -193,9 +212,8 @@ $$
 
 ### Story 6.2 Priorities
 
-1. Keep append-only integrity checks and schema-version discipline.
-2. Add explicit event for adaptation decision modify/update flow when endpoint is implemented.
-3. Implement export request/download telemetry as part of Story 6.3.
+1. Add explicit event for adaptation decision modify/update flow when endpoint is implemented.
+2. Implement export request/download telemetry as part of Story 6.3.
 
 ## Source Index
 

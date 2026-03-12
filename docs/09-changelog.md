@@ -6,6 +6,43 @@ Last Updated: January 23, 2026
 
 ---
 
+## Story 6.2: Ensure Event Immutability and Audit Trail Completeness
+
+**Status:** ✅ COMPLETE  
+**Date:** March 12, 2026  
+**Developer:** Nicolas (via Dev Agent - GPT-5.3-Codex)
+
+**What Was Built:**
+
+- Enforced append-only event behavior at service + Prisma-client guardrail layers.
+- Added deterministic event ordering with stable tie-breakers (`createdAt`, `id`) for issue history and export-read paths.
+- Added event metadata integrity checks in shared event logging service.
+- Implemented controlled batch purge workflow with explicit confirmation token and mandatory reason.
+- Added purge audit record event type: `event.purged_batch` (actor, scope, row count, timestamp).
+- Added restore verification utility to confirm events table row presence after backup restore.
+- Updated infrastructure and research documentation for purge and backup validation evidence.
+
+**Files Added:**
+
+- `server/src/services/event-purge.service.ts`
+- `server/src/services/event-purge.service.test.ts`
+- `server/src/services/events.service.test.ts`
+- `server/src/scripts/purge-events-batch.ts`
+- `server/src/scripts/verify-events-restore.ts`
+
+**Files Updated:**
+
+- `server/src/lib/prisma.ts`
+- `server/src/repositories/event.repository.ts`
+- `server/src/repositories/event.repository.test.ts`
+- `server/src/services/events.service.ts`
+- `server/src/services/issue.service.test.ts`
+- `server/package.json`
+- `docs/07-infrastructure.md`
+- `docs/research/event-coverage-documentation.md`
+
+---
+
 ## Epic 1: Authentication & Team Onboarding
 
 **Status:** ✅ COMPLETE (7/7 stories)  

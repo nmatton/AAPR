@@ -227,10 +227,33 @@ SELECT * FROM events ORDER BY created_at DESC LIMIT 10;
 docker exec aapr-postgres pg_dump -U aapr_user aapr > backup_$(Get-Date -Format "yyyyMMdd_HHmmss").sql
 ```
 
+This backup is full-database and explicitly includes the `events` table (research audit trail).
+
 **Restore Database:**
 ```powershell
 docker exec -i aapr-postgres psql -U aapr_user aapr < backup_20260119_100000.sql
 ```
+
+**Post-Restore Verification (required):**
+```powershell
+cd server
+npm run events:verify-restore
+```
+
+**Stronger verification (recommended for research snapshots):**
+```powershell
+cd server
+npm run events:verify-restore -- --expected-min-count 100 --required-event-types issue.created,issue.comment_added,issue.decision_recorded,issue.evaluated
+```
+
+Expected result:
+- command exits with code `0`
+- output contains `events_row_count=<N>` with `N > 0`
+
+**Controlled purge prerequisites:**
+- `ALLOW_EVENT_BATCH_PURGE=true` must be set explicitly in environment before running purge.
+- `EVENT_PURGE_CONFIRM_TOKEN` must be configured with a strong secret token (min 12 chars).
+- purge command must include `--confirm <token>` matching `EVENT_PURGE_CONFIRM_TOKEN`.
 
 ---
 

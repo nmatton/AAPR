@@ -132,7 +132,8 @@ export const registerUser = async (dto: RegisterUserDto): Promise<UserResponse> 
         payload: {
           email: newUser.email,
           name: newUser.name,
-          registrationMethod: 'email_password'
+          registrationMethod: 'email_password',
+          systemReason: 'User context is not yet available until after persistence in signup transaction.'
         },
         schemaVersion: 'v1'
       }

@@ -257,6 +257,57 @@ describe('getIssueDetails', () => {
         await expect(import('./issue.service').then(m => m.getIssueDetails(teamId, 999)))
             .rejects.toThrow('Issue not found');
     });
+
+    it('should preserve complete issue lifecycle traceability in history', async () => {
+        const createdAt = new Date('2026-03-12T12:00:00.000Z');
+        const mockIssue = {
+            id: issueId,
+            title: 'Lifecycle issue',
+            description: 'Track full lifecycle',
+            priority: 'HIGH',
+            status: 'EVALUATED',
+            teamId,
+            createdByUser: { id: 1, name: 'Alice' },
+            linkedPractices: [],
+            decisionText: null,
+            decisionRecordedAt: null,
+            decisionRecorder: null,
+            evaluationOutcome: null,
+            evaluationComments: null,
+            evaluationRecordedAt: null,
+            evaluationRecorder: null,
+            version: 1,
+            createdAt,
+        };
+
+        const mockEvents = [
+            { id: 10n, eventType: 'issue.created', action: 'created', actorId: 1, createdAt },
+            { id: 11n, eventType: 'issue.comment_added', action: 'issue.comment_added', actorId: 2, createdAt: new Date('2026-03-12T12:02:00.000Z') },
+            { id: 12n, eventType: 'issue.decision_recorded', action: 'issue.decision_recorded', actorId: 3, createdAt: new Date('2026-03-12T12:04:00.000Z') },
+            { id: 13n, eventType: 'issue.evaluated', action: 'issue.evaluated', actorId: 3, createdAt: new Date('2026-03-12T12:08:00.000Z') },
+        ];
+
+        (issueRepository.findById as jest.Mock<any>).mockResolvedValue(mockIssue);
+        (eventRepository.findByEntity as jest.Mock<any>).mockResolvedValue(mockEvents);
+        (prisma as any).user = { findMany: jest.fn() };
+        ((prisma as any).user.findMany as jest.Mock<any>).mockResolvedValue([
+            { id: 1, name: 'Alice' },
+            { id: 2, name: 'Bob' },
+            { id: 3, name: 'Charlie' },
+        ]);
+
+        const commentRepository = require('../repositories/comment.repository');
+        commentRepository.findByIssueId.mockResolvedValue([]);
+
+        const result = await import('./issue.service').then(m => m.getIssueDetails(teamId, issueId));
+
+        expect(result.history.map((entry: any) => entry.eventType)).toEqual([
+            'issue.created',
+            'issue.comment_added',
+            'issue.decision_recorded',
+            'issue.evaluated',
+        ]);
+    });
 });
 
 describe('getIssues', () => {
