@@ -5,7 +5,8 @@ import { SidebarPanel } from '../../../components/ui/SidebarPanel';
 
 import { fetchPracticeDetail, logPracticeDetailViewed } from '../api/practices.api';
 import { PillarContextPopover } from './PillarContextPopover';
-import type { Practice, Pillar } from '../types';
+import type { PracticeDetail } from '../api/practices.api';
+import type { Pillar } from '../types';
 
 interface PracticeDetailSidebarProps {
     isOpen: boolean;
@@ -19,17 +20,7 @@ interface PracticeDetailSidebarProps {
     onNavigateToPractice?: (practiceId: number) => void;
 }
 
-type DetailedPractice = Practice & {
-    description?: string | null;
-    method?: string | null;
-    tags?: string[] | null;
-    activities?: unknown | null;
-    roles?: string[] | null;
-    workProducts?: string[] | null;
-    benefits?: string[] | null;
-    pitfalls?: string[] | null;
-    updatedAt?: string;
-};
+type DetailedPractice = PracticeDetail;
 
 export const PracticeDetailSidebar: React.FC<PracticeDetailSidebarProps> = ({
     isOpen,
@@ -60,7 +51,7 @@ export const PracticeDetailSidebar: React.FC<PracticeDetailSidebarProps> = ({
                 try {
                     const { practice: data } = await fetchPracticeDetail(practiceId);
                     if (isMounted) {
-                        setPractice(data as unknown as DetailedPractice);
+                        setPractice(data);
                     }
 
                     await logPracticeDetailViewed({
@@ -128,6 +119,16 @@ export const PracticeDetailSidebar: React.FC<PracticeDetailSidebarProps> = ({
             {text}
         </span>
     );
+
+    const getAssociationBadgeClass = (associationType: string) => {
+        const normalized = associationType.toLowerCase();
+        if (normalized === 'dependency') return 'bg-amber-50 text-amber-700 border border-amber-100';
+        if (normalized === 'complementarity') return 'bg-emerald-50 text-emerald-700 border border-emerald-100';
+        if (normalized === 'equivalence') return 'bg-sky-50 text-sky-700 border border-sky-100';
+        if (normalized === 'configuration') return 'bg-gray-100 text-gray-700 border border-gray-200';
+        if (normalized === 'exclusion') return 'bg-red-50 text-red-700 border border-red-100';
+        return 'bg-gray-100 text-gray-700 border border-gray-200';
+    };
 
     return (
         <>
@@ -271,6 +272,122 @@ export const PracticeDetailSidebar: React.FC<PracticeDetailSidebarProps> = ({
                             {renderList(practice.workProducts)}
                         </div>
 
+                        {/* Activities */}
+                        <div>
+                            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Activities</h3>
+                            {practice.activities && practice.activities.length > 0 ? (
+                                <ul className="space-y-2 text-sm text-gray-700">
+                                    {practice.activities
+                                        .slice()
+                                        .sort((a, b) => a.sequence - b.sequence)
+                                        .map((activity, idx) => (
+                                            <li key={`${activity.sequence}-${activity.name}-${idx}`}>
+                                                <p className="font-semibold">
+                                                    {activity.sequence}. {activity.name}
+                                                </p>
+                                                <p>{activity.description}</p>
+                                            </li>
+                                        ))}
+                                </ul>
+                            ) : (
+                                <p className="text-gray-500 italic text-sm">Not specified</p>
+                            )}
+                        </div>
+
+                        {/* Completion Criteria */}
+                        <div>
+                            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Completion Criteria</h3>
+                            {practice.completionCriteria ? (
+                                <p className="text-sm text-gray-700 whitespace-pre-wrap">{practice.completionCriteria}</p>
+                            ) : (
+                                <p className="text-gray-500 italic text-sm">Not specified</p>
+                            )}
+                        </div>
+
+                        {/* Metrics */}
+                        <div>
+                            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Metrics</h3>
+                            {practice.metrics && practice.metrics.length > 0 ? (
+                                <ul className="space-y-2 text-sm text-gray-700">
+                                    {practice.metrics.map((metric, idx) => (
+                                        <li key={`${metric.name}-${idx}`}>
+                                            <p className="font-semibold">
+                                                {metric.name}
+                                                {metric.unit ? ` (${metric.unit})` : ''}
+                                            </p>
+                                            {metric.formula ? <p>{metric.formula}</p> : null}
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-gray-500 italic text-sm">Not specified</p>
+                            )}
+                        </div>
+
+                        {/* Guidelines (Resources) */}
+                        <div>
+                            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Resources</h3>
+                            {practice.guidelines && practice.guidelines.length > 0 ? (
+                                <ul className="space-y-2 text-sm text-gray-700">
+                                    {practice.guidelines.map((guideline, idx) => {
+                                        const hasUrl = guideline.url.trim() !== '';
+                                        return (
+                                            <li key={`${guideline.name}-${idx}`}>
+                                                {hasUrl ? (
+                                                    <a
+                                                        href={guideline.url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-blue-700 hover:text-blue-800 underline"
+                                                    >
+                                                        {guideline.name}
+                                                    </a>
+                                                ) : (
+                                                    <span>{guideline.name}</span>
+                                                )}
+                                            </li>
+                                        );
+                                    })}
+                                </ul>
+                            ) : (
+                                <p className="text-gray-500 italic text-sm">Not specified</p>
+                            )}
+                        </div>
+
+                        {/* Associated Practices */}
+                        <div>
+                            <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Associated Practices</h3>
+                            {practice.associatedPractices && practice.associatedPractices.length > 0 ? (
+                                <ul className="space-y-2">
+                                    {practice.associatedPractices.map((association, idx) => (
+                                        <li key={`${association.targetPracticeId}-${association.associationType}-${idx}`}>
+                                            {onNavigateToPractice ? (
+                                                <button
+                                                    type="button"
+                                                    onClick={() => onNavigateToPractice(association.targetPracticeId)}
+                                                    className="w-full text-left bg-white border border-gray-200 rounded-md p-2 hover:bg-gray-50 transition-colors"
+                                                >
+                                                    <span className="text-sm font-medium text-gray-900">{association.targetPracticeTitle}</span>
+                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ml-2 ${getAssociationBadgeClass(association.associationType)}`}>
+                                                        {association.associationType}
+                                                    </span>
+                                                </button>
+                                            ) : (
+                                                <div className="bg-white border border-gray-200 rounded-md p-2">
+                                                    <span className="text-sm font-medium text-gray-900">{association.targetPracticeTitle}</span>
+                                                    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ml-2 ${getAssociationBadgeClass(association.associationType)}`}>
+                                                        {association.associationType}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="text-gray-500 italic text-sm">Not specified</p>
+                            )}
+                        </div>
+
                         {/* Linked Issues */}
                         {teamId && linkedIssues && linkedIssues.length > 0 && (
                             <div className="mt-6 pt-4 border-t border-gray-100">
@@ -312,14 +429,8 @@ export const PracticeDetailSidebar: React.FC<PracticeDetailSidebarProps> = ({
                     currentPracticeId={practice.id}
                     onClose={() => setActivePillar(null)}
                     onNavigateToPractice={(id) => {
-                        console.log('[PracticeDetailSidebar] Received navigation request for practice:', id)
                         setActivePillar(null);
-                        if (onNavigateToPractice) {
-                            console.log('[PracticeDetailSidebar] Calling parent onNavigateToPractice')
-                            onNavigateToPractice(id);
-                        } else {
-                            console.warn('[PracticeDetailSidebar] onNavigateToPractice is undefined!')
-                        }
+                        onNavigateToPractice?.(id);
                     }}
                 />
             )}

@@ -1,5 +1,60 @@
 import type { PracticesResponse, Practice } from '../types'
 
+export type PracticeActivity = {
+  sequence: number
+  name: string
+  description: string
+}
+
+export type PracticeRole =
+  | string
+  | {
+      role: string
+      responsibility: string
+    }
+
+export type PracticeWorkProduct =
+  | string
+  | {
+      name: string
+      description: string
+    }
+
+export type PracticeMetric = {
+  name: string
+  unit?: string | null
+  formula?: string | null
+}
+
+export type PracticeGuideline = {
+  name: string
+  url: string
+  type?: string | null
+}
+
+export type AssociatedPracticeLink = {
+  targetPracticeId: number
+  associationType: string
+  targetPracticeTitle: string
+}
+
+export type PracticeDetail = Practice & {
+  description?: string | null
+  method?: string | null
+  tags?: string[] | null
+  activities?: PracticeActivity[] | null
+  roles?: PracticeRole[] | null
+  workProducts?: PracticeWorkProduct[] | null
+  completionCriteria?: string | null
+  metrics?: PracticeMetric[] | null
+  guidelines?: PracticeGuideline[] | null
+  pitfalls?: string[] | null
+  benefits?: string[] | null
+  associatedPractices?: AssociatedPracticeLink[] | null
+  importedBy?: string | null
+  updatedAt: string
+}
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 export class ApiError extends Error {
@@ -93,22 +148,7 @@ export const fetchPractices = async (
 }
 
 export type PracticeDetailResponse = {
-  practice: Practice & {
-    description?: string | null
-    method?: string | null
-    tags?: unknown | null
-    activities?: unknown | null
-    roles?: unknown | null
-    workProducts?: unknown | null
-    completionCriteria?: string | null
-    metrics?: unknown | null
-    guidelines?: unknown | null
-    pitfalls?: unknown | null
-    benefits?: unknown | null
-    associatedPractices?: unknown | null
-    importedBy?: string | null
-    updatedAt: string
-  }
+  practice: PracticeDetail
 }
 
 export const fetchPracticeDetail = async (id: number): Promise<PracticeDetailResponse> => {
