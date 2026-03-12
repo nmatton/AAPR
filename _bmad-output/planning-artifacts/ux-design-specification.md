@@ -700,12 +700,12 @@ flowchart TD
 **Interactions**: Compare diffs, choose resolution path, confirm action.
 **States**: Open/closed; disabled overwrite button if user lacks permission.
 
-#### Export Panel
-**Purpose**: Filter and export event logs for research.
-**Layout**: Form with date range, event type filters; export format buttons (CSV/JSON).
-**Components**: ExportPanel, FormField[], download trigger.
-**Interactions**: Set filters, click export, download file.
-**States**: Idle, loading, success, error.
+#### Export Operations (No UI Surface)
+**Purpose**: Keep research export workflows outside the product UI and execute them only from controlled server-side command line tooling.
+**Layout**: No frontend page, panel, or modal is provided for exports.
+**Components**: N/A (handled by server scripts/runbooks).
+**Interactions**: Authorized operators run CLI commands on the server with filters and format parameters.
+**States**: Command start, processing, success, error (CLI output only).
 
 ### Page Skeleton Annotations
 
@@ -723,7 +723,7 @@ Each page template includes:
 - [ ] Semantic color mapping for statuses (Submittedblue, Discussedslate, Decidedteal, Evaluatedslate-600, Conflictamber).
 
 #### Component Library
-- [ ] Build core components: IssueCard, IssueDetail, ConflictModal, CoverageWidget, StatusBadge, SidebarPanel, ActivityFeed, ExportPanel, FormField, Toast.
+- [ ] Build core components: IssueCard, IssueDetail, ConflictModal, CoverageWidget, StatusBadge, SidebarPanel, ActivityFeed, FormField, Toast.
 - [ ] Enforce AA contrast; focus outlines (2px, 4px offset); semantic HTML.
 - [ ] Implement keyboard navigation (Tab order, Enter/Esc, Up/Down for lists).
 
@@ -735,7 +735,7 @@ Each page template includes:
 - [ ] Conflict resolution: detect 409, show ConflictModal, preserve draft.
 
 #### Page Templates
-- [ ] Implement Teams View, Team Dashboard, Issue Detail, Practice Catalog, Export Panel.
+- [ ] Implement Teams View, Team Dashboard, Issue Detail, Practice Catalog.
 - [ ] Use semantic landmarks; ensure regions have aria-labels.
 - [ ] Empty states: clear CTA, supportive copy, optional sample.
 
@@ -751,7 +751,7 @@ Each page template includes:
 
 #### Research Integrity Hooks
 - [ ] Event logging: capture actor, action, timestamp, payload for every state change.
-- [ ] Export: CSV/JSON with complete event history; validate no data loss.
+- [ ] Export: Validate server CLI CSV/JSON output with complete event history and no data loss.
 - [ ] Immutable log: ensure events are append-only; no edit/delete.
 
 ### Handoff Artifacts
@@ -767,7 +767,7 @@ Each page template includes:
 - **Tailwind First**: Use utility classes for rapid iteration; custom CSS only when necessary.
 - **Component Encapsulation**: Keep components small, props simple, events explicit.
 - **Progressive Enhancement**: Build core flows first (Issue submission, detail view); add polish (animations, advanced filtering) incrementally.
-- **Testing Strategy**: Unit tests for components; integration tests for flows (submit issue, resolve conflict, export); accessibility tests automated + manual.
+- **Testing Strategy**: Unit tests for components; integration tests for flows (submit issue, resolve conflict); backend tests for CLI export; accessibility tests automated + manual.
 - **Documentation**: Inline code comments for complex logic; README for setup/run; CHANGELOG for iterations.
 
 ### Next Steps for Development
@@ -777,7 +777,7 @@ Each page template includes:
 3. **Core Pages**: Implement Team Dashboard, Issue Detail, Conflict Resolution flow.
 4. **UX Patterns**: Apply forms, lists, feedback patterns consistently.
 5. **Accessibility Pass**: Validate AA contrast, keyboard nav, screen reader support.
-6. **Research Hooks**: Implement event logging, export panel.
+6. **Research Hooks**: Implement event logging and server-side CLI export tooling (no export panel).
 7. **Polish**: Animations, empty states, loading skeletons.
 8. **Handoff**: Document setup, component usage, known limitations.
 

@@ -21,7 +21,7 @@ All planning artifacts have been systematically updated to reflect two critical 
 **Changes Made:**
 - **Access Control Section:** Replaced "RBAC Matrix (Owner | Member)" with "Access Control (Single Role: Team Member)"
   - Clarified: "All users are equal team members with no role hierarchy"
-  - All team members can: create team, configure practices, invite members, manage membership, submit issues, comment, view coverage/catalog, manage Big Five, view/export events
+  - All team members can: create team, configure practices, invite members, manage membership, submit issues, comment, view coverage/catalog, manage Big Five
 
 - **Scope Decisions:** 
   - Moved "Practice recommendations" from `outOfScope` to `mustHave` in MVP
@@ -85,11 +85,11 @@ All planning artifacts have been systematically updated to reflect two critical 
   - FR Coverage Map: Updated all role references to single-role model
 
 - **Story 6.3 Refactored (Epic 6 - Research Logging):**
-  - **FROM:** CLI-based export for "researchers with database access"
-  - **TO:** Web-based UI export available to all team members
-  - Moved from backend-only export script to frontend-accessible feature
-  - All team members can now filter and export events (not restricted to database admins)
-  - Updated AC to reflect web UI with date/type filtering instead of CLI parameters
+  - **FROM:** Earlier proposal for web-based UI export available to team members
+  - **TO:** Server-side CLI export only for authorized researchers/operators
+  - Export remains backend-only (no frontend-accessible export flow)
+  - Filtering/export is executed via command-line parameters on the server
+  - Updated AC to remove UI actions and enforce "no export capability exposed in web UI"
 
 **Lines Changed:** ~120 edits including major story rewrites
 **Verification:** ✅ All stories verified for actor consistency
@@ -181,8 +181,8 @@ All planning artifacts have been systematically updated to reflect two critical 
 ### Issue 4: Export Functionality Owner-Only ✅
 **Problem:** FR18 "User (owner) can export events" suggested restricted access  
 **Root Cause:** Initial permission model assumptions  
-**Resolution:** All team members can now access export via web UI (Story 6.3)  
-**Impact:** Aligns with single-role model; simplifies research data access
+**Resolution:** Export execution is restricted to authorized server operators via CLI (Story 6.3), with no web UI export surface  
+**Impact:** Reduces privacy/security exposure and keeps export operations in controlled server contexts
 
 ---
 
@@ -195,7 +195,7 @@ All planning artifacts have been systematically updated to reflect two critical 
 | Story 5.3 scope conflict | ✅ RESOLVED | Moved to MVP as coverage-based recommendations |
 | Missing practice import | ✅ RESOLVED | Added Story 2.0 to Epic 2 |
 | Permission AC gaps (FR21-22) | ✅ RESOLVED | Clarified single-role model in all docs |
-| Export restricted to owner | ✅ RESOLVED | Made available to all team members |
+| Export restricted to owner | ✅ RESOLVED | Reframed as CLI-only server operation with controlled operator access |
 
 ### Remaining Blockers
 **None identified.** All critical blockers from initial assessment have been resolved.
@@ -231,9 +231,9 @@ All planning artifacts have been systematically updated to reflect two critical 
    - Set algebra operations (same-pillar match, gap detection)
    - Simpler than Big Five ranking; achievable in MVP timeline
 
-3. **Export Feature Timing:** Story 6.3 is now web-based (not CLI)
-   - Implement alongside issue discussion features
-   - Use same filtering/export logic as practice catalog
+3. **Export Feature Timing:** Story 6.3 is CLI-only on the server (no UI export)
+  - Implement as backend command tooling and runbook
+  - Keep filter/export logic in server services, not frontend flows
 
 4. **Data Seeding:** Story 2.0 is critical path
    - Implement practice import before practice catalog features

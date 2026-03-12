@@ -31,6 +31,7 @@ Thumbs.db
 # Logs
 logs/
 *.log
+server/exports/
 
 # Reference only (not part of deliverable)
 starter-template/

@@ -139,9 +139,9 @@ Important:
 
 | User Action | Endpoint / Flow | Service | Event Type(s) | Payload Fields (Current) | Metadata Check | Status | Notes | Evidence |
 |---|---|---|---|---|---|---|---|---|
-| Open export panel | UI flow | client flow | None | None | N/A | Missing | Export domain included for Story 6.0 coverage completeness. | `client/src` |
-| Request filtered export | Export API flow (planned) | export service (planned) | None | None | N/A | Missing | Story 6.3 requirement; no current endpoint in server routes. | `_bmad-output/planning-artifacts/epics.md` |
-| Download exported file | Export API flow (planned) | export service (planned) | None | None | N/A | Missing | Story 6.3 requirement; no telemetry yet. | `_bmad-output/planning-artifacts/epics.md` |
+| Run filtered export command | Server CLI flow | `exportEvents` | `event.export_started` | `teamId`, `from`, `to`, `format`, `eventTypes`, `outputPath`, `systemReason` | actor: no (system), team: top-level yes / payload yes, timestamp: DB only | Logged | Start telemetry is emitted after validation and before streaming begins. | `server/src/services/event-export.service.ts` |
+| Complete export and persist file | Server CLI flow | `exportEvents` | `event.export_completed` | `teamId`, `from`, `to`, `format`, `eventTypes`, `outputPath`, `rowCount`, `systemReason` | actor: no (system), team: top-level yes / payload yes, timestamp: DB only | Logged | Completion telemetry records successful research export execution. | `server/src/services/event-export.service.ts` |
+| Fail export validation or execution | Server CLI flow | `exportEvents` | `event.export_failed` | `teamId`, `from`, `to`, `format`, `eventTypes`, `message`, `outputPath`, `systemReason` | actor: no (system), team: top-level yes when available / payload yes, timestamp: DB only | Logged | Failure telemetry covers invalid ranges, empty result sets, and I/O failures without exposing PII. | `server/src/services/event-export.service.ts` |
 
 ### Read / View
 
@@ -162,15 +162,15 @@ Important:
 
 | Status | Count |
 |---|---:|
-| Logged | 19 |
+| Logged | 22 |
 | Partial | 6 |
-| Missing | 17 |
+| Missing | 14 |
 | Out of Scope | 2 |
 
 Coverage for in-scope actions is:
 
 $$
-\frac{19 + 6}{19 + 6 + 17} = \frac{25}{42} \approx 59.5\%
+\frac{22 + 6}{22 + 6 + 14} = \frac{28}{42} \approx 66.7\%
 $$
 
 **Story 6.1 changes (vs Story 6.0 baseline):** `big_five.completed` Missing→Logged, `big_five.retaken` Missing→Logged, `issue.created` Partial→Logged, `issue.comment_added` Partial→Logged, `team.created` Partial→Logged, `team.name_updated` Partial→Logged, `invite.auto_resolved` Partial→Logged, `issue.status_changed` Partial→Logged, `issue.priority_changed` Partial→Logged, `issue.decision_recorded` Partial→Logged, `issue.evaluated` Partial→Logged.
@@ -208,12 +208,12 @@ $$
    - timestamp,
    - schema version.
 3. Add explicit event for adaptation decision update/modify action.
-4. Add export request/download events for Story 6.3 execution.
+4. Validate export telemetry payload quality and operator runbook consistency for Story 6.3.
 
 ### Story 6.2 Priorities
 
 1. Add explicit event for adaptation decision modify/update flow when endpoint is implemented.
-2. Implement export request/download telemetry as part of Story 6.3.
+2. Story 6.3 implemented CLI export execution/completion/failure telemetry; keep future export flows aligned with the same event contract.
 
 ## Source Index
 
@@ -227,10 +227,12 @@ $$
 - `server/src/services/auth.service.ts`
 - `server/src/services/big-five.service.ts`
 - `server/src/services/coverage.service.ts`
+- `server/src/services/event-export.service.ts`
 - `server/src/services/events.service.ts`
 - `server/src/services/invites.service.ts`
 - `server/src/services/issue.service.ts`
 - `server/src/services/members.service.ts`
 - `server/src/services/practice-import.service.ts`
 - `server/src/services/teams.service.ts`
+- `server/src/scripts/export-events.ts`
 - `client/src`

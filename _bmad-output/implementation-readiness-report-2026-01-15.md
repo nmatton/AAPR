@@ -257,7 +257,7 @@ documentResolutions:
 | Journey 1: Signup → Teams → Create Team | Detailed signup flow, Teams View, Team Dashboard | ✅ Complete |
 | Journey 2: Stale Data/Optimistic Concurrency | Conflict Resolution Modal with 3-path merge, diffs, auto-draft | ✅ Complete |
 | Journey 3: Invite Flow Recovery | Email-based invites, status chips (Added/Pending/Failed), retry | ✅ Complete |
-| Journey 4: Data Export for Research | Export Panel with date range filtering, CSV/JSON formats | ✅ Complete |
+| Journey 4: Data Export for Research | Server CLI export with date/type filtering and CSV/JSON formats | ✅ Complete |
 
 **✅ ALIGNED - UX Addresses PRD Success Criteria:**
 
@@ -393,11 +393,11 @@ The UX specification includes:
 **Current Gap:** UX spec doesn't detail:
 - Where/how event log is shown to users (sidebar, detail view section, separate page?)
 - What events are visible to team members vs. facilitators vs. researchers
-- How to export events (Story 6.3 mentions CSV/JSON but UX doesn't show export UI)
+- How to run/operate server-side event exports (Story 6.3 is CLI-only)
 
-**Recommendation:** Add UX details for:
+**Recommendation:** Add UX/operations details for:
 1. Activity Feed component (what events are included, display format)
-2. Export Panel UI (filter options, format selection, download flow)
+2. CLI export runbook details (filters, format flags, output location, operational safeguards)
 3. Event visibility rules (who sees what events in the UI)
 
 ### Summary: UX Alignment Status
@@ -406,7 +406,7 @@ The UX specification includes:
 
 **What's Working:**
 - UX specification is comprehensive and well-structured
-- Core user journeys (submit issue, resolve conflict, export events) are detailed and implementable
+- Core user journeys (submit issue, resolve conflict) are detailed and implementable; export is covered as an operational CLI workflow
 - UX patterns (forms, lists, detail views, modals) are practical and grounded in established precedents
 - Design system (Tailwind + custom components) is architecture-aligned
 - Accessibility approach (AA contrast, focus states, semantic HTML) is well-defined
@@ -414,12 +414,12 @@ The UX specification includes:
 **What Needs Clarification:**
 1. ⚠️ Recommendations engine (Story 5.3) scope and MVP viability
 2. ⚠️ Personality integration scope and UX manifestation
-3. ⚠️ Event logging visibility and export flow UI details
+3. ⚠️ Event logging visibility details and CLI export runbook details
 
 **Blockers for Development:**
 1. ⛔ **Scope Decision Needed:** Is Story 5.3 (recommendations) MVP or Phase 2?
 2. ⛔ **Architecture Clarification Needed:** How are Big Five traits used in the UX?
-3. ⛔ **UX Enhancement Needed:** Add explicit design for Activity Feed and Export Panel
+3. ⛔ **UX Enhancement Needed:** Add explicit design for Activity Feed and document CLI export runbook (no export panel)
 
 ## Step 5: Epic Quality Review
 
@@ -692,7 +692,7 @@ The UX specification includes:
 |-------|--------|-------|--------|
 | 6.1: Log All Events | ✅ | ✅ (Research) Captures full audit trail | ✅ |
 | 6.2: Ensure Immutability | ✅ | ✅ (Research) Validates data integrity | ✅ |
-| 6.3: Export/Filter Events | ✅ | ✅ (Research) Enables analysis | ⚠️ No user-facing export AC |
+| 6.3: Export/Filter Events | ✅ | ✅ (Research) Enables analysis | ✅ CLI-only by policy; no user-facing export AC required |
 
 **Acceptance Criteria Review:** ✅ STRONG
 - Event schema clearly specified
@@ -700,13 +700,12 @@ The UX specification includes:
 - Export formats (CSV/JSON) specified
 - **Status:** Well-structured ✅
 
-**Issue: Missing User-Facing Export UI**
+**Issue: Export Surface Policy Clarification**
 
-- Story 6.3 AC focuses on direct DB access for researchers
-- **Problem:** PRD FR18 says "User (owner) can filter and export events"
-- **Problem:** No story covers the user-facing Export Panel UI
-- **Location:** Should be in Epic 4 or 5, not Epic 6
-- **Recommendation:** Add story to Epic 4 or 5 for "Export Panel UI" with user-friendly filtering
+- Story 6.3 is intentionally CLI-only for authorized server operators
+- **Decision:** No user-facing Export Panel UI will be implemented
+- **Security/Privacy Rationale:** Avoid exposing export capabilities in frontend surfaces
+- **Recommendation:** Keep export scope in Epic 6 with CLI tooling and operational controls
 
 **Database/Entity Creation Timing:** ✅ CORRECT
 - Story 6.1: Creates events table (append-only)
@@ -714,7 +713,7 @@ The UX specification includes:
 - Story 6.3: Reads from events table
 - **Status:** Appropriate ✅
 
-**Quality Score:** 8/10 ⚠️ GOOD BUT MISSING USER-FACING EXPORT
+**Quality Score:** 8/10 ✅ GOOD WITH CONTROLLED CLI EXPORT SCOPE
 
 ---
 
@@ -788,13 +787,13 @@ Problematic: None identified ✅
 - **Impact:** Creates hidden blocker between epics
 - **Resolution:** Add explicit data import story
 
-**Issue 4: Missing User-Facing Export Panel**
+**Issue 4: Export Scope Clarification (UI intentionally excluded)**
 - **Epic:** Epic 6, Story 6.3
-- **Problem:** Covers researcher export (direct DB) but not user-facing Export Panel (FR18)
-- **Evidence:** PRD FR18: "User (owner) can filter and export events"
+- **Problem:** Earlier interpretation expected user-facing export UI
+- **Evidence:** Story 6.3 now mandates server-side CLI export without frontend exposure
 - **Severity:** 🟠 MAJOR
-- **Impact:** User-facing export requirement missing from stories
-- **Resolution:** Add story to Epic 4 or create new story in Epic 6 for "Export Panel UI"
+- **Impact:** No gap after policy alignment; export is intentionally non-UI
+- **Resolution:** Keep Story 6.3 in Epic 6 with CLI acceptance criteria and runbook validation
 
 **Issue 5: Epic 5, Story 5.3 - Personality-Recommendation Connection Not Architected**
 - **Problem:** Story assumes Big Five influences recommendations but no algorithm is defined
@@ -832,13 +831,13 @@ Problematic: None identified ✅
 **Critical Gaps Blocking Development:**
 1. ❌ Story 5.3 (Recommendations) is out-of-scope feature → MUST REMOVE OR SCOPE-LIMIT
 2. ❌ Missing practice data import story → MUST ADD to Epic 2
-3. ❌ Missing user-facing export UI story → MUST ADD to Epic 4 or 6
+3. ✅ Export UI intentionally omitted; CLI-only export scope confirmed
 4. ❌ No recommendation algorithm architecture → MUST REMOVE Story 5.3 or add architecture
 
 **Blockers for Implementation:**
 - 🛑 **Remove Story 5.3** or clarify if it's MVP vs Phase 2
 - 🛑 **Add Practice Import Story** to Epic 2
-- 🛑 **Add Export Panel UI Story** to Epic 4 or 6
+- 🛑 **Document and validate CLI export runbook** for Story 6.3
 - 🛑 **Clarify Recommendations Architecture** before proceeding with Story 5.3
 
 ## Assessment Progress
@@ -920,29 +919,27 @@ Problematic: None identified ✅
 
 ---
 
-### 🔴 CRITICAL BLOCKER #3: Missing User-Facing Export Panel UI Story
+### ✅ RESOLVED BLOCKER #3: Export Intentionally CLI-Only (No UI Story)
 
-**Issue:** PRD FR18 requires "User (owner) can filter and export events" but no story covers UI
+**Issue:** Historical interpretation expected UI export; updated policy requires CLI-only export
 
 **Evidence:**
-- PRD FR18: "User (owner) can filter and export events by type and date range"
-- Epic 6, Story 6.3: Covers researcher direct-DB export only
-- Story 6.3 AC: "Given I'm an admin/researcher with database access"
-  - This is backend/researcher, NOT user-facing
+- Epic 6, Story 6.3: Covers authorized operator CLI export with server-side filtering and format control
+- Story 6.3 AC explicitly forbids exposing export controls in frontend UI
 
 **Impact:**
-- User-facing export requirement is not implemented in any story
-- Owner users cannot fulfill FR18 requirement via UI
-- Event export is researcher-only (not user-facing)
+- Export requirement is implemented through controlled server-side CLI workflow
+- No frontend export requirement remains under the current security/privacy decision
+- Event export access is restricted to authorized operators
 
 **REQUIRED ACTION:**
-- **ADD Story to Epic 4 or Epic 6:** "Export Events Panel with User-Friendly Filtering"
-  - Filter events by: event type, date range, team (if multi-tenant)
-  - Select export format: CSV or JSON
-  - Download file with complete event history
-  - Clear feedback: "Export contains X events, Y bytes"
+- **KEEP Story 6.3 in Epic 6:** "Server CLI Event Export with Controlled Access"
+   - Filter events by: event type, date range, team
+   - Select export format: CSV or JSON
+   - Write file to secured server export path
+   - CLI feedback includes exported row count, output path, and command status
 
-**Recommendation:** Add to **Epic 4** (after Story 4.4) or **Epic 6** (before Story 6.3)
+**Recommendation:** No export UI story required; enforce operational controls and auditability for CLI execution
 
 ---
 
@@ -1040,9 +1037,9 @@ Problematic: None identified ✅
    - Description: Load practices from reference JSON, seed DB
    - Effort: Small (1-2 days)
 
-4. ✅ **ADD Story to Epic 4 or 6:** "Export Events Panel UI"
-   - Location: Epic 4 (after Story 4.4) or Epic 6 (after Story 6.2)
-   - Description: User-facing export with filtering and CSV/JSON download
+4. ✅ **KEEP Story 6.3 as CLI-only export in Epic 6**
+   - Location: Epic 6 (operational export scope)
+   - Description: Server-side export with filtering and CSV/JSON output, no frontend exposure
    - Effort: Medium (3-5 days)
 
 **Priority 3 - Permission Acceptance Criteria (2 hours)**
@@ -1082,7 +1079,7 @@ Problematic: None identified ✅
 |---------|----------|----------|--------|-----------|
 | 1 | Story 5.3 Scope | 🔴 CRITICAL | OPEN | REMOVE from MVP or add architecture |
 | 2 | Missing Import Story | 🔴 CRITICAL | OPEN | ADD Story 2.0 "Import Practice Data" |
-| 3 | Missing Export UI | 🔴 CRITICAL | OPEN | ADD export panel story to Epic 4 or 6 |
+| 3 | Export UI intentionally omitted | ✅ RESOLVED | CLOSED | Maintain CLI-only Story 6.3 with server controls |
 | 4 | Permission AC | 🟠 MAJOR | OPEN | ADD explicit FR21-22 acceptance criteria |
 | 5 | Recommendations Architecture | 🟠 MAJOR | OPEN | Either REMOVE Story 5.3 or add algorithm design |
 | 6 | Epic 2 Data Source | 🟠 MAJOR | OPEN | ADD Story 2.0 for data import |
@@ -1115,7 +1112,7 @@ Problematic: None identified ✅
 ### Critical Issues
 - [ ] Story 5.3 scope resolved ⚠️ MUST FIX
 - [ ] Practice import story added ⚠️ MUST FIX
-- [ ] Export UI story added ⚠️ MUST FIX
+- [x] Export policy clarified as CLI-only (no UI story required)
 - [ ] Permission AC clarified ⚠️ SHOULD FIX
 - [ ] Recommendation algorithm designed OR removed ⚠️ MUST FIX
 
@@ -1139,7 +1136,7 @@ Problematic: None identified ✅
 **Current Blockers:**
 1. ❌ Story 5.3 (Recommendations) is out-of-scope feature
 2. ❌ Missing practice data import mechanism
-3. ❌ Missing user-facing export UI
+3. ✅ Export remains server-side CLI only (by security/privacy policy)
 4. ❌ Permission RBAC requirements not explicitly tested
 
 **Timeline Impact:**
@@ -1152,7 +1149,7 @@ Problematic: None identified ✅
 >
 > 1. **Remove or clarify Story 5.3** (recommendations) within 24 hours
 > 2. **Add Story 2.0** for practice data import before Sprint 1
-> 3. **Add export UI story** to implement user-facing FR18
+> 3. **Keep CLI-only export scope** and document operator workflow for FR18 execution
 > 4. **Clarify RBAC permissions** with explicit AC
 >
 > Once these are resolved, the project can proceed with high confidence. Estimated effort to fix blockers: **4-6 hours** (mostly decision-making, minimal coding).

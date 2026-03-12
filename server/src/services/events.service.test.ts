@@ -118,6 +118,19 @@ describe('events.service', () => {
     ).resolves.toBeDefined();
   });
 
+  it('should accept export telemetry events with null actorId when systemReason is present', async () => {
+    await expect(
+      logEvent({
+        eventType: 'event.export_started',
+        teamId: 7,
+        payload: {
+          teamId: 7,
+          systemReason: 'CLI export executed by an authorized server operator.',
+        },
+      })
+    ).resolves.toBeDefined();
+  });
+
   it('should reject non-auth events without teamId', async () => {
     await expect(
       logEvent({

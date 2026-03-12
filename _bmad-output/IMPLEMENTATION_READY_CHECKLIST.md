@@ -13,7 +13,7 @@
 - [x] Single-role permission model clarified (no RBAC)
 - [x] Coverage-based recommendation algorithm documented with examples
 - [x] All user journeys updated to reflect equal team member permissions
-- [x] API endpoints specified for recommendations and data export
+- [x] API endpoints specified for recommendations and server-side export workflow requirements
 - [x] Success criteria and timeline clear (3 weeks, zero critical bugs)
 
 **Key Clarifications:**
@@ -27,7 +27,7 @@
 - [x] All stories reference "team member" not "owner"
 - [x] Story 2.0 added for practice data import
 - [x] Story 5.3 completely rewritten for coverage-based recommendations
-- [x] Story 6.3 refactored for web-based event export (not CLI-only)
+- [x] Story 6.3 aligned to CLI-only server-side event export (no web UI export)
 - [x] FR Coverage Map updated for single-role model
 - [x] All FRs (25 total) mapped to stories
 
@@ -73,7 +73,7 @@
 | Practice Catalog | FR8-10 | Browse, add/remove, coverage tracking | ✅ Complete |
 | Big Five | FR11-12 | Questionnaire, profile view | ✅ Complete |
 | Issues & Discussions | FR13-16 | Submit, comment, record decisions, timeline | ✅ Complete |
-| Research Logging | FR17-18 | Event logging, export (all members) | ✅ Updated |
+| Research Logging | FR17-18 | Event logging, CLI export (authorized operators) | ✅ Updated |
 | Concurrency | FR19-20 | Optimistic locking, conflict resolution | ✅ Complete |
 | Permissions | FR21-22 | Single-role, equal access | ✅ Simplified |
 | Provisioning | FR23 | Instance creation per team | ✅ Complete |
@@ -110,8 +110,8 @@
 
 ### ✅ Issue 4: Export Restricted to Owner
 **Status:** RESOLVED  
-**Resolution:** Made export web-based and available to all team members  
-**Impact:** All members can access research data
+**Resolution:** Kept export as server-side CLI operation for authorized operators; no UI export exposed  
+**Impact:** Lowers privacy/security risk while preserving research export capability
 
 ---
 
@@ -227,7 +227,7 @@
 - ✅ Single-role permission model enforced
 - ✅ Coverage-based recommendations working
 - ✅ Practice import functional for test data
-- ✅ Event export available to all team members
+- ✅ Event export available through controlled server CLI workflow
 
 ### Quality Metrics
 - ✅ Big Five calculations match IPIP-NEO standard

@@ -197,7 +197,7 @@ Resolution: Export completes; user verifies sample rows. No account or team comp
 ### Reliability & Compliance
 
 - No institutional research policy enforcement required.
-- No mandatory export protocol; researcher accesses DB directly.
+- No web-based export protocol; authorized researchers/operators execute exports via server-side command line tooling.
 - Data retention: indefinite during experiment; manual erase at end.
 - Page-refresh acceptable for discussions; no real-time transport required.
 - No rate limiting for MVP (rely on server-side validations + SMTP throttling).
@@ -208,7 +208,8 @@ Resolution: Export completes; user verifies sample rows. No account or team comp
 
 **Note:** All users are equal team members with no role hierarchy.
 
-- All team members can: create team; configure practices and pillar specifics; invite members; manage team membership; submit issues; comment in discussions; view coverage and catalog; manage own Big Five profile; view/export events.
+- All team members can: create team; configure practices and pillar specifics; invite members; manage team membership; submit issues; comment in discussions; view coverage and catalog; manage own Big Five profile.
+- Event exports are not a team-member UI capability in MVP; they are executed by authorized researchers/operators from the server command line.
 - No permission restrictions or owner-only actions in MVP.
 
 ### Practice Recommendation Logic (MVP - Coverage & Affinity-Based)

@@ -255,6 +255,53 @@ Expected result:
 - `EVENT_PURGE_CONFIRM_TOKEN` must be configured with a strong secret token (min 12 chars).
 - purge command must include `--confirm <token>` matching `EVENT_PURGE_CONFIRM_TOKEN`.
 
+### Event Export CLI
+
+Story 6.3 adds a server-side export workflow for research use. Export remains intentionally outside the web UI.
+
+**Optional environment variables:**
+
+```bash
+EVENT_EXPORT_DIR="server/exports"
+```
+
+- If `EVENT_EXPORT_DIR` is omitted, the server script writes to `server/exports/` by default.
+- Date-only inputs such as `2026-01-15` are normalized to inclusive UTC day boundaries.
+
+**Run CSV export:**
+
+```powershell
+cd server
+npm run events:export -- --team-id 3 --from 2026-01-15 --to 2026-01-22 --format csv
+```
+
+**Filter by one or more event types:**
+
+```powershell
+cd server
+npm run events:export -- --team-id 3 --from 2026-01-15 --to 2026-01-22 --event-type issue.created --event-type issue.evaluated --format json
+```
+
+**Expected behavior:**
+- validates `team-id`, `from`, `to`, optional repeated `event-type`, and `format` before querying
+- rejects future ranges and invalid ranges with a non-zero exit code
+- redacts PII in payloads before writing files
+- streams export output in batches so larger exports do not require loading the full result set in memory
+
+**Expected output example:**
+
+```text
+[START] Exporting events for team 3 from 2026-01-15T00:00:00.000Z to 2026-01-22T23:59:59.999Z as csv
+Exported 184 events
+Output path: C:\path\to\repo\server\exports\team-events-2026-01-15-to-2026-01-22.csv
+Format: csv
+```
+
+**Failure behavior:**
+- no file is retained when validation fails or no matching events are found
+- the command prints a clear error message such as `Invalid date range` or `No events found in date range`
+- export execution emits start/completion/failure telemetry in the immutable events table for research traceability
+
 ---
 
 ## Email Testing (Mailtrap)

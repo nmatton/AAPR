@@ -207,7 +207,7 @@ GPT-5.3-Codex
 ### Review Follow-ups (AI)
 
 - [ ] [AI-Review][Medium] Implement explicit event for adaptation decision modify/update flow when endpoint is introduced (currently not implemented). [docs/research/event-coverage-documentation.md]
-- [ ] [AI-Review][Medium] Implement export request/download telemetry in Story 6.3 scope. [docs/research/event-coverage-documentation.md]
+- [ ] [AI-Review][Medium] Implement CLI export execution/completion/failure telemetry in Story 6.3 scope. [docs/research/event-coverage-documentation.md]
 
 ### File List
 

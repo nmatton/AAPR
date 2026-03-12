@@ -2259,7 +2259,7 @@ So that I can validate research observability coverage before executing Epic 6 i
 - **Given** the current codebase and planning artifacts
   **When** I perform a full analysis of user interactions and system mutations
   **Then** I produce an "Event Coverage Documentation" file in the docs folder
-  **And** it includes all user-facing actions grouped by domain (Auth, Teams, Practices, Issues, Big Five, Export)
+  **And** it includes all user-facing actions grouped by domain (Auth, Teams, Practices, Issues, Big Five) plus operational export actions for Story 6.3 CLI workflows
 
 - **Given** each user action in scope
   **When** I map it to backend behavior
@@ -2351,25 +2351,28 @@ So that the data is research-grade valid.
 
 #### Story 6.3: Event Export & Filtering Capability (Research Use)
 
-As a **researcher**,
-I want to **export events filtered by type, date range, and team**,
-So that **I can analyze specific periods or events for research**.
+As an **authorized researcher/operator with server access**,
+I want to **run server-side CLI exports of events filtered by type, date range, and team**,
+So that **I can analyze specific periods or events for research without exposing export capabilities in the web UI**.
 
 **Acceptance Criteria:**
 
-- **Given** I'm on the Team Dashboard
-  **When** I click [Export Events]
-  **Then** I can filter events by: event type, date range
-  **And** I can select export format: CSV or JSON
+- **Given** I'm on the server with access to project scripts and environment
+  **When** I run the export command with valid parameters (`--team-id`, `--from`, `--to`, optional `--event-type`, `--format csv|json`)
+  **Then** the export process validates parameters and starts successfully
 
-- **Given** I filter events from "2026-01-15" to "2026-01-22"
-  **When** I click [Download]
-  **Then** a CSV file is generated with all events in that date range
+- **Given** I run an export for date range "2026-01-15" to "2026-01-22"
+  **When** the command completes
+  **Then** a file is generated in a server-side export directory with all matching events in that date range
 
 - **Given** I export events
-  **When** the CSV is generated
+  **When** the output is generated in CSV format
   **Then** columns are properly structured: actor_id, team_id, entity_type, entity_id, action, payload_json, created_at
   **And** the data is escaped properly for CSV format
+
+- **Given** I export events
+  **When** the output is generated in JSON format
+  **Then** each record preserves canonical event fields and deterministic ordering for research analysis
 
 - **Given** I export events with PII-sensitive data (e.g., email in payload)
   **When** the export runs
@@ -2377,20 +2380,24 @@ So that **I can analyze specific periods or events for research**.
   **And** emails are masked as "redacted@example.com", names as "REDACTED"
 
 - **Given** I'm exporting a large dataset (1000+ events)
-  **When** I initiate the export
+  **When** I run the export command
   **Then** the system streams results efficiently
-  **And** I see a download progress indicator
   **And** the export completes without timeout
 
 - **Given** the export completes successfully
-  **When** the file is downloaded
+  **When** the output file is written on the server
   **Then** the file has proper naming: "team-events-2026-01-15-to-2026-01-22.csv"
-  **And** a confirmation message appears: "Exported X events"
+  **And** the CLI prints a confirmation message: "Exported X events"
 
 - **Given** I attempt an export with invalid parameters (e.g., future date range)
-  **When** I submit the export request
+  **When** I run the export command
   **Then** a clear error message is returned: "Invalid date range" or "No events found in date range"
+  **And** the command exits with a non-zero status
   **And** the export is not generated
+
+- **Given** Story 6.3 is implemented
+  **When** users access any web UI page
+  **Then** no export button, panel, or download workflow is exposed in the frontend
 
 ---
 

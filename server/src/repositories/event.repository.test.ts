@@ -1,5 +1,5 @@
 
-import { findByEntity, findByTeamForExport } from './event.repository';
+import { findByEntity, findByTeamForExport, findByTeamForExportBatch } from './event.repository';
 import { prisma } from '../lib/prisma';
 
 jest.mock('../lib/prisma', () => ({
@@ -69,6 +69,62 @@ describe('Event Repository', () => {
                     { createdAt: 'asc' },
                     { id: 'asc' },
                 ],
+            });
+            expect(result).toEqual(mockEvents);
+        });
+
+        it('should return export batches using a deterministic cursor', async () => {
+            const from = new Date('2026-03-01T00:00:00.000Z');
+            const to = new Date('2026-03-12T23:59:59.999Z');
+            const cursor = {
+                createdAt: new Date('2026-03-04T08:00:00.000Z'),
+                id: 88n,
+            };
+            const mockEvents = [
+                { id: 89n, eventType: 'issue.created', createdAt: new Date('2026-03-04T08:00:00.000Z') },
+            ];
+            (prisma.event.findMany as jest.Mock).mockResolvedValue(mockEvents);
+
+            const result = await findByTeamForExportBatch(
+                9,
+                {
+                    from,
+                    to,
+                    eventTypes: ['issue.created'],
+                },
+                cursor,
+                250
+            );
+
+            expect(prisma.event.findMany).toHaveBeenCalledWith({
+                where: {
+                    teamId: 9,
+                    createdAt: {
+                        gte: from,
+                        lte: to,
+                    },
+                    eventType: {
+                        in: ['issue.created'],
+                    },
+                    OR: [
+                        {
+                            createdAt: {
+                                gt: cursor.createdAt,
+                            },
+                        },
+                        {
+                            createdAt: cursor.createdAt,
+                            id: {
+                                gt: cursor.id,
+                            },
+                        },
+                    ],
+                },
+                orderBy: [
+                    { createdAt: 'asc' },
+                    { id: 'asc' },
+                ],
+                take: 250,
             });
             expect(result).toEqual(mockEvents);
         });
