@@ -129,3 +129,23 @@ export const getPracticeDetail = async (
     next(error);
   }
 };
+
+/**
+ * GET /api/v1/practices/methods
+ * Returns all distinct method values from the global practice catalog
+ */
+export const getPracticeMethods = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const methods = await practicesService.getAllDistinctMethods();
+    res.json({ methods, requestId: req.id });
+  } catch (error: any) {
+    if (error && req.id) {
+      error.requestId = req.id;
+    }
+    next(error);
+  }
+};

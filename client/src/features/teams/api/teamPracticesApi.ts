@@ -1,5 +1,12 @@
 import { apiClient } from '../../../lib/apiClient'
 import type { Practice } from '../../practices/types'
+import type {
+  ActivityInput,
+  RoleInput,
+  MetricInput,
+  GuidelineInput,
+  AssociatedPracticeInput
+} from '../types/practice.types'
 
 export interface AvailablePracticesParams {
   teamId: number;
@@ -7,6 +14,9 @@ export interface AvailablePracticesParams {
   pageSize?: number;
   search?: string;
   pillars?: number[];
+  categories?: string[];
+  methods?: string[];
+  tags?: string[];
 }
 
 export interface AvailablePracticesResponse {
@@ -59,6 +69,12 @@ export interface CreateCustomPracticePayload {
   benefits?: string[];
   pitfalls?: string[];
   workProducts?: string[];
+  activities?: ActivityInput[];
+  roles?: RoleInput[];
+  completionCriteria?: string;
+  metrics?: MetricInput[];
+  guidelines?: GuidelineInput[];
+  associatedPractices?: AssociatedPracticeInput[];
   templatePracticeId?: number;
 }
 
@@ -75,6 +91,15 @@ export interface EditPracticePayload {
   categoryId: string;
   method?: string | null;
   tags?: string[];
+  benefits?: string[];
+  pitfalls?: string[];
+  workProducts?: string[];
+  activities?: ActivityInput[];
+  roles?: RoleInput[];
+  completionCriteria?: string | null;
+  metrics?: MetricInput[];
+  guidelines?: GuidelineInput[];
+  associatedPractices?: AssociatedPracticeInput[];
   saveAsCopy?: boolean;
   version: number;
 }
@@ -95,7 +120,7 @@ export interface EditPracticeResponse {
 export const fetchAvailablePractices = async (
   params: AvailablePracticesParams
 ): Promise<AvailablePracticesResponse> => {
-  const { teamId, page = 1, pageSize = 20, search, pillars } = params;
+  const { teamId, page = 1, pageSize = 20, search, pillars, categories, methods, tags } = params;
 
   const queryParams = new URLSearchParams({
     page: page.toString(),
@@ -108,6 +133,18 @@ export const fetchAvailablePractices = async (
 
   if (pillars && pillars.length > 0) {
     queryParams.append('pillars', pillars.join(','));
+  }
+
+  if (categories && categories.length > 0) {
+    queryParams.append('categories', categories.join(','));
+  }
+
+  if (methods && methods.length > 0) {
+    queryParams.append('methods', methods.join(','));
+  }
+
+  if (tags && tags.length > 0) {
+    queryParams.append('tags', tags.join(','));
   }
 
   return apiClient<AvailablePracticesResponse>(
@@ -132,6 +169,18 @@ export const addPracticeToTeam = async (
       body: JSON.stringify({ practiceId }),
     }
   );
+};
+
+/**
+ * Fetch all distinct method values for practices available to a team
+ * @param teamId - Team identifier
+ * @returns Sorted array of unique method strings
+ */
+export const fetchAvailablePracticeMethods = async (teamId: number): Promise<string[]> => {
+  const response = await apiClient<{ methods: string[] }>(
+    `/api/v1/teams/${teamId}/practices/available/methods`
+  );
+  return response.methods;
 };
 
 /**

@@ -15,6 +15,16 @@ export type PracticeWithRelations = Practice & {
   _count?: { teamPractices: number };
 };
 
+const normalizeDistinctMethods = (values: Array<{ method: string | null }>): string[] => {
+  return Array.from(
+    new Set(
+      values
+        .map((value) => value.method?.trim())
+        .filter((method): method is string => Boolean(method))
+    )
+  ).sort((a, b) => a.localeCompare(b))
+}
+
 /**
  * Find all global practices with related pillars and category
  * @returns Array of practices with full relationships
@@ -842,6 +852,14 @@ export async function updatePracticeWithVersion(
     categoryId: string
     method?: string | null
     tags?: string[]
+    benefits?: string[]
+    pitfalls?: string[]
+    workProducts?: string[]
+    activities?: unknown
+    roles?: unknown
+    completionCriteria?: string | null
+    metrics?: unknown
+    guidelines?: unknown
   },
   tx?: Prisma.TransactionClient
 ): Promise<number> {
@@ -857,6 +875,14 @@ export async function updatePracticeWithVersion(
       categoryId: data.categoryId,
       method: data.method,
       tags: data.tags,
+      ...(data.benefits !== undefined ? { benefits: data.benefits } : {}),
+      ...(data.pitfalls !== undefined ? { pitfalls: data.pitfalls } : {}),
+      ...(data.workProducts !== undefined ? { workProducts: data.workProducts } : {}),
+      ...(data.activities !== undefined ? { activities: data.activities as Prisma.InputJsonValue } : {}),
+      ...(data.roles !== undefined ? { roles: data.roles as Prisma.InputJsonValue } : {}),
+      ...(data.completionCriteria !== undefined ? { completionCriteria: data.completionCriteria } : {}),
+      ...(data.metrics !== undefined ? { metrics: data.metrics as Prisma.InputJsonValue } : {}),
+      ...(data.guidelines !== undefined ? { guidelines: data.guidelines as Prisma.InputJsonValue } : {}),
       practiceVersion: { increment: 1 }
     }
   })
@@ -884,4 +910,107 @@ export async function countTeamsUsingPractice(practiceId: number): Promise<numbe
   return prisma.teamPractice.count({
     where: { practiceId }
   })
+}
+
+/**
+ * Find all distinct method values across global practices
+ * Used to populate Method filter options for the full practice catalog
+ * @returns Sorted array of all unique method strings
+ */
+export async function findAllDistinctMethods(): Promise<string[]> {
+  const practices = await prisma.practice.findMany({
+    where: { isGlobal: true, method: { not: null } },
+    select: { method: true },
+    distinct: ['method'],
+    orderBy: { method: 'asc' }
+  })
+  return normalizeDistinctMethods(practices)
+}
+
+/**
+ * Find all distinct method values across practices available for a team
+ * (global practices not yet selected by the team)
+ * Used to populate Method filter options in ManagePracticesView
+ * @param teamId - Team identifier
+ * @returns Sorted array of unique method strings available for the team
+ */
+export async function findDistinctMethodsAvailableForTeam(teamId: number): Promise<string[]> {
+  const practices = await prisma.practice.findMany({
+    where: {
+      isGlobal: true,
+      method: { not: null },
+      NOT: {
+        teamPractices: {
+          some: { teamId }
+        }
+      }
+    },
+    select: { method: true },
+    distinct: ['method'],
+    orderBy: { method: 'asc' }
+  })
+  return normalizeDistinctMethods(practices)
+}
+
+/**
+ * Sync practice associations (source → target) by replacing all existing source associations
+ * Prevents self-links and duplicate (source, target, type) combinations
+ * @param sourcePracticeId - Source practice identifier
+ * @param associations - Desired associations after sync
+ * @param tx - Optional Prisma transaction client
+ */
+export async function syncAssociations(
+  sourcePracticeId: number,
+  associations: Array<{ targetPracticeId: number; associationType: string }>,
+  tx?: Prisma.TransactionClient
+): Promise<void> {
+  const client = tx ?? prisma
+
+  // Delete all existing source associations
+  await client.practiceAssociation.deleteMany({
+    where: { sourcePracticeId }
+  })
+
+  // Filter out self-links and deduplicate
+  const seen = new Set<string>()
+  const validAssociations = associations.filter((association) => {
+    if (association.targetPracticeId === sourcePracticeId) return false
+    const key = `${association.targetPracticeId}:${association.associationType}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
+
+  if (validAssociations.length > 0) {
+    await client.practiceAssociation.createMany({
+      data: validAssociations.map((association) => ({
+        sourcePracticeId,
+        targetPracticeId: association.targetPracticeId,
+        associationType: association.associationType
+      }))
+    })
+  }
+}
+
+/**
+ * Find all associations for a practice (as source)
+ * @param sourcePracticeId - Source practice identifier
+ * @returns Associations with target practice info
+ */
+export async function findAssociationsForPractice(
+  sourcePracticeId: number
+): Promise<Array<{ targetPracticeId: number; associationType: string; targetPracticeTitle: string }>> {
+  const associations = await prisma.practiceAssociation.findMany({
+    where: { sourcePracticeId },
+    include: {
+      targetPractice: {
+        select: { id: true, title: true }
+      }
+    }
+  })
+  return associations.map((association) => ({
+    targetPracticeId: association.targetPracticeId,
+    associationType: association.associationType,
+    targetPracticeTitle: association.targetPractice.title
+  }))
 }

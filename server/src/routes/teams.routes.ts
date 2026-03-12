@@ -101,6 +101,13 @@ teamsRouter.get('/:teamId/members/:userId', requireAuth, validateTeamMembership,
 teamsRouter.delete('/:teamId/members/:userId', requireAuth, validateTeamMembership, membersController.removeMember);
 
 /**
+ * GET /api/v1/teams/:teamId/practices/available/methods
+ * Get all distinct method values for practices available to a team
+ * Protected by requireAuth + team membership validation
+ */
+teamsRouter.get('/:teamId/practices/available/methods', requireAuth, validateTeamMembership, teamsController.getAvailablePracticeMethods);
+
+/**
  * GET /api/v1/teams/:teamId/practices/available
  * Get practices not yet selected by team (for "Add Practices" view)
  * Protected by requireAuth + team membership validation

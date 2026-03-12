@@ -34,6 +34,7 @@ export const PracticeCatalog = () => {
     error,
     loadPractices,
     loadAvailablePillars,
+    loadAvailableMethods,
     retry,
     currentDetail,
     setCurrentDetail,
@@ -95,6 +96,10 @@ export const PracticeCatalog = () => {
   useEffect(() => {
     void loadAvailablePillars()
   }, [loadAvailablePillars])
+
+  useEffect(() => {
+    void loadAvailableMethods()
+  }, [loadAvailableMethods])
 
   useEffect(() => {
     if (user && teams.length === 0) {

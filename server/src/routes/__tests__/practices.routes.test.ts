@@ -263,3 +263,38 @@ describe('GET /api/v1/practices', () => {
     expect(response.body.total).toBe(0);
   });
 });
+
+describe('GET /api/v1/practices/methods', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('returns sorted distinct methods with requestId', async () => {
+    (practicesService.getAllDistinctMethods as jest.Mock).mockResolvedValue(['Kanban', 'Scrum']);
+
+    const response = await request(app).get('/api/v1/practices/methods');
+
+    expect(response.status).toBe(200);
+    expect(practicesService.getAllDistinctMethods).toHaveBeenCalledTimes(1);
+    expect(response.body).toEqual({
+      methods: ['Kanban', 'Scrum'],
+      requestId: 'test-request-id'
+    });
+  });
+
+  it('passes service errors through structured error handling', async () => {
+    const error: any = new Error('Database unavailable');
+    error.code = 'database_error';
+    error.statusCode = 503;
+    (practicesService.getAllDistinctMethods as jest.Mock).mockRejectedValue(error);
+
+    const response = await request(app).get('/api/v1/practices/methods');
+
+    expect(response.status).toBe(503);
+    expect(response.body).toEqual({
+      code: 'database_error',
+      message: 'Database unavailable',
+      requestId: 'test-request-id'
+    });
+  });
+});

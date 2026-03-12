@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getPractices } from '../api/practicesApi';
+import { CategorizedTagSelector } from '../../../shared/components/CategorizedTagSelector';
 import type { Practice } from '../types/practice.types';
+
+const CATEGORIES = [
+  { id: 'TECHNICAL_QUALITY', label: 'Technical Quality & Engineering Excellence' },
+  { id: 'TEAM_CULTURE', label: 'Team Culture & Psychology' },
+  { id: 'PROCESS_EXECUTION', label: 'Process & Execution' },
+  { id: 'PRODUCT_VALUE', label: 'Product Value & Customer Alignment' },
+];
 
 interface PracticeSelectionStepProps {
   onBack: () => void;
@@ -20,6 +28,9 @@ export const PracticeSelectionStep = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<number[]>(initialSelectedIds);
   const [selectedPillarIds, setSelectedPillarIds] = useState<number[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedMethods, setSelectedMethods] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [practices, setPractices] = useState<Practice[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +62,24 @@ export const PracticeSelectionStep = ({
     return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
   }, [practices]);
 
+  const availableMethods = useMemo(() => {
+    return Array.from(
+      new Set(
+        practices
+          .map((p) => p.method?.trim())
+          .filter((m): m is string => Boolean(m))
+      )
+    ).sort((a, b) => a.localeCompare(b));
+  }, [practices]);
+
+  const methods = useMemo(
+    () =>
+      Array.from(new Set([...availableMethods, ...selectedMethods])).sort((a, b) =>
+        a.localeCompare(b)
+      ),
+    [availableMethods, selectedMethods]
+  );
+
   const filteredPractices = practices.filter((practice) => {
     const matchesSearch =
       practice.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -60,7 +89,18 @@ export const PracticeSelectionStep = ({
       selectedPillarIds.length === 0 ||
       practice.pillars.some((pillar) => selectedPillarIds.includes(pillar.id));
 
-    return matchesSearch && matchesPillar;
+    const matchesCategory =
+      selectedCategories.length === 0 || selectedCategories.includes(practice.categoryId);
+
+    const matchesMethod =
+      selectedMethods.length === 0 ||
+      (practice.method != null && selectedMethods.includes(practice.method.trim()));
+
+    const matchesTag =
+      selectedTags.length === 0 ||
+      selectedTags.some((tag) => practice.tags?.includes(tag));
+
+    return matchesSearch && matchesPillar && matchesCategory && matchesMethod && matchesTag;
   });
 
   const togglePractice = (practiceId: number) => {
@@ -78,6 +118,35 @@ export const PracticeSelectionStep = ({
         : [...prev, pillarId]
     );
   };
+
+  const toggleCategory = (categoryId: string) => {
+    setSelectedCategories((prev) =>
+      prev.includes(categoryId)
+        ? prev.filter((id) => id !== categoryId)
+        : [...prev, categoryId]
+    );
+  };
+
+  const toggleMethod = (method: string) => {
+    setSelectedMethods((prev) =>
+      prev.includes(method) ? prev.filter((m) => m !== method) : [...prev, method]
+    );
+  };
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setSelectedPillarIds([]);
+    setSelectedCategories([]);
+    setSelectedMethods([]);
+    setSelectedTags([]);
+  };
+
+  const hasActiveFilters =
+    searchQuery ||
+    selectedPillarIds.length > 0 ||
+    selectedCategories.length > 0 ||
+    selectedMethods.length > 0 ||
+    selectedTags.length > 0;
 
   const handleCreate = () => {
     onSubmit(selectedIds);
@@ -135,6 +204,77 @@ export const PracticeSelectionStep = ({
           </div>
         </div>
       </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-gray-100">
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium text-gray-700">Categories</h3>
+          <div className="space-y-1">
+            {CATEGORIES.map((category) => (
+              <label key={category.id} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedCategories.includes(category.id)}
+                  onChange={() => toggleCategory(category.id)}
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-600">{category.label}</span>
+              </label>
+            ))}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium text-gray-700">Method / Framework</h3>
+          <div className="space-y-1">
+            {methods.map((method) => (
+              <label key={method} className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={selectedMethods.includes(method)}
+                  onChange={() => toggleMethod(method)}
+                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-600">{method}</span>
+              </label>
+            ))}
+            {methods.length === 0 && (
+              <p className="text-xs text-gray-500">No methods available.</p>
+            )}
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <h3 className="text-sm font-medium text-gray-700">Tags</h3>
+          <CategorizedTagSelector selectedTags={selectedTags} onChange={setSelectedTags} />
+        </div>
+      </div>
+
+      {hasActiveFilters && (
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-sm text-gray-500">Active filters:</span>
+          {selectedCategories.map((cat) => (
+            <span key={cat} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-medium">
+              {cat}
+              <button onClick={() => toggleCategory(cat)} className="hover:text-blue-900">×</button>
+            </span>
+          ))}
+          {selectedMethods.map((method) => (
+            <span key={method} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-purple-50 text-purple-700 text-xs font-medium">
+              {method}
+              <button onClick={() => toggleMethod(method)} className="hover:text-purple-900">×</button>
+            </span>
+          ))}
+          {selectedTags.map((tag) => (
+            <span key={tag} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-green-50 text-green-700 text-xs font-medium">
+              {tag}
+              <button onClick={() => setSelectedTags((prev) => prev.filter((t) => t !== tag))} className="hover:text-green-900">×</button>
+            </span>
+          ))}
+          <button onClick={clearFilters} className="text-xs text-gray-500 hover:text-gray-700 underline ml-2">
+            Clear all
+          </button>
+        </div>
+      )}
 
       <div className="space-y-3 max-h-96 overflow-y-auto">
         {filteredPractices.map((practice) => (

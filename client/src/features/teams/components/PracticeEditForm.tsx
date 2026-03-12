@@ -2,7 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { CategorizedTagSelector } from '../../../shared/components/CategorizedTagSelector'
 import { normalizeValidTags } from '../../../shared/constants/tags.constants'
 import { getTeamPillarCoverage } from '../api/coverageApi'
+import { fetchPracticeDetail } from '../../practices/api/practices.api'
 import { useManagePracticesStore } from '../state/managePracticesSlice'
+import type { ActivityInput, RoleInput, MetricInput, GuidelineInput, AssociatedPracticeInput } from '../types/practice.types'
 
 const UNSAVED_CHANGES_MESSAGE = 'You have unsaved changes. Leave anyway?'
 
@@ -12,10 +14,20 @@ interface PracticeEditFormProps {
     id: number
     title: string
     goal: string
+    description?: string | null
     categoryId: string
     categoryName: string
     method?: string | null
     tags?: unknown | null
+    benefits?: string[] | null
+    pitfalls?: string[] | null
+    workProducts?: string[] | null
+    activities?: unknown[] | null
+    roles?: unknown[] | null
+    completionCriteria?: string | null
+    metrics?: unknown[] | null
+    guidelines?: unknown[] | null
+    associatedPractices?: unknown[] | null
     pillars: Array<{ id: number; name: string; category: string; description?: string | null }>
     isGlobal?: boolean
     practiceVersion?: number
@@ -41,10 +53,20 @@ export const PracticeEditForm = ({
   const { editPractice, isUpdating } = useManagePracticesStore()
   const [title, setTitle] = useState(practice.title)
   const [goal, setGoal] = useState(practice.goal)
+  const [description, setDescription] = useState(practice.description ?? '')
   const [categoryId, setCategoryId] = useState(practice.categoryId)
   const [method, setMethod] = useState(practice.method ?? '')
   const [tags, setTags] = useState<string[]>(normalizeValidTags(Array.isArray(practice.tags) ? (practice.tags as string[]) : []))
   const [pillarIds, setPillarIds] = useState<number[]>(practice.pillars.map((pillar) => pillar.id))
+  const [benefits, setBenefits] = useState(practice.benefits?.join('\n') ?? '')
+  const [pitfalls, setPitfalls] = useState(practice.pitfalls?.join('\n') ?? '')
+  const [workProducts, setWorkProducts] = useState(practice.workProducts?.join('\n') ?? '')
+  const [activities, setActivities] = useState<ActivityInput[]>((practice.activities as ActivityInput[]) ?? [])
+  const [roles, setRoles] = useState<RoleInput[]>((practice.roles as RoleInput[]) ?? [])
+  const [completionCriteria, setCompletionCriteria] = useState(practice.completionCriteria ?? '')
+  const [metrics, setMetrics] = useState<MetricInput[]>((practice.metrics as MetricInput[]) ?? [])
+  const [guidelines, setGuidelines] = useState<GuidelineInput[]>((practice.guidelines as GuidelineInput[]) ?? [])
+  const [associatedPractices, setAssociatedPractices] = useState<AssociatedPracticeInput[]>((practice.associatedPractices as AssociatedPracticeInput[]) ?? [])
   const [availablePillars, setAvailablePillars] = useState(practice.pillars)
   const [categories, setCategories] = useState<CategoryOption[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -56,10 +78,20 @@ export const PracticeEditForm = ({
   const initialState = useMemo(() => ({
     title: practice.title,
     goal: practice.goal,
+    description: practice.description ?? '',
     categoryId: practice.categoryId,
     method: practice.method ?? '',
     tags: normalizeValidTags(Array.isArray(practice.tags) ? (practice.tags as string[]) : []),
-    pillarIds: practice.pillars.map((pillar) => pillar.id).sort((a, b) => a - b)
+    pillarIds: practice.pillars.map((pillar) => pillar.id).sort((a, b) => a - b),
+    benefits: practice.benefits?.join('\n') ?? '',
+    pitfalls: practice.pitfalls?.join('\n') ?? '',
+    workProducts: practice.workProducts?.join('\n') ?? '',
+    activities: JSON.stringify(practice.activities ?? []),
+    roles: JSON.stringify(practice.roles ?? []),
+    completionCriteria: practice.completionCriteria ?? '',
+    metrics: JSON.stringify(practice.metrics ?? []),
+    guidelines: JSON.stringify(practice.guidelines ?? []),
+    associatedPractices: JSON.stringify(practice.associatedPractices ?? [])
   }), [practice])
 
   const isDirty = useMemo(() => {
@@ -70,12 +102,22 @@ export const PracticeEditForm = ({
     return (
       title !== initialState.title ||
       goal !== initialState.goal ||
+      description !== initialState.description ||
       categoryId !== initialState.categoryId ||
       method !== initialState.method ||
       currentTags !== initialTags ||
-      sortedCurrent.join(',') !== initialState.pillarIds.join(',')
+      sortedCurrent.join(',') !== initialState.pillarIds.join(',') ||
+      benefits !== initialState.benefits ||
+      pitfalls !== initialState.pitfalls ||
+      workProducts !== initialState.workProducts ||
+      JSON.stringify(activities) !== initialState.activities ||
+      JSON.stringify(roles) !== initialState.roles ||
+      completionCriteria !== initialState.completionCriteria ||
+      JSON.stringify(metrics) !== initialState.metrics ||
+      JSON.stringify(guidelines) !== initialState.guidelines ||
+      JSON.stringify(associatedPractices) !== initialState.associatedPractices
     )
-  }, [title, goal, categoryId, method, tags, pillarIds, initialState])
+  }, [title, goal, description, categoryId, method, tags, pillarIds, benefits, pitfalls, workProducts, activities, roles, completionCriteria, metrics, guidelines, associatedPractices, initialState])
 
   const isGlobal = Boolean(practice.isGlobal)
   const usedByTeamsCount = practice.usedByTeamsCount ?? 0
@@ -103,13 +145,53 @@ export const PracticeEditForm = ({
     loadCoverage()
   }, [teamId])
 
+  // Fetch full practice detail to hydrate extended fields if not already present
+  useEffect(() => {
+    const hydrateExtendedFields = async () => {
+      try {
+        const response = await fetchPracticeDetail(practice.id)
+        if (response?.practice) {
+          const detail = response.practice
+          const asArr = (v: unknown): string[] =>
+            Array.isArray(v) ? v.filter((s): s is string => typeof s === 'string') : []
+          const castArr = <T,>(v: unknown): T[] =>
+            Array.isArray(v) ? (v as T[]) : []
+          setDescription(typeof detail.description === 'string' ? detail.description : '')
+          setBenefits(asArr(detail.benefits).join('\n'))
+          setPitfalls(asArr(detail.pitfalls).join('\n'))
+          setWorkProducts(asArr(detail.workProducts).join('\n'))
+          setActivities(castArr<ActivityInput>(detail.activities))
+          setRoles(castArr<RoleInput>(detail.roles))
+          setCompletionCriteria(typeof detail.completionCriteria === 'string' ? detail.completionCriteria : '')
+          setMetrics(castArr<MetricInput>(detail.metrics))
+          setGuidelines(castArr<GuidelineInput>(detail.guidelines))
+          setAssociatedPractices(castArr<AssociatedPracticeInput>(detail.associatedPractices))
+        }
+      } catch {
+        // Extended fields stay at defaults from prop
+      }
+    }
+    hydrateExtendedFields()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [practice.id])
+
   useEffect(() => {
     setTitle(practice.title)
     setGoal(practice.goal)
+    setDescription(practice.description ?? '')
     setCategoryId(practice.categoryId)
     setMethod(practice.method ?? '')
     setTags(normalizeValidTags(Array.isArray(practice.tags) ? (practice.tags as string[]) : []))
     setPillarIds(practice.pillars.map((pillar) => pillar.id))
+    setBenefits(practice.benefits?.join('\n') ?? '')
+    setPitfalls(practice.pitfalls?.join('\n') ?? '')
+    setWorkProducts(practice.workProducts?.join('\n') ?? '')
+    setActivities((practice.activities as ActivityInput[]) ?? [])
+    setRoles((practice.roles as RoleInput[]) ?? [])
+    setCompletionCriteria(practice.completionCriteria ?? '')
+    setMetrics((practice.metrics as MetricInput[]) ?? [])
+    setGuidelines((practice.guidelines as GuidelineInput[]) ?? [])
+    setAssociatedPractices((practice.associatedPractices as AssociatedPracticeInput[]) ?? [])
     setErrors({})
   }, [practice])
 
@@ -192,6 +274,7 @@ export const PracticeEditForm = ({
     }
 
     try {
+      const splitLines = (text: string) => text.split(/[\n,]+/).map(s => s.trim()).filter(Boolean)
       const result = await editPractice(teamId, practice.id, {
         title: title.trim(),
         goal: goal.trim(),
@@ -199,6 +282,15 @@ export const PracticeEditForm = ({
         method: method || null,
         tags,
         pillarIds,
+        benefits: splitLines(benefits),
+        pitfalls: splitLines(pitfalls),
+        workProducts: splitLines(workProducts),
+        activities: activities.filter(a => a.name.trim()),
+        roles: roles.filter(r => r.role.trim()),
+        completionCriteria: completionCriteria || null,
+        metrics: metrics.filter(m => m.name.trim()),
+        guidelines: guidelines.filter(g => g.name.trim() && g.url.trim()),
+        associatedPractices: associatedPractices.filter(a => a.targetPracticeId > 0),
         saveAsCopy,
         version: practice.practiceVersion ?? 1
       })
@@ -220,10 +312,20 @@ export const PracticeEditForm = ({
     if (updatedPractice) {
       setTitle(updatedPractice.title)
       setGoal(updatedPractice.goal)
+      setDescription((updatedPractice as any).description ?? '')
       setCategoryId(updatedPractice.categoryId)
       setMethod(updatedPractice.method ?? '')
       setTags(normalizeValidTags(Array.isArray(updatedPractice.tags) ? (updatedPractice.tags as string[]) : []))
       setPillarIds(updatedPractice.pillars.map((pillar) => pillar.id))
+      setBenefits((updatedPractice as any).benefits?.join('\n') ?? '')
+      setPitfalls((updatedPractice as any).pitfalls?.join('\n') ?? '')
+      setWorkProducts((updatedPractice as any).workProducts?.join('\n') ?? '')
+      setActivities((updatedPractice as any).activities ?? [])
+      setRoles((updatedPractice as any).roles ?? [])
+      setCompletionCriteria((updatedPractice as any).completionCriteria ?? '')
+      setMetrics((updatedPractice as any).metrics ?? [])
+      setGuidelines((updatedPractice as any).guidelines ?? [])
+      setAssociatedPractices((updatedPractice as any).associatedPractices ?? [])
     }
     setConflictMessage(null)
   }
@@ -358,6 +460,332 @@ export const PracticeEditForm = ({
             {errors.pillarIds && (
               <p className="text-xs text-red-600 mt-1">{errors.pillarIds}</p>
             )}
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              rows={4}
+              placeholder="Detailed description of the practice"
+            />
+          </div>
+
+          {/* Benefits */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Benefits</label>
+            <textarea
+              value={benefits}
+              onChange={(e) => setBenefits(e.target.value)}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              rows={3}
+              placeholder="List benefits separated by commas or new lines"
+            />
+          </div>
+
+          {/* Pitfalls */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Pitfalls</label>
+            <textarea
+              value={pitfalls}
+              onChange={(e) => setPitfalls(e.target.value)}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              rows={3}
+              placeholder="List pitfalls separated by commas or new lines"
+            />
+          </div>
+
+          {/* Work Products */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Work Products</label>
+            <textarea
+              value={workProducts}
+              onChange={(e) => setWorkProducts(e.target.value)}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              rows={3}
+              placeholder="List work products separated by commas or new lines"
+            />
+          </div>
+
+          {/* Activities */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">Activities</label>
+              <button
+                type="button"
+                onClick={() => setActivities([...activities, { sequence: activities.length + 1, name: '', description: '' }])}
+                className="text-xs text-blue-600 hover:text-blue-800"
+              >
+                + Add Activity
+              </button>
+            </div>
+            {activities.map((activity, index) => (
+              <div key={index} className="flex gap-2 mb-2 items-start">
+                <input
+                  type="number"
+                  value={activity.sequence}
+                  onChange={(e) => {
+                    const next = [...activities]
+                    next[index] = { ...next[index], sequence: parseInt(e.target.value, 10) || 1 }
+                    setActivities(next)
+                  }}
+                  className="w-16 px-2 py-1 border border-gray-300 rounded text-sm"
+                  placeholder="#"
+                  min={1}
+                />
+                <input
+                  type="text"
+                  value={activity.name}
+                  onChange={(e) => {
+                    const next = [...activities]
+                    next[index] = { ...next[index], name: e.target.value }
+                    setActivities(next)
+                  }}
+                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                  placeholder="Activity name"
+                />
+                <input
+                  type="text"
+                  value={activity.description}
+                  onChange={(e) => {
+                    const next = [...activities]
+                    next[index] = { ...next[index], description: e.target.value }
+                    setActivities(next)
+                  }}
+                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                  placeholder="Description"
+                />
+                <button
+                  type="button"
+                  onClick={() => setActivities(activities.filter((_, i) => i !== index))}
+                  className="text-red-400 hover:text-red-600 text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Roles (RACI) */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">Roles (RACI)</label>
+              <button
+                type="button"
+                onClick={() => setRoles([...roles, { role: '', responsibility: 'Responsible' }])}
+                className="text-xs text-blue-600 hover:text-blue-800"
+              >
+                + Add Role
+              </button>
+            </div>
+            {roles.map((role, index) => (
+              <div key={index} className="flex gap-2 mb-2 items-center">
+                <input
+                  type="text"
+                  value={role.role}
+                  onChange={(e) => {
+                    const next = [...roles]
+                    next[index] = { ...next[index], role: e.target.value }
+                    setRoles(next)
+                  }}
+                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                  placeholder="Role name"
+                />
+                <select
+                  value={role.responsibility}
+                  onChange={(e) => {
+                    const next = [...roles]
+                    next[index] = { ...next[index], responsibility: e.target.value as RoleInput['responsibility'] }
+                    setRoles(next)
+                  }}
+                  className="px-2 py-1 border border-gray-300 rounded text-sm"
+                >
+                  <option value="Responsible">Responsible</option>
+                  <option value="Accountable">Accountable</option>
+                  <option value="Consulted">Consulted</option>
+                  <option value="Informed">Informed</option>
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setRoles(roles.filter((_, i) => i !== index))}
+                  className="text-red-400 hover:text-red-600 text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Completion Criteria */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Completion Criteria</label>
+            <textarea
+              value={completionCriteria}
+              onChange={(e) => setCompletionCriteria(e.target.value)}
+              className="w-full rounded-md border border-gray-300 px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              rows={3}
+              placeholder="Define when the practice is considered complete"
+            />
+          </div>
+
+          {/* Metrics */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">Metrics</label>
+              <button
+                type="button"
+                onClick={() => setMetrics([...metrics, { name: '' }])}
+                className="text-xs text-blue-600 hover:text-blue-800"
+              >
+                + Add Metric
+              </button>
+            </div>
+            {metrics.map((metric, index) => (
+              <div key={index} className="flex gap-2 mb-2 items-center">
+                <input
+                  type="text"
+                  value={metric.name}
+                  onChange={(e) => {
+                    const next = [...metrics]
+                    next[index] = { ...next[index], name: e.target.value }
+                    setMetrics(next)
+                  }}
+                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                  placeholder="Metric name"
+                />
+                <input
+                  type="text"
+                  value={metric.unit ?? ''}
+                  onChange={(e) => {
+                    const next = [...metrics]
+                    next[index] = { ...next[index], unit: e.target.value || undefined }
+                    setMetrics(next)
+                  }}
+                  className="w-24 px-2 py-1 border border-gray-300 rounded text-sm"
+                  placeholder="Unit"
+                />
+                <input
+                  type="text"
+                  value={metric.formula ?? ''}
+                  onChange={(e) => {
+                    const next = [...metrics]
+                    next[index] = { ...next[index], formula: e.target.value || undefined }
+                    setMetrics(next)
+                  }}
+                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                  placeholder="Formula (optional)"
+                />
+                <button
+                  type="button"
+                  onClick={() => setMetrics(metrics.filter((_, i) => i !== index))}
+                  className="text-red-400 hover:text-red-600 text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Guidelines */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">Guidelines / Resources</label>
+              <button
+                type="button"
+                onClick={() => setGuidelines([...guidelines, { name: '', url: '' }])}
+                className="text-xs text-blue-600 hover:text-blue-800"
+              >
+                + Add Guideline
+              </button>
+            </div>
+            {guidelines.map((guideline, index) => (
+              <div key={index} className="flex gap-2 mb-2 items-center">
+                <input
+                  type="text"
+                  value={guideline.name}
+                  onChange={(e) => {
+                    const next = [...guidelines]
+                    next[index] = { ...next[index], name: e.target.value }
+                    setGuidelines(next)
+                  }}
+                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                  placeholder="Guideline name"
+                />
+                <input
+                  type="text"
+                  value={guideline.url}
+                  onChange={(e) => {
+                    const next = [...guidelines]
+                    next[index] = { ...next[index], url: e.target.value }
+                    setGuidelines(next)
+                  }}
+                  className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                  placeholder="URL"
+                />
+                <button
+                  type="button"
+                  onClick={() => setGuidelines(guidelines.filter((_, i) => i !== index))}
+                  className="text-red-400 hover:text-red-600 text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+
+          {/* Associated Practices */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">Associated Practices</label>
+              <button
+                type="button"
+                onClick={() => setAssociatedPractices([...associatedPractices, { targetPracticeId: 0, associationType: 'Complementarity' }])}
+                className="text-xs text-blue-600 hover:text-blue-800"
+              >
+                + Add Association
+              </button>
+            </div>
+            {associatedPractices.map((assoc, index) => (
+              <div key={index} className="flex gap-2 mb-2 items-center">
+                <input
+                  type="number"
+                  value={assoc.targetPracticeId || ''}
+                  onChange={(e) => {
+                    const next = [...associatedPractices]
+                    next[index] = { ...next[index], targetPracticeId: parseInt(e.target.value, 10) || 0 }
+                    setAssociatedPractices(next)
+                  }}
+                  className="w-24 px-2 py-1 border border-gray-300 rounded text-sm"
+                  placeholder="Practice ID"
+                  min={1}
+                />
+                <select
+                  value={assoc.associationType}
+                  onChange={(e) => {
+                    const next = [...associatedPractices]
+                    next[index] = { ...next[index], associationType: e.target.value as AssociatedPracticeInput['associationType'] }
+                    setAssociatedPractices(next)
+                  }}
+                  className="px-2 py-1 border border-gray-300 rounded text-sm"
+                >
+                  <option value="Complementarity">Complementarity</option>
+                  <option value="Configuration">Configuration</option>
+                  <option value="Dependency">Dependency</option>
+                  <option value="Equivalence">Equivalence</option>
+                  <option value="Exclusion">Exclusion</option>
+                </select>
+                <button
+                  type="button"
+                  onClick={() => setAssociatedPractices(associatedPractices.filter((_, i) => i !== index))}
+                  className="text-red-400 hover:text-red-600 text-sm"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
           </div>
         </div>
 

@@ -4,10 +4,12 @@ import cookieParser from 'cookie-parser';
 import { teamsRouter } from '../teams.routes';
 import * as teamsService from '../../services/teams.service';
 import { requireAuth } from '../../middleware/requireAuth';
+import { validateTeamMembership } from '../../middleware/validateTeamMembership';
 
 // Mock the service and middleware
 jest.mock('../../services/teams.service');
 jest.mock('../../middleware/requireAuth');
+jest.mock('../../middleware/validateTeamMembership');
 
 const app = express();
 app.use(express.json());
@@ -37,6 +39,10 @@ describe('GET /api/v1/teams', () => {
     // Mock requireAuth to add user to request
     (requireAuth as any).mockImplementation((req: any, _res: any, next: any) => {
       req.user = { userId: 1, email: 'test@example.com' };
+      next();
+    });
+
+    (validateTeamMembership as any).mockImplementation((_req: any, _res: any, next: any) => {
       next();
     });
   });
@@ -365,5 +371,49 @@ describe('POST /api/v1/teams', () => {
       });
 
     expect(response.body.requestId).toBe('test-request-id');
+  });
+});
+
+describe('GET /api/v1/teams/:teamId/practices/available/methods', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+
+    (requireAuth as any).mockImplementation((req: any, _res: any, next: any) => {
+      req.user = { userId: 1, email: 'test@example.com' };
+      next();
+    });
+
+    (validateTeamMembership as any).mockImplementation((_req: any, _res: any, next: any) => {
+      next();
+    });
+  });
+
+  it('returns available practice methods for the team', async () => {
+    (teamsService.getAvailablePracticeMethods as jest.Mock).mockResolvedValue(['Kanban', 'Scrum']);
+
+    const response = await request(app).get('/api/v1/teams/12/practices/available/methods');
+
+    expect(response.status).toBe(200);
+    expect(teamsService.getAvailablePracticeMethods).toHaveBeenCalledWith(12);
+    expect(response.body).toEqual({
+      methods: ['Kanban', 'Scrum'],
+      requestId: 'test-request-id'
+    });
+  });
+
+  it('returns 400 for invalid teamId', async () => {
+    const error: any = new Error('Valid team ID is required');
+    error.code = 'invalid_team_id';
+    error.statusCode = 400;
+    (teamsService.getAvailablePracticeMethods as jest.Mock).mockRejectedValue(error);
+
+    const response = await request(app).get('/api/v1/teams/not-a-number/practices/available/methods');
+
+    expect(response.status).toBe(400);
+    expect(response.body).toEqual({
+      code: 'invalid_team_id',
+      message: 'Valid team ID is required',
+      requestId: 'test-request-id'
+    });
   });
 });

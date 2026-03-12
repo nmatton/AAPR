@@ -17,6 +17,12 @@ export interface Practice {
   benefits?: string[] | null
   pitfalls?: string[] | null
   workProducts?: string[] | null
+  activities?: unknown[] | null
+  roles?: unknown[] | null
+  completionCriteria?: string | null
+  metrics?: unknown[] | null
+  guidelines?: unknown[] | null
+  associatedPractices?: unknown[] | null
   isGlobal?: boolean
   practiceVersion?: number
   usedByTeamsCount?: number

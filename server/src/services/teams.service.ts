@@ -339,6 +339,9 @@ export interface AvailablePracticesParams {
   pageSize?: number;
   search?: string;
   pillars?: number[];
+  categories?: string[];
+  methods?: string[];
+  tags?: string[];
 }
 
 /**
@@ -353,7 +356,16 @@ export const getAvailablePractices = async (
   teamId: number,
   params: AvailablePracticesParams
 ): Promise<AvailablePracticesResponse> => {
-  const { page = 1, pageSize = 20, search, pillars } = params;
+  if (!Number.isInteger(teamId) || teamId <= 0) {
+    throw new AppError(
+      'invalid_team_id',
+      'Valid team ID is required',
+      { teamId },
+      400
+    );
+  }
+
+  const { page = 1, pageSize = 20, search, pillars, categories, methods, tags } = params;
   const skip = (page - 1) * pageSize;
 
   // Validate team exists
@@ -381,8 +393,8 @@ export const getAvailablePractices = async (
   }
 
   const [practices, total] = await Promise.all([
-    practiceRepository.findAvailableForTeam(teamId, { search, pillars, skip, take: pageSize }),
-    practiceRepository.countAvailableForTeam(teamId, { search, pillars })
+    practiceRepository.findAvailableForTeam(teamId, { search, pillars, categories, methods, tags, skip, take: pageSize }),
+    practiceRepository.countAvailableForTeam(teamId, { search, pillars, categories, methods, tags })
   ]);
 
   return {
@@ -412,6 +424,25 @@ export const getAvailablePractices = async (
     pageSize,
     total
   };
+};
+
+/**
+ * Get all distinct method values for practices available to a team
+ * (global practices not yet selected by the team)
+ *
+ * @param teamId - Team identifier
+ * @returns Sorted array of unique method strings
+ */
+export const getAvailablePracticeMethods = async (teamId: number): Promise<string[]> => {
+  if (!Number.isInteger(teamId) || teamId <= 0) {
+    throw new AppError('invalid_team_id', 'Valid team ID is required', { teamId }, 400);
+  }
+
+  const team = await prisma.team.findUnique({ where: { id: teamId } });
+  if (!team) {
+    throw new AppError('team_not_found', 'Team not found', { teamId }, 404);
+  }
+  return practiceRepository.findDistinctMethodsAvailableForTeam(teamId);
 };
 
 /**
@@ -487,6 +518,39 @@ export interface RemovePracticeResult {
   gapPillarNames: string[];
 }
 
+export interface ActivityInput {
+  sequence: number;
+  name: string;
+  description: string;
+}
+
+export interface RoleInput {
+  role: string;
+  responsibility: 'Responsible' | 'Accountable' | 'Consulted' | 'Informed';
+}
+
+export interface WorkProductInput {
+  name: string;
+  description: string;
+}
+
+export interface MetricInput {
+  name: string;
+  unit?: string;
+  formula?: string;
+}
+
+export interface GuidelineInput {
+  name: string;
+  url: string;
+  type?: string;
+}
+
+export interface AssociatedPracticeInput {
+  targetPracticeId: number;
+  associationType: 'Configuration' | 'Equivalence' | 'Dependency' | 'Complementarity' | 'Exclusion';
+}
+
 export interface CreateCustomPracticePayload {
   title: string;
   goal: string;
@@ -498,6 +562,12 @@ export interface CreateCustomPracticePayload {
   benefits?: string[];
   pitfalls?: string[];
   workProducts?: string[];
+  activities?: ActivityInput[];
+  roles?: RoleInput[];
+  completionCriteria?: string;
+  metrics?: MetricInput[];
+  guidelines?: GuidelineInput[];
+  associatedPractices?: AssociatedPracticeInput[];
   templatePracticeId?: number;
 }
 
@@ -513,6 +583,15 @@ export interface EditPracticePayload {
   categoryId: string;
   method?: string | null;
   tags?: string[];
+  benefits?: string[];
+  pitfalls?: string[];
+  workProducts?: string[];
+  activities?: ActivityInput[];
+  roles?: RoleInput[];
+  completionCriteria?: string | null;
+  metrics?: MetricInput[];
+  guidelines?: GuidelineInput[];
+  associatedPractices?: AssociatedPracticeInput[];
   saveAsCopy?: boolean;
   version: number;
 }
@@ -870,7 +949,13 @@ export const createCustomPracticeForTeam = async (
     tags,
     benefits,
     pitfalls,
-    workProducts
+    workProducts,
+    activities,
+    roles,
+    completionCriteria,
+    metrics,
+    guidelines,
+    associatedPractices
   } = payload;
 
   const normalizedDescription = description?.trim() || undefined;
@@ -879,6 +964,7 @@ export const createCustomPracticeForTeam = async (
   const normalizedBenefits = normalizeOptionalList(benefits);
   const normalizedPitfalls = normalizeOptionalList(pitfalls);
   const normalizedWorkProducts = normalizeOptionalList(workProducts);
+  const normalizedCompletionCriteria = completionCriteria?.trim() || undefined;
 
   // Validate pillar IDs exist
   const invalidPillars = await practiceRepository.validatePillarIds(pillarIds);
@@ -930,13 +1016,23 @@ export const createCustomPracticeForTeam = async (
           tags: normalizedTags,
           benefits: normalizedBenefits,
           pitfalls: normalizedPitfalls,
-          workProducts: normalizedWorkProducts
+          workProducts: normalizedWorkProducts,
+          activities: activities ? (activities as unknown as Prisma.InputJsonValue) : undefined,
+          roles: roles ? (roles as unknown as Prisma.InputJsonValue) : undefined,
+          completionCriteria: normalizedCompletionCriteria,
+          metrics: metrics ? (metrics as unknown as Prisma.InputJsonValue) : undefined,
+          guidelines: guidelines ? (guidelines as unknown as Prisma.InputJsonValue) : undefined
         },
         tx
       );
 
       await practiceRepository.createPracticePillars(practice.id, pillarIds, tx);
       await practiceRepository.linkPracticeToTeam(teamId, practice.id, tx);
+
+      // Persist associated practices via relational model
+      if (associatedPractices && associatedPractices.length > 0) {
+        await practiceRepository.syncAssociations(practice.id, associatedPractices, tx);
+      }
 
       await tx.event.create({
         data: {
@@ -1040,7 +1136,7 @@ export const editPracticeForTeam = async (
   practiceId: number,
   payload: EditPracticePayload
 ): Promise<EditPracticeResult> => {
-  const { title, goal, pillarIds, categoryId, method, tags, saveAsCopy = false, version } = payload
+  const { title, goal, pillarIds, categoryId, method, tags, benefits, pitfalls, workProducts, activities, roles, completionCriteria, metrics, guidelines, associatedPractices, saveAsCopy = false, version } = payload
 
   const existingPractice = await practiceRepository.findById(practiceId)
   if (!existingPractice) {
@@ -1098,6 +1194,17 @@ export const editPracticeForTeam = async (
     : (method?.trim() || null)
   const normalizedTags = tags === undefined ? existingTags : normalizeOptionalList(tags)
 
+  const normalizedBenefits = benefits !== undefined ? normalizeOptionalList(benefits) : (normalizeStringArray(existingPractice.benefits) ?? undefined)
+  const normalizedPitfalls = pitfalls !== undefined ? normalizeOptionalList(pitfalls) : (normalizeStringArray(existingPractice.pitfalls) ?? undefined)
+  const normalizedWorkProducts = workProducts !== undefined ? normalizeOptionalList(workProducts) : (normalizeStringArray(existingPractice.workProducts) ?? undefined)
+  const normalizedCompletionCriteria = completionCriteria === undefined
+    ? (existingPractice.completionCriteria ?? undefined)
+    : (completionCriteria === null ? undefined : (completionCriteria.trim() || undefined))
+  const resolvedActivities = activities !== undefined ? activities : (existingPractice.activities ?? undefined)
+  const resolvedRoles = roles !== undefined ? roles : (existingPractice.roles ?? undefined)
+  const resolvedMetrics = metrics !== undefined ? metrics : (existingPractice.metrics ?? undefined)
+  const resolvedGuidelines = guidelines !== undefined ? guidelines : (existingPractice.guidelines ?? undefined)
+
   const changes = buildPracticeChangeSet(
     {
       title: existingPractice.title,
@@ -1134,15 +1241,14 @@ export const editPracticeForTeam = async (
           category: { connect: { id: categoryId } },
           method: normalizedMethod ?? undefined,
           tags: normalizedTags,
-          activities: existingPractice.activities ?? undefined,
-          roles: existingPractice.roles ?? undefined,
-          workProducts: existingPractice.workProducts ?? undefined,
-          completionCriteria: existingPractice.completionCriteria ?? undefined,
-          metrics: existingPractice.metrics ?? undefined,
-          guidelines: existingPractice.guidelines ?? undefined,
-          pitfalls: existingPractice.pitfalls ?? undefined,
-          benefits: existingPractice.benefits ?? undefined,
-          associatedPractices: existingPractice.associatedPractices ?? undefined,
+          activities: resolvedActivities ? (resolvedActivities as unknown as Prisma.InputJsonValue) : undefined,
+          roles: resolvedRoles ? (resolvedRoles as unknown as Prisma.InputJsonValue) : undefined,
+          workProducts: normalizedWorkProducts,
+          completionCriteria: normalizedCompletionCriteria,
+          metrics: resolvedMetrics ? (resolvedMetrics as unknown as Prisma.InputJsonValue) : undefined,
+          guidelines: resolvedGuidelines ? (resolvedGuidelines as unknown as Prisma.InputJsonValue) : undefined,
+          pitfalls: normalizedPitfalls,
+          benefits: normalizedBenefits,
           importedAt: existingPractice.importedAt ?? undefined,
           sourceFile: existingPractice.sourceFile ?? undefined,
           jsonChecksum: existingPractice.jsonChecksum ?? undefined,
@@ -1155,6 +1261,12 @@ export const editPracticeForTeam = async (
       )
 
       await practiceRepository.createPracticePillars(newPractice.id, pillarIds, tx)
+
+      // Sync associations for the copy using submitted values
+      if (associatedPractices && associatedPractices.length > 0) {
+        await practiceRepository.syncAssociations(newPractice.id, associatedPractices, tx)
+      }
+
       await tx.teamPractice.upsert({
         where: {
           teamId_practiceId: {
@@ -1239,7 +1351,21 @@ export const editPracticeForTeam = async (
     const updatedCount = await practiceRepository.updatePracticeWithVersion(
       practiceId,
       version,
-      { title, goal, categoryId, method: normalizedMethod, tags: normalizedTags },
+      {
+        title,
+        goal,
+        categoryId,
+        method: normalizedMethod,
+        tags: normalizedTags,
+        benefits: normalizedBenefits,
+        pitfalls: normalizedPitfalls,
+        workProducts: normalizedWorkProducts,
+        activities: resolvedActivities,
+        roles: resolvedRoles,
+        completionCriteria: normalizedCompletionCriteria,
+        metrics: resolvedMetrics,
+        guidelines: resolvedGuidelines
+      },
       tx
     )
 
@@ -1253,6 +1379,11 @@ export const editPracticeForTeam = async (
     }
 
     await practiceRepository.replacePracticePillars(practiceId, pillarIds, tx)
+
+    // Sync associations if provided
+    if (associatedPractices !== undefined) {
+      await practiceRepository.syncAssociations(practiceId, associatedPractices ?? [], tx)
+    }
 
     const eventPayload: Prisma.InputJsonObject = {
       teamId,

@@ -1,11 +1,12 @@
 import { create } from 'zustand'
-import { fetchPractices, logCatalogViewed, logCatalogSearched, ApiError } from '../api/practices.api'
+import { fetchPractices, fetchPracticeMethods, logCatalogViewed, logCatalogSearched, ApiError } from '../api/practices.api'
 import { normalizeValidTags } from '../../../shared/constants/tags.constants'
 import type { Practice, Pillar } from '../types'
 
 export interface PracticesState {
   practices: Practice[]
   availablePillars: Pillar[]
+  availableMethods: string[]
   isPillarsLoading: boolean
   isLoading: boolean
   error: string | null
@@ -22,6 +23,7 @@ export interface PracticesState {
   selectedTags: string[]
   loadPractices: (page?: number, pageSize?: number, teamId?: number | null) => Promise<void>
   loadAvailablePillars: () => Promise<void>
+  loadAvailableMethods: () => Promise<void>
   setCurrentDetail: (practice: Practice | null) => void
   setSearchQuery: (query: string) => void
   setSelectedPillars: (pillars: number[]) => void
@@ -34,9 +36,10 @@ export interface PracticesState {
   retry: () => Promise<void>
 }
 
-const initialState: Omit<PracticesState, 'loadPractices' | 'loadAvailablePillars' | 'setCurrentDetail' | 'setSearchQuery' | 'setSelectedPillars' | 'setPillarFilters' | 'togglePillar' | 'toggleCategory' | 'toggleMethod' | 'setTags' | 'clearFilters' | 'retry'> = {
+const initialState: Omit<PracticesState, 'loadPractices' | 'loadAvailablePillars' | 'loadAvailableMethods' | 'setCurrentDetail' | 'setSearchQuery' | 'setSelectedPillars' | 'setPillarFilters' | 'togglePillar' | 'toggleCategory' | 'toggleMethod' | 'setTags' | 'clearFilters' | 'retry'> = {
   practices: [],
   availablePillars: [],
+  availableMethods: [],
   isPillarsLoading: false,
   isLoading: false,
   error: null,
@@ -148,6 +151,15 @@ export const usePracticesStore = create<PracticesState>((set, get) => ({
       set({ availablePillars, isPillarsLoading: false })
     } catch (error) {
       set({ availablePillars: [], isPillarsLoading: false })
+    }
+  },
+
+  loadAvailableMethods: async () => {
+    try {
+      const methods = await fetchPracticeMethods()
+      set({ availableMethods: methods })
+    } catch (error) {
+      set({ availableMethods: [] })
     }
   },
 

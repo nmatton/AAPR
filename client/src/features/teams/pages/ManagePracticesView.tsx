@@ -10,6 +10,10 @@ import { fetchPracticeDetail } from '../../practices/api/practices.api';
 import { RemovePracticeModal } from '../components/RemovePracticeModal';
 import { CreatePracticeModal } from '../components/CreatePracticeModal';
 import { PracticeEditForm } from '../components/PracticeEditForm';
+import { AvailablePracticesCategoryFilter } from '../components/AvailablePracticesCategoryFilter';
+import { AvailablePracticesMethodFilter } from '../components/AvailablePracticesMethodFilter';
+import { AvailablePracticesTagFilter } from '../components/AvailablePracticesTagFilter';
+import { AvailablePracticesActiveFilters } from '../components/AvailablePracticesActiveFilters';
 import type { Practice } from '../types/practice.types';
 
 type TabType = 'available' | 'selected';
@@ -27,7 +31,11 @@ export const ManagePracticesView = () => {
     page,
     searchQuery,
     selectedPillars,
+    selectedCategories,
+    selectedMethods,
+    selectedTags,
     loadAvailablePractices,
+    loadAvailableMethods,
     addPractice,
     setSearchQuery,
     togglePillar,
@@ -94,7 +102,13 @@ export const ManagePracticesView = () => {
     if (numericTeamId && activeTab === 'available') {
       loadAvailablePractices(numericTeamId);
     }
-  }, [numericTeamId, activeTab, loadAvailablePractices, searchQuery, selectedPillars]);
+  }, [numericTeamId, activeTab, loadAvailablePractices, searchQuery, selectedPillars, selectedCategories, selectedMethods, selectedTags]);
+
+  useEffect(() => {
+    if (numericTeamId) {
+      void loadAvailableMethods(numericTeamId);
+    }
+  }, [numericTeamId, loadAvailableMethods]);
 
   useEffect(() => {
     if (numericTeamId && activeTab === 'selected') {
@@ -146,6 +160,7 @@ export const ManagePracticesView = () => {
       const result = await removePractice(numericTeamId, practiceToRemove.id);
       showSuccessMessage(`"${practiceToRemove.title}" removed from team portfolio`);
       setGapPillarSuggestions(result.gapPillarNames);
+      await loadAvailableMethods(numericTeamId);
 
       // Refresh teams to update coverage stats
       await fetchTeams();
@@ -167,6 +182,7 @@ export const ManagePracticesView = () => {
     showSuccessMessage(`New practice created: ${practiceName}`);
     setIsCreateModalOpen(false);
     await fetchTeams();
+    await loadAvailableMethods(numericTeamId);
     await loadTeamPractices(numericTeamId);
   };
 
@@ -207,6 +223,7 @@ export const ManagePracticesView = () => {
   const handlePracticeSaved = async (result: { practiceId?: number; practice?: any }) => {
     showSuccessMessage('Practice updated successfully');
     await fetchTeams();
+    await loadAvailableMethods(numericTeamId);
     // Always refresh both lists because:
     // - If saved as copy, new practice appears in team list
     // - Original practice may have changed in available list
@@ -383,6 +400,14 @@ export const ManagePracticesView = () => {
                 isLoading={isLoadingAvailable && availablePillars.length === 0}
               />
             </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 border-t border-gray-100">
+              <AvailablePracticesCategoryFilter />
+              <AvailablePracticesMethodFilter />
+              <AvailablePracticesTagFilter />
+            </div>
+
+            <AvailablePracticesActiveFilters />
 
             {(searchQuery || selectedPillars.length > 0) && (
               <div className="flex items-center justify-between">

@@ -34,6 +34,7 @@ vi.mock('react-router-dom', async () => {
 
 const mockLoad = vi.fn()
 const mockLoadPillars = vi.fn()
+const mockLoadMethods = vi.fn()
 const mockRetry = vi.fn()
 const mockSetDetail = vi.fn()
 const mockSetSearchQuery = vi.fn()
@@ -47,6 +48,7 @@ const mockedUsePracticesStore = slice.usePracticesStore as unknown as MockedFunc
 const mockStore: PracticesState = {
   practices: [],
   availablePillars: [],
+  availableMethods: [],
   isPillarsLoading: false,
   searchQuery: '',
   selectedPillars: [],
@@ -56,6 +58,7 @@ const mockStore: PracticesState = {
   currentDetail: null,
   loadPractices: mockLoad,
   loadAvailablePillars: mockLoadPillars,
+  loadAvailableMethods: mockLoadMethods,
   retry: mockRetry,
   setCurrentDetail: mockSetDetail,
   setSearchQuery: mockSetSearchQuery,

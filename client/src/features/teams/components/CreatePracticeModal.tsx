@@ -2,8 +2,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { CategorizedTagSelector } from '../../../shared/components/CategorizedTagSelector';
 import { normalizeValidTags, type ValidTag } from '../../../shared/constants/tags.constants';
 import { fetchAvailablePractices, fetchTeamPractices } from '../api/teamPracticesApi';
+import { fetchPracticeDetail } from '../../practices/api/practices.api';
 import { useManagePracticesStore } from '../state/managePracticesSlice';
-import type { Practice } from '../types/practice.types';
+import type { Practice, ActivityInput, RoleInput, MetricInput, GuidelineInput, AssociatedPracticeInput } from '../types/practice.types';
 interface CreatePracticeModalProps {
   teamId: number;
   onClose: () => void;
@@ -23,6 +24,12 @@ type FormState = {
   benefits: string;
   pitfalls: string;
   workProducts: string;
+  activities: ActivityInput[];
+  roles: RoleInput[];
+  completionCriteria: string;
+  metrics: MetricInput[];
+  guidelines: GuidelineInput[];
+  associatedPractices: AssociatedPracticeInput[];
   templatePracticeId?: number;
 };
 
@@ -44,7 +51,13 @@ export const CreatePracticeModal = ({ teamId, onClose, onCreated }: CreatePracti
     method: '',
     benefits: '',
     pitfalls: '',
-    workProducts: ''
+    workProducts: '',
+    activities: [],
+    roles: [],
+    completionCriteria: '',
+    metrics: [],
+    guidelines: [],
+    associatedPractices: []
   });
 
   const joinValues = (values?: string[] | null) =>
@@ -168,7 +181,13 @@ export const CreatePracticeModal = ({ teamId, onClose, onCreated }: CreatePracti
       method: '',
       benefits: '',
       pitfalls: '',
-      workProducts: ''
+      workProducts: '',
+      activities: [],
+      roles: [],
+      completionCriteria: '',
+      metrics: [],
+      guidelines: [],
+      associatedPractices: []
     });
     setStep('form');
   };
@@ -195,24 +214,45 @@ export const CreatePracticeModal = ({ teamId, onClose, onCreated }: CreatePracti
     return candidateName;
   };
 
-  const handleDuplicateTemplate = () => {
+  const handleDuplicateTemplate = async () => {
     const selected = templates.find((practice) => practice.id === selectedTemplateId);
     if (!selected) return;
 
-    const uniqueTitle = generateUniqueCopyTitle(selected.title);
+    // Fetch full practice detail to get extended fields
+    let detail: Practice = selected;
+    try {
+      const { practice: fullDetail } = await fetchPracticeDetail(selected.id);
+      detail = { ...selected, ...fullDetail } as Practice;
+    } catch {
+      // Fall back to shallow template data if detail fetch fails
+    }
+
+    const uniqueTitle = generateUniqueCopyTitle(detail.title);
+
+    const safeActivities = Array.isArray(detail.activities) ? detail.activities as ActivityInput[] : [];
+    const safeRoles = Array.isArray(detail.roles) ? detail.roles as RoleInput[] : [];
+    const safeMetrics = Array.isArray(detail.metrics) ? detail.metrics as MetricInput[] : [];
+    const safeGuidelines = Array.isArray(detail.guidelines) ? detail.guidelines as GuidelineInput[] : [];
+    const safeAssociatedPractices = Array.isArray(detail.associatedPractices) ? detail.associatedPractices as AssociatedPracticeInput[] : [];
 
     setFormState({
       title: uniqueTitle,
-      goal: selected.goal,
-      description: selected.description ?? '',
-      categoryId: selected.categoryId,
-      pillarIds: selected.pillars.map((pillar) => pillar.id),
-      tags: normalizeValidTags(selected.tags),
-      method: selected.method ?? '',
-      benefits: joinValues(selected.benefits ?? undefined),
-      pitfalls: joinValues(selected.pitfalls ?? undefined),
-      workProducts: joinValues(selected.workProducts ?? undefined),
-      templatePracticeId: selected.id
+      goal: detail.goal,
+      description: detail.description ?? '',
+      categoryId: detail.categoryId,
+      pillarIds: detail.pillars.map((pillar) => pillar.id),
+      tags: normalizeValidTags(detail.tags),
+      method: detail.method ?? '',
+      benefits: joinValues(detail.benefits ?? undefined),
+      pitfalls: joinValues(detail.pitfalls ?? undefined),
+      workProducts: joinValues(detail.workProducts ?? undefined),
+      activities: safeActivities,
+      roles: safeRoles,
+      completionCriteria: (detail.completionCriteria as string) ?? '',
+      metrics: safeMetrics,
+      guidelines: safeGuidelines,
+      associatedPractices: safeAssociatedPractices,
+      templatePracticeId: detail.id
     });
     setStep('form');
   };
@@ -247,6 +287,12 @@ export const CreatePracticeModal = ({ teamId, onClose, onCreated }: CreatePracti
         benefits: normalizeListInput(formState.benefits),
         pitfalls: normalizeListInput(formState.pitfalls),
         workProducts: normalizeListInput(formState.workProducts),
+        activities: formState.activities.length > 0 ? formState.activities : undefined,
+        roles: formState.roles.length > 0 ? formState.roles : undefined,
+        completionCriteria: formState.completionCriteria.trim() || undefined,
+        metrics: formState.metrics.length > 0 ? formState.metrics : undefined,
+        guidelines: formState.guidelines.length > 0 ? formState.guidelines : undefined,
+        associatedPractices: formState.associatedPractices.length > 0 ? formState.associatedPractices : undefined,
         templatePracticeId: formState.templatePracticeId
       });
       onCreated(formState.title.trim());
@@ -543,6 +589,304 @@ export const CreatePracticeModal = ({ teamId, onClose, onCreated }: CreatePracti
                   rows={3}
                   placeholder="List work products separated by commas or new lines"
                 />
+              </div>
+
+              {/* Activities */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-gray-700">Activities</label>
+                  <button
+                    type="button"
+                    onClick={() => setFormState({
+                      ...formState,
+                      activities: [...formState.activities, { sequence: formState.activities.length + 1, name: '', description: '' }]
+                    })}
+                    className="text-xs text-blue-600 hover:text-blue-800"
+                  >
+                    + Add Activity
+                  </button>
+                </div>
+                {formState.activities.map((activity, index) => (
+                  <div key={index} className="flex gap-2 mb-2 items-start">
+                    <input
+                      type="number"
+                      value={activity.sequence}
+                      onChange={(e) => {
+                        const next = [...formState.activities];
+                        next[index] = { ...next[index], sequence: parseInt(e.target.value, 10) || 1 };
+                        setFormState({ ...formState, activities: next });
+                      }}
+                      className="w-16 px-2 py-1 border border-gray-300 rounded text-sm"
+                      placeholder="#"
+                      min={1}
+                    />
+                    <input
+                      type="text"
+                      value={activity.name}
+                      onChange={(e) => {
+                        const next = [...formState.activities];
+                        next[index] = { ...next[index], name: e.target.value };
+                        setFormState({ ...formState, activities: next });
+                      }}
+                      className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                      placeholder="Activity name"
+                    />
+                    <input
+                      type="text"
+                      value={activity.description}
+                      onChange={(e) => {
+                        const next = [...formState.activities];
+                        next[index] = { ...next[index], description: e.target.value };
+                        setFormState({ ...formState, activities: next });
+                      }}
+                      className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                      placeholder="Description"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFormState({ ...formState, activities: formState.activities.filter((_, i) => i !== index) })}
+                      className="text-red-400 hover:text-red-600 text-sm"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Roles (RACI) */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-gray-700">Roles (RACI)</label>
+                  <button
+                    type="button"
+                    onClick={() => setFormState({
+                      ...formState,
+                      roles: [...formState.roles, { role: '', responsibility: 'Responsible' }]
+                    })}
+                    className="text-xs text-blue-600 hover:text-blue-800"
+                  >
+                    + Add Role
+                  </button>
+                </div>
+                {formState.roles.map((role, index) => (
+                  <div key={index} className="flex gap-2 mb-2 items-center">
+                    <input
+                      type="text"
+                      value={role.role}
+                      onChange={(e) => {
+                        const next = [...formState.roles];
+                        next[index] = { ...next[index], role: e.target.value };
+                        setFormState({ ...formState, roles: next });
+                      }}
+                      className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                      placeholder="Role name"
+                    />
+                    <select
+                      value={role.responsibility}
+                      onChange={(e) => {
+                        const next = [...formState.roles];
+                        next[index] = { ...next[index], responsibility: e.target.value as RoleInput['responsibility'] };
+                        setFormState({ ...formState, roles: next });
+                      }}
+                      className="px-2 py-1 border border-gray-300 rounded text-sm"
+                    >
+                      <option value="Responsible">Responsible</option>
+                      <option value="Accountable">Accountable</option>
+                      <option value="Consulted">Consulted</option>
+                      <option value="Informed">Informed</option>
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => setFormState({ ...formState, roles: formState.roles.filter((_, i) => i !== index) })}
+                      className="text-red-400 hover:text-red-600 text-sm"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Completion Criteria */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="practice-completion-criteria">
+                  Completion Criteria
+                </label>
+                <textarea
+                  id="practice-completion-criteria"
+                  value={formState.completionCriteria}
+                  onChange={(event) => setFormState({ ...formState, completionCriteria: event.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  rows={3}
+                  placeholder="Define when the practice is considered complete"
+                />
+              </div>
+
+              {/* Metrics */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-gray-700">Metrics</label>
+                  <button
+                    type="button"
+                    onClick={() => setFormState({
+                      ...formState,
+                      metrics: [...formState.metrics, { name: '' }]
+                    })}
+                    className="text-xs text-blue-600 hover:text-blue-800"
+                  >
+                    + Add Metric
+                  </button>
+                </div>
+                {formState.metrics.map((metric, index) => (
+                  <div key={index} className="flex gap-2 mb-2 items-center">
+                    <input
+                      type="text"
+                      value={metric.name}
+                      onChange={(e) => {
+                        const next = [...formState.metrics];
+                        next[index] = { ...next[index], name: e.target.value };
+                        setFormState({ ...formState, metrics: next });
+                      }}
+                      className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                      placeholder="Metric name"
+                    />
+                    <input
+                      type="text"
+                      value={metric.unit ?? ''}
+                      onChange={(e) => {
+                        const next = [...formState.metrics];
+                        next[index] = { ...next[index], unit: e.target.value || undefined };
+                        setFormState({ ...formState, metrics: next });
+                      }}
+                      className="w-24 px-2 py-1 border border-gray-300 rounded text-sm"
+                      placeholder="Unit"
+                    />
+                    <input
+                      type="text"
+                      value={metric.formula ?? ''}
+                      onChange={(e) => {
+                        const next = [...formState.metrics];
+                        next[index] = { ...next[index], formula: e.target.value || undefined };
+                        setFormState({ ...formState, metrics: next });
+                      }}
+                      className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                      placeholder="Formula (optional)"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFormState({ ...formState, metrics: formState.metrics.filter((_, i) => i !== index) })}
+                      className="text-red-400 hover:text-red-600 text-sm"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Guidelines */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-gray-700">Guidelines / Resources</label>
+                  <button
+                    type="button"
+                    onClick={() => setFormState({
+                      ...formState,
+                      guidelines: [...formState.guidelines, { name: '', url: '' }]
+                    })}
+                    className="text-xs text-blue-600 hover:text-blue-800"
+                  >
+                    + Add Guideline
+                  </button>
+                </div>
+                {formState.guidelines.map((guideline, index) => (
+                  <div key={index} className="flex gap-2 mb-2 items-center">
+                    <input
+                      type="text"
+                      value={guideline.name}
+                      onChange={(e) => {
+                        const next = [...formState.guidelines];
+                        next[index] = { ...next[index], name: e.target.value };
+                        setFormState({ ...formState, guidelines: next });
+                      }}
+                      className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                      placeholder="Guideline name"
+                    />
+                    <input
+                      type="text"
+                      value={guideline.url}
+                      onChange={(e) => {
+                        const next = [...formState.guidelines];
+                        next[index] = { ...next[index], url: e.target.value };
+                        setFormState({ ...formState, guidelines: next });
+                      }}
+                      className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                      placeholder="URL"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setFormState({ ...formState, guidelines: formState.guidelines.filter((_, i) => i !== index) })}
+                      className="text-red-400 hover:text-red-600 text-sm"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Associated Practices */}
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-gray-700">Associated Practices</label>
+                  <button
+                    type="button"
+                    onClick={() => setFormState({
+                      ...formState,
+                      associatedPractices: [...formState.associatedPractices, { targetPracticeId: 0, associationType: 'Complementarity' }]
+                    })}
+                    className="text-xs text-blue-600 hover:text-blue-800"
+                  >
+                    + Add Association
+                  </button>
+                </div>
+                {formState.associatedPractices.map((assoc, index) => (
+                  <div key={index} className="flex gap-2 mb-2 items-center">
+                    <select
+                      value={assoc.targetPracticeId || ''}
+                      onChange={(e) => {
+                        const next = [...formState.associatedPractices];
+                        next[index] = { ...next[index], targetPracticeId: parseInt(e.target.value, 10) || 0 };
+                        setFormState({ ...formState, associatedPractices: next });
+                      }}
+                      className="flex-1 px-2 py-1 border border-gray-300 rounded text-sm"
+                    >
+                      <option value="">Select practice</option>
+                      {templates.map((practice) => (
+                        <option key={practice.id} value={practice.id}>{practice.title}</option>
+                      ))}
+                    </select>
+                    <select
+                      value={assoc.associationType}
+                      onChange={(e) => {
+                        const next = [...formState.associatedPractices];
+                        next[index] = { ...next[index], associationType: e.target.value as AssociatedPracticeInput['associationType'] };
+                        setFormState({ ...formState, associatedPractices: next });
+                      }}
+                      className="px-2 py-1 border border-gray-300 rounded text-sm"
+                    >
+                      <option value="Complementarity">Complementarity</option>
+                      <option value="Configuration">Configuration</option>
+                      <option value="Dependency">Dependency</option>
+                      <option value="Equivalence">Equivalence</option>
+                      <option value="Exclusion">Exclusion</option>
+                    </select>
+                    <button
+                      type="button"
+                      onClick={() => setFormState({ ...formState, associatedPractices: formState.associatedPractices.filter((_, i) => i !== index) })}
+                      className="text-red-400 hover:text-red-600 text-sm"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
               </div>
 
               <div className="flex justify-end gap-3">

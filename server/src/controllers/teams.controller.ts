@@ -189,6 +189,34 @@ const addPracticeSchema = z.object({
  */
 const validTagSchema = z.enum(VALID_TAGS)
 
+const activitySchema = z.object({
+  sequence: z.number().int().positive(),
+  name: z.string().min(1, 'Activity name is required').max(200),
+  description: z.string().min(1, 'Activity description is required')
+})
+
+const roleSchema = z.object({
+  role: z.string().min(1, 'Role name is required').max(100),
+  responsibility: z.enum(['Responsible', 'Accountable', 'Consulted', 'Informed'])
+})
+
+const metricSchema = z.object({
+  name: z.string().min(1, 'Metric name is required').max(200),
+  unit: z.string().max(50).optional(),
+  formula: z.string().optional()
+})
+
+const guidelineSchema = z.object({
+  name: z.string().min(1, 'Guideline name is required').max(200),
+  url: z.union([z.string().url(), z.literal('')]),
+  type: z.string().optional()
+})
+
+const associatedPracticeInputSchema = z.object({
+  targetPracticeId: z.number().int().positive(),
+  associationType: z.enum(['Configuration', 'Equivalence', 'Dependency', 'Complementarity', 'Exclusion'])
+})
+
 const createCustomPracticeSchema = z.object({
   title: z.string()
     .min(2, 'Title is required')
@@ -214,6 +242,14 @@ const createCustomPracticeSchema = z.object({
   benefits: z.array(z.string().min(1).max(500)).optional(),
   pitfalls: z.array(z.string().min(1).max(500)).optional(),
   workProducts: z.array(z.string().min(1).max(500)).optional(),
+  activities: z.array(activitySchema).optional(),
+  roles: z.array(roleSchema).optional(),
+  completionCriteria: z.string().max(5000).optional()
+    .transform((value) => value?.trim())
+    .refine((value) => value === undefined || value.length > 0, 'Completion criteria cannot be empty'),
+  metrics: z.array(metricSchema).optional(),
+  guidelines: z.array(guidelineSchema).optional(),
+  associatedPractices: z.array(associatedPracticeInputSchema).optional(),
   templatePracticeId: z.number().int().positive().optional()
 });
 
@@ -238,6 +274,17 @@ const editPracticeSchema = z.object({
     .transform((value) => (value === null ? null : value?.trim()))
     .refine((value) => value === undefined || value === null || value.length > 0, 'Method cannot be empty'),
   tags: z.array(validTagSchema).optional(),
+  benefits: z.array(z.string().min(1).max(500)).optional(),
+  pitfalls: z.array(z.string().min(1).max(500)).optional(),
+  workProducts: z.array(z.string().min(1).max(500)).optional(),
+  activities: z.array(activitySchema).optional(),
+  roles: z.array(roleSchema).optional(),
+  completionCriteria: z.string().max(5000).nullable().optional()
+    .transform((value) => (value === null ? null : value?.trim()))
+    .refine((value) => value === undefined || value === null || value.length > 0, 'Completion criteria cannot be empty'),
+  metrics: z.array(metricSchema).optional(),
+  guidelines: z.array(guidelineSchema).optional(),
+  associatedPractices: z.array(associatedPracticeInputSchema).optional(),
   saveAsCopy: z.boolean().optional(),
   version: z.number().int().positive()
 });
@@ -266,18 +313,53 @@ export const getAvailablePractices = async (
     const pillars = pillarsParam 
       ? pillarsParam.split(',').map(id => parseInt(id.trim(), 10))
       : undefined;
+    const categoriesParam = req.query.categories as string | undefined;
+    const categories = categoriesParam ? categoriesParam.split(',').map(s => s.trim()).filter(Boolean) : undefined;
+    const methodsParam = req.query.methods as string | undefined;
+    const methods = methodsParam ? methodsParam.split(',').map(s => s.trim()).filter(Boolean) : undefined;
+    const tagsParam = req.query.tags as string | undefined;
+    const tags = tagsParam ? tagsParam.split(',').map(s => s.trim()).filter(Boolean) : undefined;
     
     const result = await teamsService.getAvailablePractices(teamId, {
       page,
       pageSize,
       search,
-      pillars
+      pillars,
+      categories,
+      methods,
+      tags
     });
     
     res.json({
       ...result,
       requestId: req.id
     });
+  } catch (error: any) {
+    if (error && req.id) {
+      error.requestId = req.id;
+    }
+    next(error);
+  }
+};
+
+/**
+ * GET /api/v1/teams/:teamId/practices/available/methods
+ * Returns all distinct method values for practices available to a team
+ * (global practices not yet selected by the team)
+ *
+ * @param req - Express request with teamId param
+ * @param res - Express response
+ * @param next - Express next function
+ */
+export const getAvailablePracticeMethods = async (
+  req: Request<{ teamId: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const teamId = parseInt(req.params.teamId, 10);
+    const methods = await teamsService.getAvailablePracticeMethods(teamId);
+    res.json({ methods, requestId: req.id });
   } catch (error: any) {
     if (error && req.id) {
       error.requestId = req.id;

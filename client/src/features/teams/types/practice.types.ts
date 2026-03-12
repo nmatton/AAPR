@@ -5,6 +5,39 @@ export interface PracticePillar {
   description?: string | null;
 }
 
+export interface ActivityInput {
+  sequence: number;
+  name: string;
+  description: string;
+}
+
+export interface RoleInput {
+  role: string;
+  responsibility: 'Responsible' | 'Accountable' | 'Consulted' | 'Informed';
+}
+
+export interface WorkProductInput {
+  name: string;
+  description: string;
+}
+
+export interface MetricInput {
+  name: string;
+  unit?: string;
+  formula?: string;
+}
+
+export interface GuidelineInput {
+  name: string;
+  url: string;
+  type?: string;
+}
+
+export interface AssociatedPracticeInput {
+  targetPracticeId: number;
+  associationType: 'Configuration' | 'Equivalence' | 'Dependency' | 'Complementarity' | 'Exclusion';
+}
+
 export interface Practice {
   id: number;
   title: string;
@@ -17,6 +50,12 @@ export interface Practice {
   benefits?: string[] | null;
   pitfalls?: string[] | null;
   workProducts?: string[] | null;
+  activities?: unknown[] | null;
+  roles?: unknown[] | null;
+  completionCriteria?: string | null;
+  metrics?: unknown[] | null;
+  guidelines?: unknown[] | null;
+  associatedPractices?: unknown[] | null;
   isGlobal?: boolean;
   practiceVersion?: number;
   usedByTeamsCount?: number;

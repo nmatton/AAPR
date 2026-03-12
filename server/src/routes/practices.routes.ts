@@ -10,6 +10,12 @@ export const practicesRouter = Router();
 practicesRouter.get('/', practicesController.getPractices);
 
 /**
+ * GET /api/v1/practices/methods
+ * Fetch all distinct method values from global catalog
+ */
+practicesRouter.get('/methods', practicesController.getPracticeMethods);
+
+/**
  * GET /api/v1/practices/:id
  * Fetch full practice detail by ID
  */

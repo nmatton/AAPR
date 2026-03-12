@@ -56,7 +56,7 @@ development_status:
   epic-2: in-progress
   2-0-import-practice-data-from-json: done
   2-1-load-and-display-practice-catalog: done
-  2-2-search-and-filter-practices-by-pillar: review
+  2-2-search-and-filter-practices-by-pillar: done
   2-3-add-selected-practices-to-team-portfolio: done
   2-4-remove-practices-from-team-portfolio: done
   2-5-create-new-practice-from-scratch-or-as-template: done
@@ -80,8 +80,8 @@ development_status:
   2-1-10-database-schema-create-practice-association-table: done
   2-1-11-database-migration-migrate-associated-practices-from-json-to-relational: done
   2-1-12-database-cleanup-remove-category-id-from-practices-table: invalid  # Contradicts normalized data model (Architecture Decision 3)
-  2-1-13-practice-selection-advanced-filters: backlog
-  2-1-14-extended-practice-editor: backlog
+  2-1-13-practice-selection-advanced-filters: done
+  2-1-14-extended-practice-editor: done
   2-1-15-extended-practice-detail-view: backlog
   2-1-16-practice-taxonomy-contextual-tooltips: backlog
   epic-2-1-retrospective: done

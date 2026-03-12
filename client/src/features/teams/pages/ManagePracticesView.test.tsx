@@ -22,6 +22,11 @@ vi.mock('../api/teamPracticesApi', () => ({
 }));
 
 describe('ManagePracticesView', () => {
+  const mockLoadAvailablePractices = vi.fn();
+  const mockLoadAvailableMethods = vi.fn();
+  const mockToggleCategory = vi.fn();
+  const mockToggleMethod = vi.fn();
+  const mockSetTags = vi.fn();
   const mockPractice: Practice = {
     id: 5,
     title: 'Sprint Planning',
@@ -63,6 +68,7 @@ describe('ManagePracticesView', () => {
 
     (useAddPracticesStore as any).mockReturnValue({
       practices: [],
+      availableMethods: ['Scrum'],
       isLoading: false,
       error: null,
       total: 0,
@@ -70,10 +76,17 @@ describe('ManagePracticesView', () => {
       pageSize: 20,
       searchQuery: '',
       selectedPillars: [],
-      loadAvailablePractices: vi.fn(),
+      selectedCategories: [],
+      selectedMethods: [],
+      selectedTags: [],
+      loadAvailablePractices: mockLoadAvailablePractices,
+      loadAvailableMethods: mockLoadAvailableMethods,
       addPractice: vi.fn(),
       setSearchQuery: vi.fn(),
       togglePillar: vi.fn(),
+      toggleCategory: mockToggleCategory,
+      toggleMethod: mockToggleMethod,
+      setTags: mockSetTags,
       clearFilters: vi.fn()
     });
 
@@ -213,6 +226,7 @@ describe('ManagePracticesView', () => {
     const mockAddPractice = vi.fn().mockResolvedValue(true);
     (useAddPracticesStore as any).mockReturnValue({
       practices: [mockPractice],
+      availableMethods: ['Scrum'],
       isLoading: false,
       error: null,
       total: 1,
@@ -220,10 +234,17 @@ describe('ManagePracticesView', () => {
       pageSize: 20,
       searchQuery: '',
       selectedPillars: [],
-      loadAvailablePractices: vi.fn(),
+      selectedCategories: [],
+      selectedMethods: [],
+      selectedTags: [],
+      loadAvailablePractices: mockLoadAvailablePractices,
+      loadAvailableMethods: mockLoadAvailableMethods,
       addPractice: mockAddPractice,
       setSearchQuery: vi.fn(),
       togglePillar: vi.fn(),
+      toggleCategory: mockToggleCategory,
+      toggleMethod: mockToggleMethod,
+      setTags: mockSetTags,
       clearFilters: vi.fn()
     });
 
@@ -235,12 +256,31 @@ describe('ManagePracticesView', () => {
       </MemoryRouter>
     );
 
-    const addButton = await screen.findByRole('button', { name: /add to team/i });
+    const addButton = (await screen.findAllByLabelText(/add to team/i))[0];
     fireEvent.click(addButton);
 
     await waitFor(() => {
       expect(mockAddPractice).toHaveBeenCalledWith(1, 5);
       expect(screen.getByText(/"Sprint Planning" added to team portfolio/i)).toBeInTheDocument();
+    });
+  });
+
+  it('renders advanced filters and loads available methods on mount', async () => {
+    render(
+      <MemoryRouter initialEntries={['/teams/1/practices/manage']}>
+        <Routes>
+          <Route path="/teams/:teamId/practices/manage" element={<ManagePracticesView />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    expect(screen.getByText('Categories')).toBeInTheDocument();
+    expect(screen.getByText('Method / Framework')).toBeInTheDocument();
+    expect(screen.getByText('Tags')).toBeInTheDocument();
+    expect(screen.getByText('Scrum')).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(mockLoadAvailableMethods).toHaveBeenCalledWith(1);
     });
   });
 });

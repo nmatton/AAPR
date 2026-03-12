@@ -1,9 +1,10 @@
 import { create } from 'zustand';
-import { fetchAvailablePractices, addPracticeToTeam } from '../api/teamPracticesApi';
+import { fetchAvailablePractices, addPracticeToTeam, fetchAvailablePracticeMethods } from '../api/teamPracticesApi';
 import type { Practice } from '../types/practice.types';
 
 export interface AddPracticesState {
   practices: Practice[];
+  availableMethods: string[];
   isLoading: boolean;
   error: string | null;
   total: number;
@@ -11,25 +12,36 @@ export interface AddPracticesState {
   pageSize: number;
   searchQuery: string;
   selectedPillars: number[];
+  selectedCategories: string[];
+  selectedMethods: string[];
+  selectedTags: string[];
   
   // Actions
   loadAvailablePractices: (teamId: number, page?: number) => Promise<void>;
+  loadAvailableMethods: (teamId: number) => Promise<void>;
   addPractice: (teamId: number, practiceId: number) => Promise<void>;
   setSearchQuery: (query: string) => void;
   togglePillar: (pillarId: number) => void;
+  toggleCategory: (categoryId: string) => void;
+  toggleMethod: (method: string) => void;
+  setTags: (tags: string[]) => void;
   clearFilters: () => void;
   reset: () => void;
 }
 
 const initialState = {
   practices: [],
+  availableMethods: [],
   isLoading: false,
   error: null,
   total: 0,
   page: 1,
   pageSize: 20,
   searchQuery: '',
-  selectedPillars: []
+  selectedPillars: [],
+  selectedCategories: [],
+  selectedMethods: [],
+  selectedTags: []
 };
 
 export const useAddPracticesStore = create<AddPracticesState>((set, get) => ({
@@ -40,14 +52,17 @@ export const useAddPracticesStore = create<AddPracticesState>((set, get) => ({
     set({ isLoading: true, error: null, page: currentPage });
     
     try {
-      const { searchQuery, selectedPillars, pageSize, practices: existingPractices } = get();
+      const { searchQuery, selectedPillars, selectedCategories, selectedMethods, selectedTags, pageSize, practices: existingPractices } = get();
       
       const data = await fetchAvailablePractices({
         teamId,
         page: currentPage,
         pageSize,
         search: searchQuery || undefined,
-        pillars: selectedPillars.length > 0 ? selectedPillars : undefined
+        pillars: selectedPillars.length > 0 ? selectedPillars : undefined,
+        categories: selectedCategories.length > 0 ? selectedCategories : undefined,
+        methods: selectedMethods.length > 0 ? selectedMethods : undefined,
+        tags: selectedTags.length > 0 ? selectedTags : undefined
       });
       
       // If page > 1, append to existing practices (load more)
@@ -81,18 +96,29 @@ export const useAddPracticesStore = create<AddPracticesState>((set, get) => ({
       });
     }
   },
+
+  loadAvailableMethods: async (teamId: number) => {
+    try {
+      const methods = await fetchAvailablePracticeMethods(teamId);
+      set({ availableMethods: methods });
+    } catch (error) {
+      set({ availableMethods: [] });
+    }
+  },
   
   addPractice: async (teamId: number, practiceId: number) => {
     set({ isLoading: true, error: null });
     
     try {
       await addPracticeToTeam(teamId, practiceId);
+      const methods = await fetchAvailablePracticeMethods(teamId);
       
       // Remove the added practice from the list
       const { practices } = get();
       const updatedPractices = practices.filter(p => p.id !== practiceId);
       
       set({ 
+        availableMethods: methods,
         practices: updatedPractices,
         total: get().total - 1,
         isLoading: false 
@@ -129,8 +155,28 @@ export const useAddPracticesStore = create<AddPracticesState>((set, get) => ({
     set({ selectedPillars: newPillars, page: 1, practices: [] });
   },
   
+  toggleCategory: (categoryId: string) => {
+    const { selectedCategories } = get();
+    const newCategories = selectedCategories.includes(categoryId)
+      ? selectedCategories.filter(id => id !== categoryId)
+      : [...selectedCategories, categoryId];
+    set({ selectedCategories: newCategories, page: 1, practices: [] });
+  },
+
+  toggleMethod: (method: string) => {
+    const { selectedMethods } = get();
+    const newMethods = selectedMethods.includes(method)
+      ? selectedMethods.filter(m => m !== method)
+      : [...selectedMethods, method];
+    set({ selectedMethods: newMethods, page: 1, practices: [] });
+  },
+
+  setTags: (tags: string[]) => {
+    set({ selectedTags: tags, page: 1, practices: [] });
+  },
+
   clearFilters: () => {
-    set({ searchQuery: '', selectedPillars: [], page: 1, practices: [] });
+    set({ searchQuery: '', selectedPillars: [], selectedCategories: [], selectedMethods: [], selectedTags: [], page: 1, practices: [] });
   },
   
   reset: () => set(initialState)

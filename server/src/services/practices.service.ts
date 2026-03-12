@@ -184,6 +184,7 @@ export const getPracticeDetail = async (id: number): Promise<PracticeDetailDto> 
   if (!practice) {
     throw new AppError('not_found', 'Practice not found', { id }, 404);
   }
+  const relationalAssociations = await practiceRepository.findAssociationsForPractice(id);
   return {
     id: practice.id,
     title: practice.title,
@@ -201,7 +202,7 @@ export const getPracticeDetail = async (id: number): Promise<PracticeDetailDto> 
     guidelines: practice.guidelines ?? null,
     pitfalls: practice.pitfalls ?? null,
     benefits: practice.benefits ?? null,
-    associatedPractices: practice.associatedPractices ?? null,
+    associatedPractices: relationalAssociations.length > 0 ? relationalAssociations : null,
     isGlobal: practice.isGlobal,
     practiceVersion: practice.practiceVersion,
     importedBy: practice.importedBy ?? null,
@@ -213,4 +214,12 @@ export const getPracticeDetail = async (id: number): Promise<PracticeDetailDto> 
       description: pp.pillar.description ?? undefined
     }))
   };
+};
+
+/**
+ * Fetch all distinct method values from the global practice catalog
+ * @returns Sorted array of all unique method strings
+ */
+export const getAllDistinctMethods = async (): Promise<string[]> => {
+  return practiceRepository.findAllDistinctMethods();
 };

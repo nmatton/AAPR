@@ -143,6 +143,38 @@ export const fetchPracticeDetail = async (id: number): Promise<PracticeDetailRes
   return { practice: data.practice }
 }
 
+export const fetchPracticeMethods = async (): Promise<string[]> => {
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE_URL}/api/v1/practices/methods`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Request-Id': generateRequestId()
+      },
+      credentials: 'include'
+    })
+  } catch (error) {
+    if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      throw new ApiError('network_error', 'Unable to reach server. Check your connection.')
+    }
+    throw new ApiError('unknown_error', 'Unexpected error while fetching methods', { originalError: error })
+  }
+
+  const data = await parseJsonSafely<{ methods: string[]; code?: string; message?: string }>(response)
+
+  if (!response.ok || !data) {
+    throw new ApiError(
+      data?.code ?? 'unknown_error',
+      data?.message ?? 'Unable to load methods',
+      undefined,
+      response.status
+    )
+  }
+
+  return data.methods
+}
+
 export const logCatalogViewed = async (teamId: number | null, practiceCount: number): Promise<void> => {
   // Best-effort client-side event logging; ignore failures so UX is not blocked
   try {

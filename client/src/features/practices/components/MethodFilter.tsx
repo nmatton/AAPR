@@ -2,14 +2,7 @@
 import { usePracticesStore } from '../state/practices.slice'
 
 export const MethodFilter = () => {
-    const { practices, selectedMethods, toggleMethod } = usePracticesStore()
-    const availableMethods = Array.from(
-        new Set(
-            practices
-                .map((practice) => practice.method?.trim())
-                .filter((method): method is string => Boolean(method))
-        )
-    ).sort((a, b) => a.localeCompare(b))
+    const { availableMethods, selectedMethods, toggleMethod } = usePracticesStore()
 
     const methods = Array.from(new Set([...availableMethods, ...selectedMethods]))
         .sort((a, b) => a.localeCompare(b))
