@@ -1,5 +1,5 @@
 import React, { useState, FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { registerUser } from '../api/authApi'
 import { useAuthStore } from '../state/authSlice'
 
@@ -19,8 +19,10 @@ interface FormErrors {
  */
 export const SignupForm: React.FC = () => {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const prefilledEmail = searchParams.get('email')?.trim() ?? ''
   const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
+  const [email, setEmail] = useState(prefilledEmail)
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState<FormErrors>({})
   const [touched, setTouched] = useState({

@@ -223,7 +223,7 @@ export const createInvite = async (
     await sendInviteEmail({
       email,
       teamName,
-      ctaUrl: `${getAppBaseUrl()}/register?email=${encodeURIComponent(email)}`
+      ctaUrl: `${getAppBaseUrl()}/signup?email=${encodeURIComponent(email)}`
     })
 
     return await updateInviteAfterEmail(invite.id, teamId, { lastSentAt: new Date() })
@@ -312,7 +312,7 @@ export const resendInvite = async (
       await sendInviteEmail({
         email: invite.email,
         teamName,
-        ctaUrl: `${getAppBaseUrl()}/register?email=${encodeURIComponent(invite.email)}`
+        ctaUrl: `${getAppBaseUrl()}/signup?email=${encodeURIComponent(invite.email)}`
       })
     }
 
