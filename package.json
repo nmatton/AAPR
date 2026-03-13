@@ -10,7 +10,17 @@
     "install:all": "cd client && npm install && cd ../server && npm install",
     "dev:client": "cd client && npm run dev",
     "dev:server": "cd server && npm run dev",
-    "dev": "concurrently -c \"cyan.bold,magenta.bold\" -n \"CLIENT,SERVER\" \"npm run dev:client\" \"npm run dev:server\""
+    "dev": "concurrently -c \"cyan.bold,magenta.bold\" -n \"CLIENT,SERVER\" \"npm run dev:client\" \"npm run dev:server\"",
+    "compose:config:stu": "docker compose --env-file deploy/compose/stu.env -f docker-compose.yml config",
+    "compose:config:hms": "docker compose --env-file deploy/compose/hms.env -f docker-compose.yml config",
+    "compose:up:stu": "docker compose --env-file deploy/compose/stu.env -f docker-compose.yml up -d",
+    "compose:up:hms": "docker compose --env-file deploy/compose/hms.env -f docker-compose.yml up -d",
+    "compose:down:stu": "docker compose --env-file deploy/compose/stu.env -f docker-compose.yml down --remove-orphans",
+    "compose:down:hms": "docker compose --env-file deploy/compose/hms.env -f docker-compose.yml down --remove-orphans",
+    "compose:ps:stu": "docker compose --env-file deploy/compose/stu.env -f docker-compose.yml ps",
+    "compose:ps:hms": "docker compose --env-file deploy/compose/hms.env -f docker-compose.yml ps",
+    "compose:health:stu": "powershell -ExecutionPolicy Bypass -File scripts/compose-instance.ps1 -Action health -EnvFile deploy/compose/stu.env",
+    "compose:health:hms": "powershell -ExecutionPolicy Bypass -File scripts/compose-instance.ps1 -Action health -EnvFile deploy/compose/hms.env"
   },
   "repository": {
     "type": "git",

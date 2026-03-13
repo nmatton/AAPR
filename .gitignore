@@ -12,6 +12,8 @@ pnpm-debug.log*
 .env
 .env.local
 .env*.local
+deploy/compose/*.env
+!deploy/compose/.env.instance.example
 
 # Build outputs
 dist/

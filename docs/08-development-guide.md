@@ -2,7 +2,7 @@
 
 **Development Standards & Practices for AAPR Platform**
 
-Last Updated: January 19, 2026  
+Last Updated: March 12, 2026  
 Team Size: 3 developers (Bob, Elena, Marcus)
 
 ---
@@ -361,6 +361,44 @@ Validation boundaries:
 - Story 7.1 verifies image build/runtime contracts and health endpoints.
 - Story 7.2+ owns multi-instance compose wiring and per-instance isolation.
 - Story 7.6 and 7.7 can reuse the same smoke commands in CI pipelines.
+
+### Multi-Instance Compose Validation Workflow (Story 7.2)
+
+Use this workflow to validate parameterized compose architecture from repository root:
+
+```powershell
+# Validate substitution and required variables
+npm run compose:config:stu
+npm run compose:config:hms
+
+# Bring up two instances concurrently
+npm run compose:up:stu
+npm run compose:up:hms
+
+# Inspect runtime state
+npm run compose:ps:stu
+npm run compose:ps:hms
+
+# Verify health endpoints for both instances
+npm run compose:health:stu
+npm run compose:health:hms
+
+# Teardown
+npm run compose:down:stu
+npm run compose:down:hms
+```
+
+Optional destructive cleanup (containers + networks + volumes):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/compose-instance.ps1 -Action clean -EnvFile deploy/compose/stu.env
+powershell -ExecutionPolicy Bypass -File scripts/compose-instance.ps1 -Action clean -EnvFile deploy/compose/hms.env
+```
+
+Notes:
+- Keep host ports unique per instance env file.
+- Keep `COMPOSE_PROJECT_NAME` unique per instance to avoid collisions.
+- If you change backend host port, also update `FRONTEND_RUNTIME_API_URL` in the same env file.
 
 ### Backend Testing (Jest)
 

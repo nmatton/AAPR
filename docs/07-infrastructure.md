@@ -2,7 +2,7 @@
 
 **Infrastructure & Deployment Guide for AAPR Platform**
 
-Last Updated: January 19, 2026  
+Last Updated: March 12, 2026  
 Environment: Local Development (Docker) + Future Production
 
 ---
@@ -332,6 +332,71 @@ npm run test:email  # (if script exists)
 ---
 
 ## Build & Production
+
+### Multi-Instance Docker Compose (Story 7.2)
+
+Single compose architecture now lives at repository root:
+
+- `docker-compose.yml`
+- `deploy/compose/.env.instance.example`
+- `deploy/compose/stu.env`
+- `deploy/compose/hms.env`
+
+The compose stack is parameterized by env file values and does not require per-instance compose file duplication.
+
+Required/important variables:
+
+- `COMPOSE_PROJECT_NAME`: deterministic instance scope (`aapr-stu`, `aapr-hms`, ...)
+- `INSTANCE_KEY`: logical instance label
+- `FRONTEND_HOST_PORT`, `BACKEND_HOST_PORT`, `POSTGRES_HOST_PORT`: host-exposed ports, must be unique per instance
+- `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`: per-instance database contract
+- `JWT_SECRET`: required by backend runtime validation
+- `FRONTEND_RUNTIME_API_URL`: runtime API URL injected into frontend `runtime-config.js`
+
+Isolation-forward naming conventions (for Story 7.3 extension):
+
+- network name pattern: `<COMPOSE_PROJECT_NAME>-net`
+- volume name pattern: `<COMPOSE_PROJECT_NAME>-postgres-data`
+- container names use `<COMPOSE_PROJECT_NAME>-<service>`
+
+Compose config validation commands:
+
+```powershell
+npm run compose:config:stu
+npm run compose:config:hms
+```
+
+Run one instance:
+
+```powershell
+npm run compose:up:stu
+npm run compose:ps:stu
+npm run compose:health:stu
+npm run compose:down:stu
+```
+
+Run two instances concurrently:
+
+```powershell
+npm run compose:up:stu
+npm run compose:up:hms
+
+npm run compose:ps:stu
+npm run compose:ps:hms
+
+npm run compose:health:stu
+npm run compose:health:hms
+
+npm run compose:down:stu
+npm run compose:down:hms
+```
+
+Optional cleanup (including volumes):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/compose-instance.ps1 -Action clean -EnvFile deploy/compose/stu.env
+powershell -ExecutionPolicy Bypass -File scripts/compose-instance.ps1 -Action clean -EnvFile deploy/compose/hms.env
+```
 
 ### Container Images (Story 7.1 Baseline)
 

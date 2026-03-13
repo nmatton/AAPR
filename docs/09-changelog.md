@@ -2,7 +2,7 @@
 
 **Implementation History for AAPR Platform**
 
-Last Updated: January 23, 2026
+Last Updated: March 12, 2026
 
 ---
 
@@ -39,6 +39,39 @@ Last Updated: January 23, 2026
 - `server/src/index.ts`
 - `client/package-lock.json`
 - `client/tailwind.config.js`
+- `docs/07-infrastructure.md`
+- `docs/08-development-guide.md`
+
+---
+
+## Story 7.2: Implement Parameterized Multi-Instance Docker Compose Architecture
+
+**Status:** ✅ COMPLETE (reviewed 2026-03-13)  
+**Date:** March 12, 2026  
+**Developer:** Nicolas (via Dev Agent - GPT-5.3-Codex)
+
+**What Was Built:**
+
+- Added one parameterized root compose architecture at `docker-compose.yml` for frontend, backend, and database.
+- Added deterministic instance contracts via env files with unique compose project scopes.
+- Added reusable env templates and sample instance profiles (`stu`, `hms`) without duplicating compose files.
+- Wired frontend runtime API URL configuration via compose env (`FRONTEND_RUNTIME_API_URL` -> `VITE_API_URL`).
+- Added startup dependency graph (`db` healthy -> `backend` healthy -> `frontend`) for predictable bring-up.
+- Added extensibility hooks for Story 7.3 isolation (per-instance network and volume naming patterns).
+- Added repository-root npm commands for config validation, up/down, ps, and health checks for multiple instances.
+- Added operator helper script for compose actions and health verification.
+
+**Files Added:**
+
+- `docker-compose.yml`
+- `deploy/compose/.env.instance.example`
+- `deploy/compose/stu.env`
+- `deploy/compose/hms.env`
+- `scripts/compose-instance.ps1`
+
+**Files Updated:**
+
+- `package.json`
 - `docs/07-infrastructure.md`
 - `docs/08-development-guide.md`
 
