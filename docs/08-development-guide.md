@@ -505,6 +505,70 @@ bash scripts/deploy-remote.sh \
 | 6 | Compose up failure | Check container logs |
 | 7 | Health check failure | Investigate service state |
 
+### Server-Focused Smoke Validation (Story 7.7)
+
+Story 7.7 keeps deployment smoke checks narrowly scoped to server/deployment health. It does not run broader frontend/backend functional regression suites.
+
+Trusted execution model:
+
+- Unsupported: GitHub-hosted runner contexts for remote smoke execution.
+- Supported: trusted operator workstation or trusted self-hosted runner with SSH reachability to deployment server.
+
+If run from a GitHub-hosted runner context, `scripts/smoke-remote.sh` exits with code `20` and prints `UNSUPPORTED_EXECUTION_CONTEXT=github-hosted-runner`.
+
+Run smoke validation:
+
+```bash
+bash scripts/smoke-remote.sh \
+  --host <server> \
+  --user <ssh-user> \
+  --repo-path <remote-repo-path> \
+  --instances stu,hms,elia \
+  --max-attempts 4 \
+  --retry-delay 5
+```
+
+Retry/backoff behavior:
+
+- backend and frontend checks use bounded retries (`--max-attempts`, `--retry-delay`)
+- `transient_recovered=true` indicates a check failed initially but passed before retry budget exhausted
+- hard failure occurs only after retry budget exhaustion
+
+Machine-readable per-instance contract:
+
+```text
+SMOKE_RESULT=<pass|fail> instance=<key> stage=<stage> code=<label> backend_attempts=<n> frontend_attempts=<n> transient_recovered=<true|false>
+```
+
+Aggregate contract:
+
+```text
+SMOKE_SUMMARY=<pass|fail>
+```
+
+Troubleshooting interpretation:
+
+| Signal | Meaning | Action |
+|---|---|---|
+| `compose_config_failed` | Compose profile/config invalid | Run `docker compose --env-file deploy/compose/<instance>.env -f docker-compose.yml config` and fix profile values |
+| `compose_ps_failed` | Remote compose status command failed | Verify Docker daemon and project path on remote host |
+| `backend_health_failed` | `/api/v1/health` never succeeded in retry budget | Inspect backend logs and startup dependencies |
+| `frontend_health_failed` | `/` never succeeded in retry budget | Inspect frontend container logs and networking |
+| `deploy_result_missing` | Upstream deploy contract line missing (when `--deploy-results-file` used) | Ensure deploy stage produced `DEPLOY_RESULT=success instance=<key>` |
+
+Recommended validation flow:
+
+```bash
+# 1. Deploy with deterministic contract output
+bash scripts/deploy-remote.sh --host <server> --user <ssh-user> --repo-path <path> --ref main --instance stu
+
+# 2. Run server-focused smoke for all instances
+bash scripts/smoke-remote.sh --host <server> --user <ssh-user> --repo-path <path>
+
+# 3. Run smoke script contract tests locally
+npm run deploy:smoke:test
+```
+
 ### Backend Testing (Jest)
 
 **File:** `server/src/__tests__/teamService.test.ts`

@@ -6,6 +6,38 @@ Last Updated: March 13, 2026
 
 ---
 
+## Story 7.7: Add Server-Focused Smoke and Resilience Checks in Pipeline Scope
+
+**Status:** ✅ COMPLETE  
+**Date:** March 13, 2026  
+**Developer:** Nicolas (via Dev Agent - GPT-5.3-Codex)
+
+**What Was Built:**
+
+- Added `scripts/smoke-remote.sh` for trusted-network server smoke checks across `stu`, `hms`, and `elia`.
+- Enforced trusted execution boundary with explicit unsupported-context failure for GitHub-hosted runners (`UNSUPPORTED_EXECUTION_CONTEXT=github-hosted-runner`, exit `20`).
+- Implemented deployment-focused smoke stages only: compose config validation, compose status (`ps`), backend health (`/api/v1/health`), and frontend availability (`/`).
+- Added bounded retry/backoff for backend and frontend health checks with transient recovery tracking.
+- Added deterministic machine-readable output contract per instance (`SMOKE_RESULT=...`) and aggregate status (`SMOKE_SUMMARY=...`).
+- Added optional deploy-contract coupling via `--deploy-results-file` to consume Story 7.5 `DEPLOY_RESULT=success` lines when available.
+- Added `scripts/test-smoke-remote.sh` contract tests with mocked SSH behavior for unsupported context, transient recovery, and mixed pass/fail outcomes.
+- Added npm entrypoints: `deploy:smoke` and `deploy:smoke:test`.
+- Updated infrastructure and development documentation with run commands, trusted-network constraints, retry interpretation, and remediation actions.
+
+**Files Added:**
+
+- `scripts/smoke-remote.sh`
+- `scripts/test-smoke-remote.sh`
+
+**Files Updated:**
+
+- `package.json`
+- `docs/07-infrastructure.md`
+- `docs/08-development-guide.md`
+- `docs/09-changelog.md`
+
+---
+
 ## Story 7.5: Build SSH-Based Deployment Scripts for Merge-Triggered Updates
 
 **Status:** ✅ COMPLETE  

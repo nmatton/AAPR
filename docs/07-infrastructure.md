@@ -722,6 +722,89 @@ npm run deploy:remote -- --host server1 --user deploy --repo-path /opt/aapr --in
 npm run deploy:test
 ```
 
+### Trusted-Context Server Smoke Checks (Story 7.7)
+
+Story 7.7 adds `scripts/smoke-remote.sh` for deployment-focused smoke validation executed from trusted network contexts.
+
+Trusted execution boundary:
+
+- GitHub-hosted runners are unsupported because deployment SSH is restricted to allowlisted/trusted IP ranges.
+- Supported contexts are:
+  - operator workstation on trusted network
+  - self-hosted runner inside trusted network with SSH access to deployment host
+
+If the script runs in an unsupported context, it exits with:
+
+```text
+UNSUPPORTED_EXECUTION_CONTEXT=github-hosted-runner
+```
+
+and exit code `20`.
+
+**Run smoke checks for all instances (`stu,hms,elia`):**
+
+```bash
+bash scripts/smoke-remote.sh \
+  --host <server-hostname> \
+  --user <ssh-user> \
+  --repo-path <absolute-path-to-remote-repo>
+```
+
+**Optional controls:**
+
+```bash
+bash scripts/smoke-remote.sh \
+  --host <server-hostname> \
+  --user <ssh-user> \
+  --repo-path <absolute-path-to-remote-repo> \
+  --instances stu,hms,elia \
+  --max-attempts 4 \
+  --retry-delay 5 \
+  --deploy-results-file ./deploy-results.log
+```
+
+`--deploy-results-file` is optional and lets smoke checks enforce Story 7.5 deployment contract lines (`DEPLOY_RESULT=success instance=<key>`) before running health probes.
+
+Smoke scope is intentionally server-focused:
+
+- compose config validation (`docker compose ... config --quiet`)
+- compose deployment status (`docker compose ... ps`)
+- backend health (`/api/v1/health`) with bounded retries
+- frontend availability (`/`) with bounded retries
+
+Machine-readable output per instance:
+
+```text
+SMOKE_RESULT=<pass|fail> instance=<key> stage=<stage> code=<label> backend_attempts=<n> frontend_attempts=<n> transient_recovered=<true|false>
+```
+
+Final summary line:
+
+```text
+SMOKE_SUMMARY=<pass|fail>
+```
+
+Exit behavior:
+
+- `0`: all instance checks passed
+- `1`: one or more instances failed
+- `2`: invocation/config validation error
+- `20`: unsupported execution context
+
+Operator remediation guide:
+
+- `compose_config_failed`: fix env profile or compose substitutions for that instance.
+- `compose_ps_failed`: inspect container state/logs (`docker compose ... logs`).
+- `backend_health_failed` / `frontend_health_failed`: check service readiness, then inspect container logs and restart if required.
+- `deploy_result_missing`: ensure deploy stage emitted `DEPLOY_RESULT=success` for the same instance before smoke.
+
+**npm entrypoints:**
+
+```bash
+npm run deploy:smoke -- --host <server> --user <ssh-user> --repo-path <path>
+npm run deploy:smoke:test
+```
+
 ### Build Frontend
 
 ```powershell

@@ -14,9 +14,7 @@ pnpm-debug.log*
 .env*.local
 deploy/compose/*.env
 !deploy/compose/.env.instance.example
-!deploy/compose/stu.env
-!deploy/compose/hms.env
-!deploy/compose/elia.env
+
 
 
 # Build outputs

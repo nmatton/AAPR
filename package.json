@@ -32,7 +32,9 @@
     "compose:validate-isolation": "powershell -ExecutionPolicy Bypass -File scripts/compose-instance.ps1 -Action validate-isolation",
     "compose:verify-isolation": "powershell -ExecutionPolicy Bypass -File scripts/verify-isolation.ps1",
     "deploy:remote": "bash scripts/deploy-remote.sh",
-    "deploy:test": "bash scripts/test-deploy-remote.sh"
+    "deploy:test": "bash scripts/test-deploy-remote.sh",
+    "deploy:smoke": "bash scripts/smoke-remote.sh",
+    "deploy:smoke:test": "bash scripts/test-smoke-remote.sh"
   },
   "repository": {
     "type": "git",
