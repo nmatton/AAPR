@@ -144,6 +144,7 @@ export const createInvite = async (
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Email send failed'
       
+      console.error(`[invites.service] sendAddedToTeamEmail failed for invite ${invite.id} (team ${teamId}):`, error)
       // CRITICAL: Update invite status and log failure event in transaction
       const failedInvite = await prisma.$transaction(async (tx) => {
         const updated = await invitesRepository.updateInvite(
@@ -229,6 +230,7 @@ export const createInvite = async (
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Email send failed'
     
+    console.error(`[invites.service] sendInviteEmail failed for invite ${invite.id} (team ${teamId}):`, error)
     // CRITICAL: Update invite status and log failure event in transaction
     const failedInvite = await prisma.$transaction(async (tx) => {
       const updated = await invitesRepository.updateInvite(
