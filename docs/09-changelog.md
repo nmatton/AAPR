@@ -6,6 +6,29 @@ Last Updated: March 13, 2026
 
 ---
 
+## Story 7.8: Update Infrastructure Runbook and Operational Documentation
+
+**Status:** ✅ COMPLETE  
+**Date:** March 13, 2026  
+**Developer:** Nicolas (via Dev Agent - GPT-5.3-Codex)
+
+**What Was Built:**
+
+- Consolidated operator runbook flow across contract validation, trusted-context deploy, smoke checks, and rollback recovery.
+- Clarified per-instance operations for `stu`, `hms`, `elia` with script-first command paths and deterministic output contracts.
+- Added explicit operational interpretation for deployment and smoke machine-readable lines (`DEPLOY_RESULT`, `SMOKE_RESULT`, `SMOKE_SUMMARY`).
+- Added incident-ready escalation flow with evidence capture requirements and rollback trigger points.
+- Documented secret-boundary expectations (env-file ownership, redaction rules, no plaintext secret disclosure in logs/docs).
+- Reinforced trusted-network constraint from Story 7.6/7.7 (no GitHub-hosted-runner SSH assumption).
+
+**Files Updated:**
+
+- `docs/07-infrastructure.md`
+- `docs/08-development-guide.md`
+- `docs/09-changelog.md`
+
+---
+
 ## Story 7.7: Add Server-Focused Smoke and Resilience Checks in Pipeline Scope
 
 **Status:** ✅ COMPLETE  

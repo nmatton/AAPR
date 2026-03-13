@@ -140,5 +140,5 @@ development_status:
   7-5-build-ssh-based-deployment-scripts-for-merge-triggered-updates: done
   7-6-add-ci-cd-workflow-for-deployment-validation-and-rollout: invalid  # GitHub Actions not feasible: IP restrictions block runner access to deployment server; deploy manually via scripts/deploy-remote.sh
   7-7-add-server-focused-smoke-and-resilience-checks-in-pipeline-scope: review
-  7-8-update-infrastructure-runbook-and-operational-documentation: backlog
+  7-8-update-infrastructure-runbook-and-operational-documentation: review
   epic-7-retrospective: optional

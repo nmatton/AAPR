@@ -650,6 +650,18 @@ bash scripts/deploy-remote.sh \
   [--ssh-key <path-to-private-key>]
 ```
 
+Parameter purpose mapping:
+
+| Parameter | Required | Purpose |
+|---|---|---|
+| `--host` | Yes | Target SSH host for deployment actions |
+| `--user` | Yes | Remote SSH user with repo + docker access |
+| `--repo-path` | Yes | Absolute remote path to checked-out AAPR repo |
+| `--instance` | Yes | Instance profile selector (`stu`, `hms`, `elia`) |
+| `--ref` | No (default `main`) | Branch/tag/SHA to deploy deterministically |
+| `--dry-run` | No | Validate connectivity and contracts without mutation |
+| `--ssh-key` | No | Explicit private key path when agent/default key is insufficient |
+
 **Deployment Sequence:**
 
 1. Validate inputs (host, user, repo path, instance)
@@ -804,6 +816,76 @@ Operator remediation guide:
 npm run deploy:smoke -- --host <server> --user <ssh-user> --repo-path <path>
 npm run deploy:smoke:test
 ```
+
+### Operations Runbook (Story 7.8)
+
+Use this sequence for deterministic operator execution and triage across `stu`, `hms`, and `elia`.
+
+**Phase 1 - Local contract validation (operator machine):**
+
+```bash
+# Validate env profile contract and isolation before touching remote host
+npm run compose:validate-isolation
+
+# Validate compose config for target instance profile
+docker compose --env-file deploy/compose/stu.env -f docker-compose.yml config
+```
+
+Optional local lifecycle sanity check before remote deployment:
+
+```bash
+npm run compose:up:stu
+npm run compose:health:stu
+npm run compose:down:stu
+```
+
+**Phase 2 - Remote deploy (trusted context only):**
+
+```bash
+# Safe preflight (no mutation)
+bash scripts/deploy-remote.sh --host <server> --user <ssh-user> --repo-path <path> --instance stu --dry-run
+
+# Authoritative rollout
+bash scripts/deploy-remote.sh --host <server> --user <ssh-user> --repo-path <path> --ref main --instance stu
+```
+
+Expected success contract line:
+
+```text
+DEPLOY_RESULT=success host=<host> instance=<instance> ref=<ref> env=<env-file>
+```
+
+**Phase 3 - Remote smoke (trusted context only):**
+
+```bash
+bash scripts/smoke-remote.sh --host <server> --user <ssh-user> --repo-path <path> --instances stu,hms,elia --max-attempts 4 --retry-delay 5
+```
+
+Expected aggregate result:
+
+```text
+SMOKE_SUMMARY=pass
+```
+
+**Phase 4 - Failure handling and rollback:**
+
+1. Capture deploy/smoke contract lines and failing stage label.
+2. Inspect remote service state: `docker compose --env-file deploy/compose/<instance>.env -f docker-compose.yml ps`.
+3. Inspect logs for affected service: `docker compose --env-file deploy/compose/<instance>.env -f docker-compose.yml logs --tail=200 <service>`.
+4. If failure persists, rollback to prior known-good ref:
+
+```bash
+bash scripts/deploy-remote.sh --host <server> --user <ssh-user> --repo-path <path> --ref <previous-commit-or-tag> --instance <stu|hms|elia>
+```
+
+5. Re-run smoke to confirm recovery and archive evidence (`DEPLOY_RESULT`, `SMOKE_RESULT`, `SMOKE_SUMMARY`) for incident notes.
+
+### Secret Boundaries for Operations (Story 7.8)
+
+- Never commit or echo values of `POSTGRES_PASSWORD`, `JWT_SECRET`, SMTP credentials, or SSH private keys.
+- Env files in `deploy/compose/*.env` are operator-managed inputs; treat them as secrets-bearing operational assets.
+- Documentation and tickets must reference secret names and responsibilities, not literal values.
+- Use CI/host secret stores and SSH agents for injection; avoid plaintext values in command history whenever possible.
 
 ### Build Frontend
 

@@ -569,6 +569,56 @@ bash scripts/smoke-remote.sh --host <server> --user <ssh-user> --repo-path <path
 npm run deploy:smoke:test
 ```
 
+### Operator Handoff Sequence (Story 7.8)
+
+Use this run sequence when onboarding a new operator or running production-support drills.
+
+```bash
+# 1) Validate contracts locally
+npm run compose:validate-isolation
+docker compose --env-file deploy/compose/stu.env -f docker-compose.yml config
+
+# 1b) Optional local lifecycle validation for target profile
+npm run compose:up:stu
+npm run compose:health:stu
+npm run compose:down:stu
+
+# 2) Validate remote connectivity without mutation
+bash scripts/deploy-remote.sh --host <server> --user <ssh-user> --repo-path <path> --instance stu --dry-run
+
+# 3) Execute deployment
+bash scripts/deploy-remote.sh --host <server> --user <ssh-user> --repo-path <path> --ref main --instance stu
+
+# 4) Run trusted-context smoke checks
+bash scripts/smoke-remote.sh --host <server> --user <ssh-user> --repo-path <path> --instances stu,hms,elia
+```
+
+Expected success signals:
+
+- `DEPLOY_RESULT=success ...` after deployment.
+- `SMOKE_RESULT=pass ...` per checked instance.
+- `SMOKE_SUMMARY=pass` as final aggregate signal.
+
+### Escalation and Rollback Flow (Story 7.8)
+
+When deployment or smoke fails:
+
+1. Capture evidence first: failing `DEPLOY_RESULT`/`SMOKE_RESULT` lines, instance key, stage code.
+2. Check `docker compose ... ps` on the same instance env profile.
+3. Check `docker compose ... logs --tail=200 <service>` for failing service.
+4. If issue is unresolved within operational SLO, rollback with previous stable ref:
+
+```bash
+bash scripts/deploy-remote.sh --host <server> --user <ssh-user> --repo-path <path> --ref <previous-commit-or-tag> --instance <stu|hms|elia>
+```
+
+5. Re-run `scripts/smoke-remote.sh` and attach recovery evidence to incident notes.
+
+Security reminders:
+
+- Do not include env-file values, SSH keys, or token material in logs/issues.
+- Keep hosted-runner constraints explicit: no assumption that GitHub-hosted runners can reach deployment SSH targets.
+
 ### Backend Testing (Jest)
 
 **File:** `server/src/__tests__/teamService.test.ts`
