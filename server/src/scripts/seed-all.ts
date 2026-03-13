@@ -6,7 +6,7 @@
 import { seedCategoriesAndPillars } from './seed-categories-pillars';
 import { seedPractices } from './seed-practices';
 
-async function seedAll(): Promise<number> {
+export async function seedAll(): Promise<number> {
   try {
     await seedCategoriesAndPillars();
     const practicesExitCode = await seedPractices();

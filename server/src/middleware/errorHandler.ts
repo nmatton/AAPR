@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
+import { Prisma } from '@prisma/client';
 import { AppError } from '../services/auth.service';
 
 /**
@@ -20,6 +21,19 @@ export const errorHandler = (
       code: error.code,
       message: error.message,
       details: error.details,
+      requestId
+    });
+    return;
+  }
+
+  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P1000') {
+    res.status(503).json({
+      code: 'database_authentication_failed',
+      message: 'Database authentication failed',
+      details: {
+        providerCode: error.code,
+        hint: 'Check POSTGRES_USER/POSTGRES_PASSWORD and recreate DB volume if credentials changed.'
+      },
       requestId
     });
     return;

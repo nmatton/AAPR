@@ -28,8 +28,8 @@ services:
 
   backend:
     build:
-      context: ./server
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: server/Dockerfile
     image: ${BACKEND_IMAGE:-aapr-backend:7.1}
     container_name: ${COMPOSE_PROJECT_NAME:-aapr-stu}-backend
     restart: unless-stopped

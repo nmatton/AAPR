@@ -178,6 +178,7 @@ export const getTeamPillarCoverage = async (teamId: number): Promise<TeamPillarC
       teamId,
       action: 'coverage.by_category.calculated',
       payload: {
+        systemReason: 'Coverage computation triggered by API request for team coverage pillars.',
         coveragePercent: overallCoveragePct,
         coveredCount,
         coveredPillarIds: Array.from(coveredPillarIds),

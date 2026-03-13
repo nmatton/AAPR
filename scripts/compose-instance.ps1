@@ -56,7 +56,7 @@ foreach ($portVar in @('FRONTEND_HOST_PORT', 'BACKEND_HOST_PORT', 'POSTGRES_HOST
 $composeArgs = @('--env-file', $EnvFile, '-f', 'docker-compose.yml')
 
 switch ($Action) {
-    'up' { docker compose @composeArgs up -d }
+    'up' { docker compose @composeArgs up -d --build }
     'down' { docker compose @composeArgs down --remove-orphans }
     'clean' { docker compose @composeArgs down --remove-orphans --volumes }
     'ps' { docker compose @composeArgs ps }

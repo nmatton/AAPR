@@ -5,7 +5,7 @@ import { TeamMembersView } from './features/teams/pages/TeamMembersView'
 import { CoverageDetailsView } from './features/teams/pages/CoverageDetailsView'
 import { ManagePracticesView } from './features/teams/pages/ManagePracticesView'
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { SignupForm } from './features/auth/components/SignupForm'
 import { LoginForm } from './features/auth/components/LoginForm'
 import { ProtectedRoute } from './features/auth/components/ProtectedRoute'
@@ -26,44 +26,76 @@ const TeamsPage = () => {
 const AppRoutes = () => {
   const navigate = useNavigate()
   const { isAuthenticated, setCurrentUser, reset, setError, setLoading } = useAuthStore()
+  const [isSessionChecked, setIsSessionChecked] = useState(false)
 
   useEffect(() => {
+    let isCancelled = false
+
     const validateSession = async () => {
       if (!isAuthenticated) {
+        if (!isCancelled) {
+          setLoading(false)
+          setIsSessionChecked(true)
+        }
         return
       }
 
-      setLoading(true)
+      if (!isCancelled) {
+        setLoading(true)
+      }
+
       try {
         const user = await getCurrentUser()
-        setCurrentUser({
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          createdAt: user.createdAt,
-          hasCompletedBigFive: user.hasCompletedBigFive
-        })
-      } catch (error) {
-        reset()
-        // Set error message for display on login page
-        if (error && typeof error === 'object' && 'code' in error) {
-          const apiError = error as { code: string; message: string }
-          if (apiError.code === 'session_expired') {
-            setError('Session expired. Please log in again.')
-          } else {
-            setError('Your session is no longer valid. Please log in again.')
-          }
-        } else {
-          setError('Your session is no longer valid. Please log in again.')
+        if (!isCancelled) {
+          setCurrentUser({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            createdAt: user.createdAt,
+            hasCompletedBigFive: user.hasCompletedBigFive
+          })
         }
-        navigate('/login', { replace: true })
+      } catch (error) {
+        if (!isCancelled) {
+          reset()
+          // Set error message for display on login page.
+          if (error && typeof error === 'object' && 'code' in error) {
+            const apiError = error as { code: string; message: string }
+            if (apiError.code === 'session_expired') {
+              setError('Session expired. Please log in again.')
+            } else {
+              setError('Your session is no longer valid. Please log in again.')
+            }
+          } else {
+            setError('Session expired. Please log in again.')
+          }
+          navigate('/login', { replace: true })
+        }
+      } finally {
+        if (!isCancelled) {
+          setLoading(false)
+          setIsSessionChecked(true)
+        }
       }
     }
 
+    setIsSessionChecked(false)
     void validateSession()
+
+    return () => {
+      isCancelled = true
+    }
   }, [isAuthenticated, navigate, reset, setCurrentUser, setError, setLoading])
 
   const { isAuthenticated: isAuthed } = useAuthStore()
+
+  if (!isSessionChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-gray-600">Loading...</div>
+      </div>
+    )
+  }
 
   return (
     <Routes>

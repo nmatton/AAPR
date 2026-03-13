@@ -31,6 +31,9 @@ const EVENT_TYPES_ALLOWING_NULL_ACTOR = new Set<string>([
   'practice.imported',
   'practices.imported',
   'coverage.by_category.calculated',
+  'event.export_started',
+  'event.export_completed',
+  'event.export_failed',
 ])
 
 const EVENT_TYPES_ALLOWING_NULL_TEAM = new Set<string>([

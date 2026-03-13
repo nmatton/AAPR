@@ -22,6 +22,7 @@ const readEvents = async (): Promise<EventLogEntry[]> => {
 }
 
 export const logEvent = async (entry: EventLogEntry): Promise<void> => {
+  await fs.mkdir(path.dirname(logFilePath), { recursive: true })
   const events = await readEvents()
   const updated = [...events, entry]
   await fs.writeFile(logFilePath, JSON.stringify(updated, null, 2))

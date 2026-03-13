@@ -240,7 +240,7 @@ export const verifyCredentials = async (
 
   await prisma.event.create({
     data: {
-      eventType: 'user.login_success',
+      eventType: 'user.login',
       actorId: user.id,
       teamId: null,
       entityType: 'user',

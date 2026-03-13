@@ -7,6 +7,7 @@ import { authRouter } from './routes/auth.routes'
 import { teamsRouter } from './routes/teams.routes'
 import { practicesRouter } from './routes/practices.routes'
 import { bigFiveRouter } from './routes/big-five.routes'
+import { eventsRouter } from './routes/events.routes'
 import { errorHandler } from './middleware/errorHandler'
 
 dotenv.config()
@@ -34,6 +35,7 @@ app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/teams', teamsRouter)
 app.use('/api/v1/practices', practicesRouter)
 app.use('/api/v1/big-five', bigFiveRouter)
+app.use('/api/v1/events', eventsRouter)
 
 app.get('/api/v1/health', (_req, res) => {
   res.json({

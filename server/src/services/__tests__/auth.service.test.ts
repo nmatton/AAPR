@@ -357,7 +357,7 @@ describe('Auth Service', () => {
 
       expect(prisma.event.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
-          eventType: 'user.login_success',
+          eventType: 'user.login',
           actorId: userRecord.id,
           teamId: null,
           entityType: 'user',

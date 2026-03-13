@@ -23,7 +23,7 @@ fi
 COMPOSE_ARGS="--env-file $ENV_FILE -f docker-compose.yml"
 
 case "$ACTION" in
-  up)     docker compose $COMPOSE_ARGS up -d ;;
+  up)     docker compose $COMPOSE_ARGS up -d --build ;;
   down)   docker compose $COMPOSE_ARGS down --remove-orphans ;;
   clean)  docker compose $COMPOSE_ARGS down --remove-orphans --volumes ;;
   ps)     docker compose $COMPOSE_ARGS ps ;;
