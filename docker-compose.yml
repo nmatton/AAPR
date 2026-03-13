@@ -22,7 +22,7 @@ services:
     networks:
       - app_network
     labels:
-      com.aapr.story: "7.2"
+      com.aapr.story: "7.3"
       com.aapr.instance: ${INSTANCE_KEY:-stu}
       com.aapr.resource.scope: "instance"
 
@@ -52,7 +52,7 @@ services:
     networks:
       - app_network
     labels:
-      com.aapr.story: "7.2"
+      com.aapr.story: "7.3"
       com.aapr.instance: ${INSTANCE_KEY:-stu}
       com.aapr.resource.scope: "instance"
 
@@ -73,14 +73,16 @@ services:
     networks:
       - app_network
     labels:
-      com.aapr.story: "7.2"
+      com.aapr.story: "7.3"
       com.aapr.instance: ${INSTANCE_KEY:-stu}
       com.aapr.resource.scope: "instance"
 
 volumes:
   postgres_data:
     name: ${COMPOSE_PROJECT_NAME:-aapr-stu}-postgres-data
+    external: false
 
 networks:
   app_network:
     name: ${COMPOSE_PROJECT_NAME:-aapr-stu}-net
+    external: false

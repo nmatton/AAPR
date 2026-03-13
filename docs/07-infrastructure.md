@@ -398,6 +398,67 @@ powershell -ExecutionPolicy Bypass -File scripts/compose-instance.ps1 -Action cl
 powershell -ExecutionPolicy Bypass -File scripts/compose-instance.ps1 -Action clean -EnvFile deploy/compose/hms.env
 ```
 
+### Instance Resource Isolation (Story 7.3)
+
+Every instance is fully isolated at the Docker resource level:
+
+| Resource | Naming Pattern | Example (stu) | Example (hms) |
+|----------|---------------|---------------|---------------|
+| Network | `<COMPOSE_PROJECT_NAME>-net` | `aapr-stu-net` | `aapr-hms-net` |
+| Volume | `<COMPOSE_PROJECT_NAME>-postgres-data` | `aapr-stu-postgres-data` | `aapr-hms-postgres-data` |
+| Containers | `<COMPOSE_PROJECT_NAME>-<service>` | `aapr-stu-db` | `aapr-hms-db` |
+| Database | `<POSTGRES_DB>` | `aapr_stu` | `aapr_hms` |
+
+**Isolation guarantees:**
+- Each instance has its own Docker bridge network — containers cannot communicate across instances
+- Each instance has its own named volume — database data is physically isolated
+- Each instance uses a unique database name — backup/restore/teardown operations are scoped
+- Teardown (`down`) of one instance does not remove another instance's resources
+- Clean (`down --volumes`) of one instance only removes that instance's network and volume
+
+**Required uniqueness per instance profile:**
+- `COMPOSE_PROJECT_NAME` (global scope for all resource names)
+- `POSTGRES_DB` (database-level data isolation)
+- `FRONTEND_HOST_PORT`, `BACKEND_HOST_PORT`, `POSTGRES_HOST_PORT` (no port conflicts)
+- `JWT_SECRET` (recommended unique per instance in production)
+
+**Adding a new instance (e.g., `elia`):**
+
+1. Copy `deploy/compose/elia.env.example` to `deploy/compose/elia.env`
+2. Set production-grade values for `POSTGRES_PASSWORD` and `JWT_SECRET`
+3. Verify no port conflicts: `npm run compose:validate-isolation`
+4. Validate config: `docker compose --env-file deploy/compose/elia.env -f docker-compose.yml config`
+5. Start: `docker compose --env-file deploy/compose/elia.env -f docker-compose.yml up -d`
+
+No compose file changes are needed — isolation is entirely env-driven.
+
+**Isolation validation commands:**
+
+```powershell
+# Validate all env profiles have unique project names, DB names, and ports
+npm run compose:validate-isolation
+
+# Full runtime isolation verification (requires running instances)
+npm run compose:verify-isolation
+
+# Inspect a specific instance's Docker resources
+powershell -ExecutionPolicy Bypass -File scripts/compose-instance.ps1 -Action inspect -EnvFile deploy/compose/stu.env
+```
+
+**Backup/restore isolation:**
+
+Backups and restores are scoped to instance database naming:
+
+```powershell
+# Backup a specific instance's database
+docker exec aapr-stu-db pg_dump -U aapr_user aapr_stu > backup_stu.sql
+
+# Restore only affects the target instance
+docker exec -i aapr-stu-db psql -U aapr_user aapr_stu < backup_stu.sql
+```
+
+The database name (`aapr_stu`, `aapr_hms`) ensures backup files target only the correct instance.
+
 ### Container Images (Story 7.1 Baseline)
 
 Build both production images from repository root:

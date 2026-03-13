@@ -2,7 +2,45 @@
 
 **Implementation History for AAPR Platform**
 
-Last Updated: March 12, 2026
+Last Updated: March 13, 2026
+
+---
+
+## Story 7.3: Provision Isolated Data, Storage, and Network per Instance
+
+**Status:** ✅ COMPLETE  
+**Date:** March 13, 2026  
+**Developer:** Nicolas (via Dev Agent - Claude Opus 4.6)
+
+**What Was Built:**
+
+- Hardened compose resource definitions with explicit `external: false` on networks and volumes to prevent accidental sharing.
+- Updated container labels to track Story 7.3 enforcement across all services.
+- Enhanced env profile templates with isolation rules, naming conventions, and production-grade credential guidance.
+- Added `validate-isolation` action to `compose-instance.ps1` and `compose-instance.sh` — validates uniqueness of `COMPOSE_PROJECT_NAME`, `POSTGRES_DB`, and host ports across all profiles.
+- Added `inspect` action to both scripts — shows per-instance Docker resource state (containers, network, volume, database).
+- Created `scripts/verify-isolation.ps1` — comprehensive 4-phase isolation verification (profile contracts, Docker resource isolation, cross-instance network isolation, volume isolation).
+- Created `deploy/compose/elia.env.example` — ready-to-use elia profile template following the same isolation contract without compose changes.
+- Added npm scripts: `compose:inspect:stu`, `compose:inspect:hms`, `compose:validate-isolation`, `compose:verify-isolation`.
+- Updated `docs/07-infrastructure.md` with isolation guarantees, naming patterns, backup/restore scoping, and new-instance onboarding guide.
+- Updated `docs/08-development-guide.md` with isolation validation commands, teardown test workflow, and troubleshooting table.
+- Verified full multi-instance runtime isolation: started `stu` + `hms` concurrently, proved distinct networks/volumes/containers, tore down one instance while other remained healthy.
+
+**Files Added:**
+
+- `scripts/verify-isolation.ps1`
+- `deploy/compose/elia.env.example`
+
+**Files Updated:**
+
+- `docker-compose.yml`
+- `deploy/compose/.env.instance.example`
+- `scripts/compose-instance.ps1`
+- `scripts/compose-instance.sh`
+- `package.json`
+- `docs/07-infrastructure.md`
+- `docs/08-development-guide.md`
+- `docs/09-changelog.md`
 
 ---
 

@@ -400,6 +400,59 @@ Notes:
 - Keep `COMPOSE_PROJECT_NAME` unique per instance to avoid collisions.
 - If you change backend host port, also update `FRONTEND_RUNTIME_API_URL` in the same env file.
 
+### Per-Instance Isolation Validation (Story 7.3)
+
+**Validate env profile isolation (no running instances needed):**
+
+```powershell
+# Check all env profiles have unique COMPOSE_PROJECT_NAME, POSTGRES_DB, and host ports
+npm run compose:validate-isolation
+```
+
+**Full runtime isolation verification (requires running instances):**
+
+```powershell
+# Start both instances
+npm run compose:up:stu
+npm run compose:up:hms
+
+# Run full isolation verification
+npm run compose:verify-isolation
+
+# Inspect a specific instance's Docker resources (network, volume, containers)
+powershell -ExecutionPolicy Bypass -File scripts/compose-instance.ps1 -Action inspect -EnvFile deploy/compose/stu.env
+```
+
+**Teardown isolation test (proves one-instance cleanup doesn't affect another):**
+
+```powershell
+# With both instances running, tear down hms
+npm run compose:down:hms
+
+# Verify stu is still healthy
+npm run compose:health:stu
+
+# hms volume should still exist (data preserved)
+docker volume ls --filter "name=aapr-hms"
+```
+
+**Adding a new instance (e.g., elia):**
+
+1. Copy `deploy/compose/elia.env.example` to `deploy/compose/elia.env`
+2. Set unique `POSTGRES_PASSWORD` and `JWT_SECRET`
+3. Run `npm run compose:validate-isolation` to confirm no collisions
+4. Run `docker compose --env-file deploy/compose/elia.env -f docker-compose.yml config` to validate
+5. Start with `docker compose --env-file deploy/compose/elia.env -f docker-compose.yml up -d`
+
+**Troubleshooting isolation issues:**
+
+| Symptom | Cause | Fix |
+|---------|-------|-----|
+| Port conflict on startup | Two instances share a host port | Check `npm run compose:validate-isolation` |
+| Containers on wrong network | Stale containers from previous run | Run `docker compose down --remove-orphans` for affected instance |
+| Data leaking between instances | Shared `COMPOSE_PROJECT_NAME` or `POSTGRES_DB` | Ensure unique values in each env profile |
+| Volume not found after restart | Used `clean` action (removes volumes) | Use `down` instead of `clean` to preserve data |
+
 ### Backend Testing (Jest)
 
 **File:** `server/src/__tests__/teamService.test.ts`
