@@ -408,8 +408,10 @@ export const cancelInvite = async (
 }
 
 /**
- * Auto-resolve pending invites when a user signs up with matching email
- * Called during user registration transaction
+ * Auto-resolve open invites when a user signs up with matching email.
+ * Includes both Pending and Failed records because email delivery errors
+ * must not prevent team membership provisioning.
+ * Called during user registration transaction.
  * 
  * @param userId - Newly created user ID
  * @param email - User's email address
@@ -420,14 +422,16 @@ export const autoResolveInvitesOnSignup = async (
   email: string,
   tx: invitesRepository.PrismaClientLike
 ): Promise<void> => {
-  const pendingInvites = await tx.teamInvite.findMany({
+  const openInvites = await tx.teamInvite.findMany({
     where: {
       email,
-      status: 'Pending' as InviteStatus
+      status: {
+        in: ['Pending', 'Failed'] as InviteStatus[]
+      }
     }
   })
 
-  for (const invite of pendingInvites) {
+  for (const invite of openInvites) {
     await tx.teamMember.create({
       data: {
         teamId: invite.teamId,

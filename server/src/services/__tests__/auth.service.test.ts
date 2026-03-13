@@ -211,6 +211,7 @@ describe('Auth Service', () => {
       const mockEventCreate = jest.fn().mockResolvedValue({})
       const mockTeamMemberCreate = jest.fn().mockResolvedValue({ id: 901 })
       const mockInviteUpdate = jest.fn().mockResolvedValue({})
+      const mockTeamInviteFindMany = jest.fn().mockResolvedValue([pendingInvite])
 
         ; (prisma.$transaction as jest.Mock).mockImplementation(async (callback) => {
           return callback({
@@ -221,7 +222,7 @@ describe('Auth Service', () => {
               create: mockEventCreate
             },
             teamInvite: {
-              findMany: jest.fn().mockResolvedValue([pendingInvite]),
+              findMany: mockTeamInviteFindMany,
               update: mockInviteUpdate
             },
             teamMember: {
@@ -231,6 +232,13 @@ describe('Auth Service', () => {
         })
 
       await registerUser(validUserDto)
+
+      expect(mockTeamInviteFindMany).toHaveBeenCalledWith({
+        where: {
+          email: validUserDto.email,
+          status: { in: ['Pending', 'Failed'] }
+        }
+      })
 
       expect(mockTeamMemberCreate).toHaveBeenCalledWith({
         data: {
