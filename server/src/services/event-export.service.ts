@@ -274,7 +274,6 @@ const logExportTelemetry = async (
     await logEvent({
       eventType,
       teamId: request.teamId,
-      entityType: 'event',
       action: eventType.replace('event.', ''),
       payload: {
         teamId: request.teamId,
@@ -312,8 +311,10 @@ export const normalizeEventExportOptions = (input: EventExportRequestInput): Eve
   const from = parseDateBoundary(input.from, 'start');
   const to = parseDateBoundary(input.to, 'end');
   const now = new Date();
+  const endOfToday = new Date(now);
+  endOfToday.setUTCHours(23, 59, 59, 999);
 
-  if (from.date > to.date || from.date > now || to.date > now) {
+  if (from.date > to.date || from.date > now || to.date > endOfToday) {
     throw new AppError('validation_error', 'Invalid date range', {
       from: from.date.toISOString(),
       to: to.date.toISOString(),

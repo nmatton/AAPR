@@ -255,40 +255,81 @@ Expected result:
 - `EVENT_PURGE_CONFIRM_TOKEN` must be configured with a strong secret token (min 12 chars).
 - purge command must include `--confirm <token>` matching `EVENT_PURGE_CONFIRM_TOKEN`.
 
-### Event Export CLI
+### Event Export CLI (Local Dev + Docker Production)
 
 Story 6.3 adds a server-side export workflow for research use. Export remains intentionally outside the web UI.
 
-**Optional environment variables:**
+Use this runbook to export events that occurred during a date range in:
+- local development environment
+- Docker production-style environment (single or multi-instance compose)
+
+#### Parameters and Validation
+
+Required parameters:
+- `--team-id <number>`
+- `--from <date-or-iso-datetime>`
+- `--to <date-or-iso-datetime>`
+
+Optional parameters:
+- `--event-type <value>` (repeatable, one or more)
+- `--format csv|json` (default: `csv`)
+
+Validation behavior:
+- `team-id` must be a positive integer
+- date range must be valid; `to` may be today but not a future calendar day
+- date-only values such as `2026-01-15` are normalized to inclusive UTC boundaries:
+  - `from=2026-01-15` -> `2026-01-15T00:00:00.000Z`
+  - `to=2026-01-22` -> `2026-01-22T23:59:59.999Z`
+- unsupported format fails with `Invalid export format`
+
+Security and reliability behavior:
+- payload PII is redacted before writing file output (emails, names, sensitive fields)
+- output is streamed in batches (stable for large result sets)
+- no file is retained on failure or when no rows match
+- immutable telemetry events are written for export start/completion/failure
+
+#### Export Directory
+
+Optional environment variable:
 
 ```bash
-EVENT_EXPORT_DIR="server/exports"
+EVENT_EXPORT_DIR="exports"
 ```
 
-- If `EVENT_EXPORT_DIR` is omitted, the server script writes to `server/exports/` by default.
-- Date-only inputs such as `2026-01-15` are normalized to inclusive UTC day boundaries.
+Directory resolution rules:
+- local run from `server/`: default output is `server/exports/`
+- Docker backend container (`/app/server` working directory): default output is `/app/server/exports/`
+- custom path can be set with `EVENT_EXPORT_DIR`
 
-**Run CSV export:**
+#### Local Development Workflow
+
+> **Important:** Do **not** use `npm run events:export -- --flag value` for this script. npm 9/10 fuzzy-matches `--to → --token-description` and `--format → --format-package-lock` before the `--` separator takes effect, consuming flags as npm config options before they reach the script. Use `npx tsx` directly to bypass npm's argument parser.
+
+1. Ensure backend dependencies are installed and database is reachable.
 
 ```powershell
 cd server
-npm run events:export -- --team-id 3 --from 2026-01-15 --to 2026-01-22 --format csv
+npm install
+npx prisma migrate deploy
 ```
 
-**Filter by one or more event types:**
+2. Run export (CSV example).
 
 ```powershell
 cd server
-npm run events:export -- --team-id 3 --from 2026-01-15 --to 2026-01-22 --event-type issue.created --event-type issue.evaluated --format json
+npx tsx src/scripts/export-events.ts --team-id 3 --from 2026-01-15 --to 2026-01-22 --format csv
 ```
 
-**Expected behavior:**
-- validates `team-id`, `from`, `to`, optional repeated `event-type`, and `format` before querying
-- rejects future ranges and invalid ranges with a non-zero exit code
-- redacts PII in payloads before writing files
-- streams export output in batches so larger exports do not require loading the full result set in memory
+3. Run export with event-type filtering (JSON example).
 
-**Expected output example:**
+```powershell
+cd server
+npx tsx src/scripts/export-events.ts --team-id 3 --from 2026-01-15 --to 2026-01-22 --event-type issue.created --event-type issue.evaluated --format json
+```
+
+4. Confirm output in `server/exports/` (or custom `EVENT_EXPORT_DIR`).
+
+Expected CLI output:
 
 ```text
 [START] Exporting events for team 3 from 2026-01-15T00:00:00.000Z to 2026-01-22T23:59:59.999Z as csv
@@ -297,10 +338,87 @@ Output path: C:\path\to\repo\server\exports\team-events-2026-01-15-to-2026-01-22
 Format: csv
 ```
 
-**Failure behavior:**
-- no file is retained when validation fails or no matching events are found
-- the command prints a clear error message such as `Invalid date range` or `No events found in date range`
-- export execution emits start/completion/failure telemetry in the immutable events table for research traceability
+#### Docker Production-Style Workflow (Compose)
+
+Important runtime detail:
+- In the backend production image, the TypeScript source and `tsx` dev runner are not present.
+- Run export via the compiled script (`node dist/scripts/export-events.js`) inside the running backend container.
+
+1. Start or verify the target instance.
+
+```powershell
+npm run compose:up:stu
+npm run compose:health:stu
+```
+
+2. Execute export in backend container (replace profile if needed).
+
+```powershell
+docker compose --env-file deploy/compose/stu.env -f docker-compose.yml exec backend node dist/scripts/export-events.js --team-id 2 --from 2026-03-12 --to 2026-03-12 --format csv
+```
+
+3. Execute filtered JSON export.
+
+```powershell
+docker compose --env-file deploy/compose/stu.env -f docker-compose.yml exec backend node dist/scripts/export-events.js --team-id 3 --from 2026-01-15 --to 2026-01-22 --event-type issue.created --event-type issue.evaluated --format json
+```
+
+4. Retrieve export file from container to host.
+
+```powershell
+docker cp aapr-stu-backend:/app/server/exports/team-events-2026-01-15-to-2026-01-22.csv .\_bmad-output\exports\team-events-2026-01-15-to-2026-01-22.csv
+```
+
+Notes:
+- Container naming convention is `<COMPOSE_PROJECT_NAME>-backend` (for `stu`, default is `aapr-stu-backend`).
+- For `hms` and `elia`, use the corresponding compose env file and container name.
+
+#### Multi-Instance Export Safety
+
+When multiple instances run concurrently:
+- always target one explicit env profile (`stu.env`, `hms.env`, or `elia.env`)
+- run export in that instance's backend container only
+- keep copied output filenames instance-qualified if you archive multiple exports together
+
+Example (hms):
+
+```powershell
+docker compose --env-file deploy/compose/hms.env -f docker-compose.yml exec backend node dist/scripts/export-events.js --team-id 7 --from 2026-02-01 --to 2026-02-15 --format csv
+```
+
+#### Telemetry Verification (Optional but Recommended)
+
+After export, verify immutable telemetry in the database:
+
+```powershell
+docker compose --env-file deploy/compose/stu.env -f docker-compose.yml exec db sh -lc "psql -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\" -c \"SELECT event_type, created_at, payload_json FROM events WHERE event_type IN ('event.export_started','event.export_completed','event.export_failed') ORDER BY created_at DESC LIMIT 20;\""
+```
+
+#### Failure Modes and Fixes
+
+Common failures and meaning:
+- `Invalid date range`
+  - check `from <= to` and confirm neither date is in the future
+- `Invalid export format`
+  - use only `csv` or `json`
+- `No events found in date range`
+  - adjust team or date filters; no export file is retained by design
+- database/auth/connectivity errors
+  - verify backend and db are healthy for the targeted compose profile
+
+Quick health checks:
+
+```powershell
+npm run compose:ps:stu
+npm run compose:health:stu
+```
+
+#### Operational Recommendations
+
+- Keep export server-side only (no web UI exposure)
+- Prefer date-only ranges for research windows to avoid timezone ambiguity
+- Always preserve raw CLI output in research audit notes alongside exported artifacts
+- For repeat operations, script profile-specific commands in a secured operator runbook
 
 ---
 
