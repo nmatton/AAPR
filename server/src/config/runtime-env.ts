@@ -3,6 +3,8 @@ type RuntimeEnvSource = {
   DATABASE_URL?: string
   JWT_SECRET?: string
   PORT?: string
+  HONEYBADGER_API_KEY?: string
+  APP_REVISION?: string
 }
 
 export const validateRuntimeEnv = (env: RuntimeEnvSource): void => {
@@ -10,7 +12,7 @@ export const validateRuntimeEnv = (env: RuntimeEnvSource): void => {
     return
   }
 
-  const mandatoryKeys: Array<keyof RuntimeEnvSource> = ['DATABASE_URL', 'JWT_SECRET']
+  const mandatoryKeys: Array<keyof RuntimeEnvSource> = ['DATABASE_URL', 'JWT_SECRET', 'HONEYBADGER_API_KEY']
   const missing = mandatoryKeys.filter((key) => !env[key]?.trim())
 
   if (missing.length > 0) {

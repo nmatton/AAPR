@@ -47,6 +47,8 @@ services:
       SMTP_FROM: ${SMTP_FROM:?SMTP_FROM must be set in env file}
       SMTP_USER: ${SMTP_USER:-}
       SMTP_PASS: ${SMTP_PASS:-}
+      HONEYBADGER_API_KEY: ${HONEYBADGER_API_KEY:?HONEYBADGER_API_KEY must be set in env file}
+      APP_REVISION: ${APP_REVISION:-}
     ports:
       - "${BACKEND_HOST_PORT:-3000}:3000"
     healthcheck:

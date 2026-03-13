@@ -1,6 +1,8 @@
+import Honeybadger from '@honeybadger-io/js'
 import { logProjectInitialized } from './logger/projectInit'
 import { app } from './app'
 import { validateRuntimeEnv } from './config/runtime-env'
+import { HONEYBADGER_REDACTED_KEYS } from './config/honeybadger'
 
 const resolvePort = (rawPort?: string): number => {
   if (!rawPort?.trim()) {
@@ -22,7 +24,17 @@ validateRuntimeEnv({
   DATABASE_URL: process.env.DATABASE_URL,
   JWT_SECRET: process.env.JWT_SECRET,
   PORT: process.env.PORT,
+  HONEYBADGER_API_KEY: process.env.HONEYBADGER_API_KEY,
 })
+
+if (process.env.NODE_ENV === 'production') {
+  Honeybadger.configure({
+    apiKey: process.env.HONEYBADGER_API_KEY!,
+    environment: 'production',
+    revision: process.env.APP_REVISION,
+    filters: HONEYBADGER_REDACTED_KEYS,
+  })
+}
 
 app.listen(port, () => {
   console.log(`Server listening on http://localhost:${port}`)

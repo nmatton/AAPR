@@ -2,6 +2,7 @@ import dotenv from 'dotenv'
 import express from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
+import Honeybadger from '@honeybadger-io/js'
 import { randomUUID } from 'crypto'
 import { authRouter } from './routes/auth.routes'
 import { teamsRouter } from './routes/teams.routes'
@@ -13,6 +14,10 @@ import { errorHandler } from './middleware/errorHandler'
 dotenv.config()
 
 export const app = express()
+
+if (process.env.NODE_ENV === 'production') {
+  app.use(Honeybadger.requestHandler)
+}
 
 app.use(
   cors({
@@ -45,4 +50,7 @@ app.get('/api/v1/health', (_req, res) => {
   })
 })
 
+if (process.env.NODE_ENV === 'production') {
+  app.use(Honeybadger.errorHandler)
+}
 app.use(errorHandler)

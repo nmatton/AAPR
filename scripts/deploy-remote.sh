@@ -4,7 +4,7 @@
 #
 # Usage:
 #   ./scripts/deploy-remote.sh --host <host> --user <ssh-user> --repo-path <path> \
-#       --ref <branch-or-ref> --instance <stu|hms|elia> [--dry-run] [--ssh-key <path>]
+#       --ref <branch-or-ref> --instance <stu|hms|elia> [--dry-run] [--ssh-key <path>] [--port <port>]
 #
 # Exit codes:
 #   0  — deployment succeeded
@@ -55,6 +55,7 @@ log_info() {
 # ─── Defaults ─────────────────────────────────────────────────────────────────
 HOST=""
 SSH_USER=""
+SSH_PORT="22"
 REPO_PATH=""
 REF="main"
 INSTANCE=""
@@ -76,6 +77,7 @@ Optional:
   --ref         Branch or commit ref to deploy (default: main)
   --dry-run     Validate inputs and SSH connection without mutating remote state
   --ssh-key     Path to SSH private key (default: use ssh-agent / default key)
+  --port        SSH port for remote connection (default: 22)
   -h, --help    Show this help message
 
 Exit codes:
@@ -109,6 +111,7 @@ while [[ $# -gt 0 ]]; do
     --instance) require_arg "$@"; INSTANCE="$2"; shift 2 ;;
     --dry-run)  DRY_RUN=true; shift ;;
     --ssh-key)  require_arg "$@"; SSH_KEY="$2"; shift 2 ;;
+    --port)     require_arg "$@"; SSH_PORT="$2"; shift 2 ;;
     -h|--help)  usage "$EXIT_SUCCESS" ;;
     *)
       echo "Error: Unknown argument '$1'" >&2
@@ -129,6 +132,11 @@ fi
 
 if [[ -z "$SSH_USER" ]]; then
   log_fail "--user is required"
+  errors=$((errors + 1))
+fi
+
+if ! [[ "$SSH_PORT" =~ ^[0-9]+$ ]] || (( SSH_PORT < 1 || SSH_PORT > 65535 )); then
+  log_fail "--port must be an integer between 1 and 65535 (got '$SSH_PORT')"
   errors=$((errors + 1))
 fi
 
@@ -162,6 +170,7 @@ COMPOSE_ARGS="--env-file $ENV_FILE -f docker-compose.yml"
 
 log_ok "Host:      $HOST"
 log_ok "User:      $SSH_USER"
+log_ok "Port:      $SSH_PORT"
 log_ok "Repo path: $REPO_PATH"
 log_ok "Ref:       $REF"
 log_ok "Instance:  $INSTANCE"
@@ -171,7 +180,7 @@ log_ok "Dry run:   $DRY_RUN"
 # ─── SSH command helper ──────────────────────────────────────────────────────
 build_ssh_opts() {
   # Builds SSH_OPTS as a global array so paths with spaces are handled safely
-  SSH_OPTS=("-o" "BatchMode=yes" "-o" "ConnectTimeout=10" "-o" "StrictHostKeyChecking=accept-new")
+  SSH_OPTS=("-p" "$SSH_PORT" "-o" "BatchMode=yes" "-o" "ConnectTimeout=10" "-o" "StrictHostKeyChecking=accept-new")
   if [[ -n "$SSH_KEY" ]]; then
     SSH_OPTS+=("-i" "$SSH_KEY")
   fi

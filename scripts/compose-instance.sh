@@ -3,7 +3,7 @@ set -euo pipefail
 
 usage() {
   echo "Usage: $0 <action> [env-file]"
-  echo "  action:   up | down | clean | ps | logs | config | health | inspect | validate-isolation"
+  echo "  action:   up | rebuild | down | clean | ps | logs | config | health | inspect | validate-isolation"
   echo "  env-file: path to instance env file (default: deploy/compose/stu.env)"
   exit 1
 }
@@ -23,8 +23,9 @@ fi
 COMPOSE_ARGS="--env-file $ENV_FILE -f docker-compose.yml"
 
 case "$ACTION" in
-  up)     docker compose $COMPOSE_ARGS up -d --build ;;
-  down)   docker compose $COMPOSE_ARGS down --remove-orphans ;;
+  up)      docker compose $COMPOSE_ARGS up -d --build ;;
+  rebuild) docker compose $COMPOSE_ARGS build --no-cache && docker compose $COMPOSE_ARGS up -d ;;
+  down)    docker compose $COMPOSE_ARGS down --remove-orphans ;;
   clean)  docker compose $COMPOSE_ARGS down --remove-orphans --volumes ;;
   ps)     docker compose $COMPOSE_ARGS ps ;;
   logs)   docker compose $COMPOSE_ARGS logs --tail=200 ;;
