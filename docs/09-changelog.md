@@ -6,6 +6,39 @@ Last Updated: March 13, 2026
 
 ---
 
+## Story 7.5: Build SSH-Based Deployment Scripts for Merge-Triggered Updates
+
+**Status:** ✅ COMPLETE  
+**Date:** March 13, 2026  
+**Developer:** Nicolas (via Dev Agent - Claude Opus 4.6)
+
+**What Was Built:**
+
+- Created `scripts/deploy-remote.sh` — idempotent SSH-based deployment script for CI-triggered remote rollouts.
+- Deployment sequence: input validation → SSH connectivity → remote repository check → git sync (fetch/reset) → compose config validation → image build → compose up → health check.
+- Deterministic exit code contract (0=success, 1=validation, 2=SSH, 3=git, 4=compose config, 5=build, 6=up, 7=health, 99=internal).
+- Supports `--dry-run` mode for preflight validation without state mutation.
+- Key-based SSH auth with `BatchMode=yes` and `StrictHostKeyChecking=accept-new` for CI-safe non-interactive operation.
+- Machine-readable `DEPLOY_RESULT=success` output line for CI pipeline parsing.
+- Reuses existing `scripts/compose-instance.sh health` for post-deploy validation hooks.
+- Created `scripts/test-deploy-remote.sh` — 16-test validation suite for input validation and exit code contract.
+- Added `npm run deploy:remote` and `npm run deploy:test` entrypoints.
+- Updated infrastructure and development documentation with SSH deployment flow, preconditions, exit codes, and rollback guidance.
+
+**Files Added:**
+
+- `scripts/deploy-remote.sh`
+- `scripts/test-deploy-remote.sh`
+
+**Files Updated:**
+
+- `package.json`
+- `docs/07-infrastructure.md`
+- `docs/08-development-guide.md`
+- `docs/09-changelog.md`
+
+---
+
 ## Story 7.4: Define and Validate Instance Environment Contracts (stu, hms, elia)
 
 **Status:** ✅ COMPLETE  

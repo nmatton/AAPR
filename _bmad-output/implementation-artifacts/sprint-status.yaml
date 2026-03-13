@@ -134,10 +134,10 @@ development_status:
   # Epic 7: Deployment Architecture & CI/CD Automation
   epic-7: in-progress
   7-1-containerize-frontend-and-backend-for-production-runtime: done
-  7-2-implement-parameterized-multi-instance-docker-compose-architecture: in-progress
-  7-3-provision-isolated-data-storage-and-network-per-instance: in-progress
+  7-2-implement-parameterized-multi-instance-docker-compose-architecture: done
+  7-3-provision-isolated-data-storage-and-network-per-instance: done
   7-4-define-and-validate-instance-environment-contracts-stu-hms-elia: done
-  7-5-build-ssh-based-deployment-scripts-for-merge-triggered-updates: backlog
+  7-5-build-ssh-based-deployment-scripts-for-merge-triggered-updates: done
   7-6-add-ci-cd-workflow-for-deployment-validation-and-rollout: backlog
   7-7-add-server-focused-smoke-and-resilience-checks-in-pipeline-scope: backlog
   7-8-update-infrastructure-runbook-and-operational-documentation: backlog

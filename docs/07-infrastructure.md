@@ -508,6 +508,102 @@ Stop smoke containers:
 docker stop aapr-backend-smoke aapr-frontend-smoke
 ```
 
+### SSH Remote Deployment (Story 7.5)
+
+The `scripts/deploy-remote.sh` script provides idempotent SSH-based deployment for CI-triggered rollouts. It orchestrates a remote update cycle: git sync → compose validation → image build → rollout → health check.
+
+**Prerequisites:**
+
+- SSH key-based access to the target server (no password prompts)
+- Repository cloned on the remote server at a known path
+- Instance env files (`deploy/compose/*.env`) present in the remote repository
+- Docker and Docker Compose V2 installed on the remote server
+
+**Invocation:**
+
+```bash
+bash scripts/deploy-remote.sh \
+  --host <server-hostname> \
+  --user <ssh-user> \
+  --repo-path <absolute-path-to-repo-on-remote> \
+  --ref <branch-or-commit> \
+  --instance <stu|hms|elia> \
+  [--dry-run] \
+  [--ssh-key <path-to-private-key>]
+```
+
+**Deployment Sequence:**
+
+1. Validate inputs (host, user, repo path, instance)
+2. Verify SSH connectivity (`BatchMode=yes`, key-based auth)
+3. Verify remote repository and env file exist
+4. Sync repository to target ref (`git fetch --all --prune`, `git checkout/reset`)
+5. Validate compose configuration (`docker compose config --quiet`)
+6. Build images (`docker compose build`)
+7. Start services (`docker compose up -d`)
+8. Run post-deploy health check (reuses `scripts/compose-instance.sh health`)
+
+**Exit Code Contract:**
+
+| Code | Meaning |
+|------|---------|
+| 0    | Deployment succeeded |
+| 1    | Validation/input error (bad arguments, missing env file) |
+| 2    | SSH connection failure |
+| 3    | Git sync failure |
+| 4    | Compose config validation failure |
+| 5    | Image build/pull failure |
+| 6    | Compose up failure |
+| 7    | Health check failure |
+| 99   | Unexpected/internal error |
+
+**Dry-run mode:**
+
+```bash
+bash scripts/deploy-remote.sh \
+  --host server1 --user deploy --repo-path /opt/aapr \
+  --instance stu --dry-run
+```
+
+Dry-run validates SSH connectivity and remote repository existence without modifying any state.
+
+**Machine-readable output:**
+
+On success, the script emits a parseable summary line for CI consumers:
+
+```
+DEPLOY_RESULT=success host=<host> instance=<instance> ref=<ref> env=<env-file>
+```
+
+**Security considerations:**
+
+- SSH uses `BatchMode=yes` to prevent interactive password prompts in CI
+- `StrictHostKeyChecking=accept-new` accepts new host keys but rejects changed ones
+- Secrets (SSH keys, passwords) must be injected via CI secret stores, never committed to the repository
+- The script never reads or exposes secret values
+
+**Rollback:**
+
+To rollback a deployment, re-run the script targeting a previous ref:
+
+```bash
+bash scripts/deploy-remote.sh \
+  --host server1 --user deploy --repo-path /opt/aapr \
+  --ref <previous-commit-or-tag> --instance stu
+```
+
+The idempotent flow (git reset + compose up) ensures the instance converges to the desired state.
+
+**npm entrypoints:**
+
+```bash
+# Deploy (pass arguments after --)
+npm run deploy:remote -- --host server1 --user deploy --repo-path /opt/aapr --instance stu --ref main
+
+# Run deployment script tests
+npm run deploy:test
+```
+
 ### Build Frontend
 
 ```powershell
@@ -787,4 +883,4 @@ Response (200):
 
 ---
 
-**Last Updated:** January 19, 2026
+**Last Updated:** March 13, 2026

@@ -462,6 +462,49 @@ docker volume ls --filter "name=aapr-hms"
 | Data leaking between instances | Shared `COMPOSE_PROJECT_NAME` or `POSTGRES_DB` | Ensure unique values in each env profile |
 | Volume not found after restart | Used `clean` action (removes volumes) | Use `down` instead of `clean` to preserve data |
 
+### SSH Deployment Validation (Story 7.5)
+
+**Run deployment script tests:**
+
+```bash
+npm run deploy:test
+```
+
+This runs input validation and exit code contract tests for `scripts/deploy-remote.sh`.
+
+**Pre-deployment validation checklist:**
+
+```bash
+# 1. Validate env profile isolation (no running instances needed)
+npm run compose:validate-isolation
+
+# 2. Validate compose config for target instance
+docker compose --env-file deploy/compose/stu.env -f docker-compose.yml config
+
+# 3. Dry-run deployment (validates SSH + remote repo without mutating state)
+bash scripts/deploy-remote.sh \
+  --host <server> --user <ssh-user> --repo-path <path> \
+  --instance stu --dry-run
+
+# 4. Full deployment
+bash scripts/deploy-remote.sh \
+  --host <server> --user <ssh-user> --repo-path <path> \
+  --ref main --instance stu
+```
+
+**Exit code interpretation for CI:**
+
+| Exit Code | Meaning | CI Action |
+|-----------|---------|----------|
+| 0 | Success | Continue pipeline |
+| 1 | Input validation error | Fix script invocation |
+| 2 | SSH failure | Check SSH keys/access |
+| 3 | Git sync failure | Check remote repo |
+| 4 | Compose config error | Fix env file or compose |
+| 5 | Build failure | Check Dockerfiles |
+| 6 | Compose up failure | Check container logs |
+| 7 | Health check failure | Investigate service state |
+
 ### Backend Testing (Jest)
 
 **File:** `server/src/__tests__/teamService.test.ts`
@@ -882,4 +925,4 @@ Stop-Process -Id <PID>
 
 ---
 
-**Last Updated:** January 19, 2026
+**Last Updated:** March 13, 2026
