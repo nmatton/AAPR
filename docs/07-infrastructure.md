@@ -2,7 +2,7 @@
 
 **Infrastructure & Deployment Guide for AAPR Platform**
 
-Last Updated: March 12, 2026  
+Last Updated: March 13, 2026  
 Environment: Local Development (Docker) + Future Production
 
 ---
@@ -341,6 +341,7 @@ Single compose architecture now lives at repository root:
 - `deploy/compose/.env.instance.example`
 - `deploy/compose/stu.env`
 - `deploy/compose/hms.env`
+- `deploy/compose/elia.env`
 
 The compose stack is parameterized by env file values and does not require per-instance compose file duplication.
 
@@ -350,7 +351,8 @@ Required/important variables:
 - `INSTANCE_KEY`: logical instance label
 - `FRONTEND_HOST_PORT`, `BACKEND_HOST_PORT`, `POSTGRES_HOST_PORT`: host-exposed ports, must be unique per instance
 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`: per-instance database contract
-- `JWT_SECRET`: required by backend runtime validation
+- `JWT_SECRET`: required by backend runtime validation (must be non-empty)
+- `POSTGRES_PASSWORD`: required per profile (must be non-empty)
 - `FRONTEND_RUNTIME_API_URL`: runtime API URL injected into frontend `runtime-config.js`
 
 Isolation-forward naming conventions (for Story 7.3 extension):
@@ -364,6 +366,7 @@ Compose config validation commands:
 ```powershell
 npm run compose:config:stu
 npm run compose:config:hms
+npm run compose:config:elia
 ```
 
 Run one instance:
@@ -422,10 +425,18 @@ Every instance is fully isolated at the Docker resource level:
 - `FRONTEND_HOST_PORT`, `BACKEND_HOST_PORT`, `POSTGRES_HOST_PORT` (no port conflicts)
 - `JWT_SECRET` (recommended unique per instance in production)
 
-**Adding a new instance (e.g., `elia`):**
+**Active Instance Profiles (Story 7.4 Contracts):**
 
-1. Copy `deploy/compose/elia.env.example` to `deploy/compose/elia.env`
-2. Set production-grade values for `POSTGRES_PASSWORD` and `JWT_SECRET`
+| Instance | Project Name | DB Name     | Frontend Port | Backend Port | Postgres Port |
+|----------|--------------|-------------|---------------|--------------|---------------|
+| `stu`    | `aapr-stu`   | `aapr_stu`  | `5173`        | `3000`       | `5543`        |
+| `hms`    | `aapr-hms`   | `aapr_hms`  | `5174`        | `3001`       | `5544`        |
+| `elia`   | `aapr-elia`  | `aapr_elia` | `5175`        | `3002`       | `5545`        |
+
+**Adding a new instance (e.g., `new-instance`):**
+
+1. Use `deploy/compose/elia.env` (baseline contract is also documented in `deploy/compose/elia.env.example`)
+2. Set production-grade unique values for `POSTGRES_PASSWORD` and `JWT_SECRET`
 3. Verify no port conflicts: `npm run compose:validate-isolation`
 4. Validate config: `docker compose --env-file deploy/compose/elia.env -f docker-compose.yml config`
 5. Start: `docker compose --env-file deploy/compose/elia.env -f docker-compose.yml up -d`

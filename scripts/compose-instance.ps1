@@ -30,6 +30,16 @@ function Read-EnvFile {
     return $result
 }
 
+function Parse-Uri {
+    param([string]$Value)
+
+    try {
+        return [Uri]$Value
+    } catch {
+        return $null
+    }
+}
+
 if (-not (Test-Path $EnvFile)) {
     throw "Env file not found: $EnvFile"
 }
@@ -129,6 +139,21 @@ switch ($Action) {
         $dbNames = @{}
         $portOwners = @{}
         $errors = @()
+        $requiredFields = @(
+            'INSTANCE_KEY',
+            'COMPOSE_PROJECT_NAME',
+            'FRONTEND_IMAGE',
+            'BACKEND_IMAGE',
+            'POSTGRES_IMAGE',
+            'POSTGRES_DB',
+            'POSTGRES_USER',
+            'FRONTEND_HOST_PORT',
+            'BACKEND_HOST_PORT',
+            'POSTGRES_HOST_PORT',
+            'POSTGRES_PASSWORD',
+            'JWT_SECRET',
+            'FRONTEND_RUNTIME_API_URL'
+        )
 
         foreach ($file in $envFiles) {
             $env = Read-EnvFile -Path $file.FullName
@@ -141,24 +166,42 @@ switch ($Action) {
 
             Write-Host "Profile: $($file.Name) (instance=$instance)"
 
-            # Check required isolation fields
-            foreach ($field in @('INSTANCE_KEY', 'COMPOSE_PROJECT_NAME', 'POSTGRES_DB', 'FRONTEND_HOST_PORT', 'BACKEND_HOST_PORT', 'POSTGRES_HOST_PORT', 'JWT_SECRET')) {
+            # Check required isolation and runtime contract fields
+            foreach ($field in $requiredFields) {
                 if (-not $env[$field]) {
                     $errors += "  MISSING: $field in $($file.Name)"
                 }
             }
 
+            # Validate numeric port bounds in every profile
+            foreach ($portEntry in @(@{Name='FRONTEND_HOST_PORT';Val=$fp}, @{Name='BACKEND_HOST_PORT';Val=$bp}, @{Name='POSTGRES_HOST_PORT';Val=$pp})) {
+                if ($portEntry.Val -and ($portEntry.Val -notmatch '^\d+$' -or [int]$portEntry.Val -lt 1 -or [int]$portEntry.Val -gt 65535)) {
+                    $errors += "  INVALID: $($portEntry.Name) must be an integer between 1 and 65535 in $($file.Name), got '$($portEntry.Val)'"
+                }
+            }
+
+            # Validate runtime API URL points to profile backend port for localhost contracts
+            $runtimeApiUrl = $env['FRONTEND_RUNTIME_API_URL']
+            if ($runtimeApiUrl) {
+                $uri = Parse-Uri -Value $runtimeApiUrl
+                if (-not $uri) {
+                    $errors += "  INVALID: FRONTEND_RUNTIME_API_URL must be a valid URL in $($file.Name), got '$runtimeApiUrl'"
+                } elseif (($uri.Host -eq 'localhost' -or $uri.Host -eq '127.0.0.1') -and ($uri.Port -ne [int]$bp)) {
+                    $errors += "  CONTRACT: FRONTEND_RUNTIME_API_URL port '$($uri.Port)' must match BACKEND_HOST_PORT '$bp' in $($file.Name)"
+                }
+            }
+
             # Check COMPOSE_PROJECT_NAME uniqueness
-            if ($projectNames.ContainsKey($project)) {
+            if ($project -and $projectNames.ContainsKey($project)) {
                 $errors += "  COLLISION: COMPOSE_PROJECT_NAME='$project' shared by $($file.Name) and $($projectNames[$project])"
-            } else {
+            } elseif ($project) {
                 $projectNames[$project] = $file.Name
             }
 
             # Check POSTGRES_DB uniqueness
-            if ($dbNames.ContainsKey($db)) {
+            if ($db -and $dbNames.ContainsKey($db)) {
                 $errors += "  COLLISION: POSTGRES_DB='$db' shared by $($file.Name) and $($dbNames[$db])"
-            } else {
+            } elseif ($db) {
                 $dbNames[$db] = $file.Name
             }
 
@@ -166,6 +209,10 @@ switch ($Action) {
             foreach ($portEntry in @(@{Name='FRONTEND_HOST_PORT';Val=$fp}, @{Name='BACKEND_HOST_PORT';Val=$bp}, @{Name='POSTGRES_HOST_PORT';Val=$pp})) {
                 $portValue = $portEntry.Val
                 $currentOwner = "$($file.Name):$($portEntry.Name)"
+                if (-not $portValue) {
+                    continue
+                }
+
                 if ($portOwners.ContainsKey($portValue)) {
                     $errors += "  COLLISION: host port '$portValue' used by $currentOwner and $($portOwners[$portValue])"
                 } else {

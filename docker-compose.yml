@@ -22,7 +22,7 @@ services:
     networks:
       - app_network
     labels:
-      com.aapr.story: "7.3"
+      com.aapr.story: "7.4"
       com.aapr.instance: ${INSTANCE_KEY:-stu}
       com.aapr.resource.scope: "instance"
 
@@ -52,7 +52,7 @@ services:
     networks:
       - app_network
     labels:
-      com.aapr.story: "7.3"
+      com.aapr.story: "7.4"
       com.aapr.instance: ${INSTANCE_KEY:-stu}
       com.aapr.resource.scope: "instance"
 
@@ -73,7 +73,7 @@ services:
     networks:
       - app_network
     labels:
-      com.aapr.story: "7.3"
+      com.aapr.story: "7.4"
       com.aapr.instance: ${INSTANCE_KEY:-stu}
       com.aapr.resource.scope: "instance"
 

@@ -136,7 +136,7 @@ development_status:
   7-1-containerize-frontend-and-backend-for-production-runtime: done
   7-2-implement-parameterized-multi-instance-docker-compose-architecture: in-progress
   7-3-provision-isolated-data-storage-and-network-per-instance: in-progress
-  7-4-define-and-validate-instance-environment-contracts-stu-hms-elia: backlog
+  7-4-define-and-validate-instance-environment-contracts-stu-hms-elia: done
   7-5-build-ssh-based-deployment-scripts-for-merge-triggered-updates: backlog
   7-6-add-ci-cd-workflow-for-deployment-validation-and-rollout: backlog
   7-7-add-server-focused-smoke-and-resilience-checks-in-pipeline-scope: backlog

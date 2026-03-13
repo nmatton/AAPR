@@ -2,7 +2,7 @@
 
 **Development Standards & Practices for AAPR Platform**
 
-Last Updated: March 12, 2026  
+Last Updated: March 13, 2026  
 Team Size: 3 developers (Bob, Elena, Marcus)
 
 ---
@@ -406,6 +406,7 @@ Notes:
 
 ```powershell
 # Check all env profiles have unique COMPOSE_PROJECT_NAME, POSTGRES_DB, and host ports
+# Also validates required keys and localhost runtime URL/backend port alignment
 npm run compose:validate-isolation
 ```
 
@@ -436,9 +437,17 @@ npm run compose:health:stu
 docker volume ls --filter "name=aapr-hms"
 ```
 
-**Adding a new instance (e.g., elia):**
+**Active Instance Profiles (Story 7.4 Contracts):**
 
-1. Copy `deploy/compose/elia.env.example` to `deploy/compose/elia.env`
+| Instance | Project Name | DB Name     | Frontend Port | Backend Port | Postgres Port |
+|----------|--------------|-------------|---------------|--------------|---------------|
+| `stu`    | `aapr-stu`   | `aapr_stu`  | `5173`        | `3000`       | `5543`        |
+| `hms`    | `aapr-hms`   | `aapr_hms`  | `5174`        | `3001`       | `5544`        |
+| `elia`   | `aapr-elia`  | `aapr_elia` | `5175`        | `3002`       | `5545`        |
+
+**Adding a new instance (e.g., new-instance):**
+
+1. Use `deploy/compose/elia.env` (baseline template remains in `deploy/compose/elia.env.example`)
 2. Set unique `POSTGRES_PASSWORD` and `JWT_SECRET`
 3. Run `npm run compose:validate-isolation` to confirm no collisions
 4. Run `docker compose --env-file deploy/compose/elia.env -f docker-compose.yml config` to validate

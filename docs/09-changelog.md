@@ -6,6 +6,41 @@ Last Updated: March 13, 2026
 
 ---
 
+## Story 7.4: Define and Validate Instance Environment Contracts (stu, hms, elia)
+
+**Status:** ✅ COMPLETE  
+**Date:** March 13, 2026  
+**Developer:** Nicolas (via Dev Agent - GPT-5.3-Codex)
+
+**What Was Built:**
+
+- Promoted `elia` to active profile flow by adding `deploy/compose/elia.env` with deterministic identity and port contract values.
+- Updated active profiles (`stu`, `hms`, `elia`) with non-placeholder local-dev secrets and aligned runtime API URL per profile backend port.
+- Formalized required key expectations in `deploy/compose/.env.instance.example` and clarified production requirements for unique secrets.
+- Hardened `validate-isolation` in PowerShell and shell scripts to fail fast on missing required keys (`POSTGRES_PASSWORD`, `JWT_SECRET`, `FRONTEND_RUNTIME_API_URL`) with actionable file-level messages.
+- Added numeric host-port validation across all profiles and explicit contract validation that localhost `FRONTEND_RUNTIME_API_URL` port matches `BACKEND_HOST_PORT`.
+- Added deterministic npm command coverage for `elia` (`compose:config:elia`, `compose:up:elia`, `compose:down:elia`, `compose:ps:elia`, `compose:health:elia`, `compose:inspect:elia`).
+- Updated infrastructure and development documentation with the active `elia` profile workflow and strengthened validation guidance.
+
+**Files Added:**
+
+- `deploy/compose/elia.env`
+
+**Files Updated:**
+
+- `deploy/compose/.env.instance.example`
+- `deploy/compose/stu.env`
+- `deploy/compose/hms.env`
+- `deploy/compose/elia.env.example`
+- `scripts/compose-instance.ps1`
+- `scripts/compose-instance.sh`
+- `package.json`
+- `docs/07-infrastructure.md`
+- `docs/08-development-guide.md`
+- `docs/09-changelog.md`
+
+---
+
 ## Story 7.3: Provision Isolated Data, Storage, and Network per Instance
 
 **Status:** ✅ COMPLETE  

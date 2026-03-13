@@ -107,7 +107,7 @@ case "$ACTION" in
       echo "Profile: $fname (instance=$instance)"
 
       # Check required fields
-      for field in INSTANCE_KEY COMPOSE_PROJECT_NAME POSTGRES_DB FRONTEND_HOST_PORT BACKEND_HOST_PORT POSTGRES_HOST_PORT JWT_SECRET; do
+      for field in INSTANCE_KEY COMPOSE_PROJECT_NAME FRONTEND_IMAGE BACKEND_IMAGE POSTGRES_IMAGE POSTGRES_DB POSTGRES_USER FRONTEND_HOST_PORT BACKEND_HOST_PORT POSTGRES_HOST_PORT POSTGRES_PASSWORD JWT_SECRET FRONTEND_RUNTIME_API_URL; do
         val=$(grep "^${field}=" "$envfile" | cut -d= -f2)
         if [ -z "$val" ]; then
           echo "  MISSING: $field in $fname"
@@ -115,18 +115,54 @@ case "$ACTION" in
         fi
       done
 
+      # Validate numeric port bounds for every profile
+      for portdef in "FRONTEND_HOST_PORT:$fp" "BACKEND_HOST_PORT:$bp" "POSTGRES_HOST_PORT:$pp"; do
+        port_name="${portdef%%:*}"
+        port_value="${portdef##*:}"
+
+        if [ -z "$port_value" ] || ! [[ "$port_value" =~ ^[0-9]+$ ]] || [ "$port_value" -lt 1 ] || [ "$port_value" -gt 65535 ]; then
+          echo "  INVALID: ${port_name} must be an integer between 1 and 65535 in $fname, got '${port_value}'"
+          ERRORS=$((ERRORS + 1))
+        fi
+      done
+
+      # Validate runtime URL aligns with backend host port for localhost contracts
+      runtime_api=$(grep '^FRONTEND_RUNTIME_API_URL=' "$envfile" | cut -d= -f2 | tr -d '\r')
+      if [ -n "$runtime_api" ]; then
+        if [[ "$runtime_api" =~ ^https?://(localhost|127\.0\.0\.1)(:([0-9]+))?(/.*)?$ ]]; then
+          runtime_host="${BASH_REMATCH[1]}"
+          runtime_port="${BASH_REMATCH[3]}"
+          # If port is missing from URL, assume 80 for http or 443 for https (though for these local tests we just check against explicitly missing or implicit port)
+          if [ -z "$runtime_port" ]; then
+             if [[ "$runtime_api" =~ ^https:// ]]; then
+                runtime_port="443"
+             else
+                runtime_port="80"
+             fi
+          fi
+          
+          if [ "$runtime_port" != "$bp" ]; then
+            echo "  CONTRACT: FRONTEND_RUNTIME_API_URL port '${runtime_port}' must match BACKEND_HOST_PORT '${bp}' in $fname"
+            ERRORS=$((ERRORS + 1))
+          fi
+        elif ! [[ "$runtime_api" =~ ^https?://[^[:space:]]+$ ]]; then
+          echo "  INVALID: FRONTEND_RUNTIME_API_URL must be a valid URL in $fname, got '$runtime_api'"
+          ERRORS=$((ERRORS + 1))
+        fi
+      fi
+
       # Check uniqueness
-      if [ -n "${PROJECT_NAMES[$project]+x}" ]; then
+      if [ -n "$project" ] && [ -n "${PROJECT_NAMES[$project]+x}" ]; then
         echo "  COLLISION: COMPOSE_PROJECT_NAME='$project' shared by $fname and ${PROJECT_NAMES[$project]}"
         ERRORS=$((ERRORS + 1))
-      else
+      elif [ -n "$project" ]; then
         PROJECT_NAMES[$project]=$fname
       fi
 
-      if [ -n "${DB_NAMES[$db]+x}" ]; then
+      if [ -n "$db" ] && [ -n "${DB_NAMES[$db]+x}" ]; then
         echo "  COLLISION: POSTGRES_DB='$db' shared by $fname and ${DB_NAMES[$db]}"
         ERRORS=$((ERRORS + 1))
-      else
+      elif [ -n "$db" ]; then
         DB_NAMES[$db]=$fname
       fi
 
@@ -134,6 +170,10 @@ case "$ACTION" in
         port_name="${portdef%%:*}"
         port_value="${portdef##*:}"
         owner="${fname}:${port_name}"
+
+        if [ -z "$port_value" ]; then
+          continue
+        fi
 
         if [ -n "${PORT_OWNERS[$port_value]+x}" ]; then
           echo "  COLLISION: host port '${port_value}' used by ${owner} and ${PORT_OWNERS[$port_value]}"
