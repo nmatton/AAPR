@@ -8,6 +8,7 @@ export const TeamsList = () => {
   const { teams, isLoading, error, fetchTeams } = useTeamsStore();
   const [minLoadTime, setMinLoadTime] = useState(false);
   const navigate = useNavigate();
+  const userGuideUrl = '/AAPR%20User%20Guide.pdf';
 
   useEffect(() => {
     fetchTeams();
@@ -28,18 +29,32 @@ export const TeamsList = () => {
     fetchTeams();
   };
 
+  const headerActions = (
+    <div className="flex items-center gap-3">
+      <a
+        href={userGuideUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-sm font-medium text-blue-700 hover:text-blue-900"
+      >
+        User Guide
+      </a>
+      <button
+        type="button"
+        onClick={() => navigate('/teams/create')}
+        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+      >
+        Create Team
+      </button>
+    </div>
+  );
+
   if (isLoading || !minLoadTime) {
     return (
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-gray-800">My Teams</h1>
-          <button
-            type="button"
-            onClick={() => navigate('/teams/create')}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Create Team
-          </button>
+          {headerActions}
         </div>
         <div className="animate-pulse space-y-4">
           <div className="bg-gray-200 h-32 rounded-lg"></div>
@@ -55,13 +70,7 @@ export const TeamsList = () => {
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-gray-800">My Teams</h1>
-          <button
-            type="button"
-            onClick={() => navigate('/teams/create')}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Create Team
-          </button>
+          {headerActions}
         </div>
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <svg
@@ -95,13 +104,7 @@ export const TeamsList = () => {
       <div className="max-w-6xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-gray-800">My Teams</h1>
-          <button
-            type="button"
-            onClick={() => navigate('/teams/create')}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            Create Team
-          </button>
+          {headerActions}
         </div>
         <EmptyState />
       </div>
@@ -112,13 +115,7 @@ export const TeamsList = () => {
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold text-gray-800">My Teams</h1>
-        <button
-          type="button"
-          onClick={() => navigate('/teams/create')}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Create Team
-        </button>
+        {headerActions}
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
