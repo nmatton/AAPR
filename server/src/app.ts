@@ -1,5 +1,5 @@
 import dotenv from 'dotenv'
-import express from 'express'
+import express, { RequestHandler, ErrorRequestHandler } from 'express'
 import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import Honeybadger from '@honeybadger-io/js'
@@ -16,7 +16,7 @@ dotenv.config()
 export const app = express()
 
 if (process.env.NODE_ENV === 'production') {
-  app.use(Honeybadger.requestHandler)
+  app.use(Honeybadger.requestHandler as unknown as RequestHandler)
 }
 
 app.use(
@@ -51,6 +51,6 @@ app.get('/api/v1/health', (_req, res) => {
 })
 
 if (process.env.NODE_ENV === 'production') {
-  app.use(Honeybadger.errorHandler)
+  app.use(Honeybadger.errorHandler as unknown as ErrorRequestHandler)
 }
 app.use(errorHandler)

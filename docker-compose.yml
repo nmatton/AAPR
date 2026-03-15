@@ -41,6 +41,7 @@ services:
       PORT: "3000"
       DATABASE_URL: postgresql://${POSTGRES_USER:-aapr_user}:${POSTGRES_PASSWORD:-aapr_password}@db:5432/${POSTGRES_DB:-aapr_stu}
       JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set in env file}
+      EVENT_EXPORT_API_KEY: ${EVENT_EXPORT_API_KEY:?EVENT_EXPORT_API_KEY must be set in env file}
       APP_BASE_URL: ${APP_BASE_URL:-http://localhost:5173}
       SMTP_HOST: ${SMTP_HOST:?SMTP_HOST must be set in env file}
       SMTP_PORT: ${SMTP_PORT:?SMTP_PORT must be set in env file}

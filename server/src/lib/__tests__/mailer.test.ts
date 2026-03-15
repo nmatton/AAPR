@@ -73,8 +73,8 @@ describe('Mailer', () => {
       expect.objectContaining({
         to: 'invitee@example.com',
         from: 'noreply@example.com',
-        subject: "You're invited to join Team Alpha on bmad_version",
-        text: expect.stringContaining("You've been invited to join the team 'Team Alpha' on bmad_version"),
+        subject: "You're invited to join Team Alpha on Addaptive Agile Practices Repository (AAPR)",
+        text: expect.stringContaining("You've been invited to join the team 'Team Alpha' on Addaptive Agile Practices Repository (AAPR)"),
         html: expect.stringContaining('Create Account')
       })
     )

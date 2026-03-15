@@ -23,6 +23,7 @@ validateRuntimeEnv({
   NODE_ENV: process.env.NODE_ENV,
   DATABASE_URL: process.env.DATABASE_URL,
   JWT_SECRET: process.env.JWT_SECRET,
+  EVENT_EXPORT_API_KEY: process.env.EVENT_EXPORT_API_KEY,
   PORT: process.env.PORT,
   HONEYBADGER_API_KEY: process.env.HONEYBADGER_API_KEY,
 })

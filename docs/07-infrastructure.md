@@ -83,6 +83,9 @@ DATABASE_URL="postgresql://aapr_user:aapr_password@localhost:5432/aapr"
 # JWT Authentication
 JWT_SECRET="your-super-secret-jwt-key-min-32-chars"
 
+# Operator export endpoint key
+EVENT_EXPORT_API_KEY="your-strong-export-api-key"
+
 # SMTP Email (Mailtrap for dev)
 SMTP_HOST="sandbox.smtp.mailtrap.io"
 SMTP_PORT=2525
@@ -97,6 +100,7 @@ PORT=3000
 
 **Security Notes:**
 - `JWT_SECRET`: Minimum 32 characters, random, NEVER commit to Git
+- `EVENT_EXPORT_API_KEY`: Required for operator export endpoint; keep secret and never expose in frontend
 - `DATABASE_URL`: Update credentials for production
 - `SMTP_*`: Use Mailtrap for dev, SendGrid/AWS SES for production
 
@@ -288,6 +292,35 @@ Security and reliability behavior:
 - no file is retained on failure or when no rows match
 - immutable telemetry events are written for export start/completion/failure
 
+#### HTTP Export Endpoint (CSV)
+
+For operator-triggered exports through backend HTTP, use:
+
+- `GET /api/v1/events/export`
+
+Security boundary:
+- endpoint is protected by `X-API-KEY` header
+- endpoint does not require authenticated team membership
+
+Query parameters:
+- `teamId=<number>` (required)
+- `from=<date-or-iso-datetime>` (required)
+- `to=<date-or-iso-datetime>` (required)
+- `eventType=<value>` (optional, repeatable)
+
+Behavior:
+- uses the same date normalization and validation as CLI export (`YYYY-MM-DD` -> inclusive UTC boundaries)
+- always returns CSV as a file download (`Content-Type: text/csv`)
+- reuses export telemetry (`event.export_started`, `event.export_completed`, `event.export_failed`)
+- generated file is deleted after the HTTP response is sent
+
+Example:
+
+```text
+GET /api/v1/events/export?teamId=3&from=2026-01-15&to=2026-01-22&eventType=issue.created&eventType=issue.evaluated
+X-API-KEY: <EVENT_EXPORT_API_KEY>
+```
+
 #### Export Directory
 
 Optional environment variable:
@@ -470,6 +503,7 @@ Required/important variables:
 - `FRONTEND_HOST_PORT`, `BACKEND_HOST_PORT`, `POSTGRES_HOST_PORT`: host-exposed ports, must be unique per instance
 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`: per-instance database contract
 - `JWT_SECRET`: required by backend runtime validation (must be non-empty)
+- `EVENT_EXPORT_API_KEY`: required by backend runtime validation (must be non-empty)
 - `POSTGRES_PASSWORD`: required per profile (must be non-empty)
 - `FRONTEND_RUNTIME_API_URL`: runtime API URL injected into frontend `runtime-config.js`
 
@@ -542,6 +576,7 @@ Every instance is fully isolated at the Docker resource level:
 - `POSTGRES_DB` (database-level data isolation)
 - `FRONTEND_HOST_PORT`, `BACKEND_HOST_PORT`, `POSTGRES_HOST_PORT` (no port conflicts)
 - `JWT_SECRET` (recommended unique per instance in production)
+- `EVENT_EXPORT_API_KEY` (recommended unique per instance in production)
 
 **Active Instance Profiles (Story 7.4 Contracts):**
 
@@ -554,7 +589,7 @@ Every instance is fully isolated at the Docker resource level:
 **Adding a new instance (e.g., `new-instance`):**
 
 1. Use `deploy/compose/elia.env` (baseline contract is also documented in `deploy/compose/elia.env.example`)
-2. Set production-grade unique values for `POSTGRES_PASSWORD` and `JWT_SECRET`
+2. Set production-grade unique values for `POSTGRES_PASSWORD`, `JWT_SECRET`, and `EVENT_EXPORT_API_KEY`
 3. Verify no port conflicts: `npm run compose:validate-isolation`
 4. Validate config: `docker compose --env-file deploy/compose/elia.env -f docker-compose.yml config`
 5. Start: `docker compose --env-file deploy/compose/elia.env -f docker-compose.yml up -d`
@@ -600,7 +635,7 @@ docker build -f client/Dockerfile -t aapr-frontend:7.1 ./client
 Backend runtime contract:
 - image exposes internal port `3000`
 - startup command runs compiled app: `node dist/index.js`
-- production env validation enforces `DATABASE_URL` and `JWT_SECRET`
+- production env validation enforces `DATABASE_URL`, `JWT_SECRET`, `EVENT_EXPORT_API_KEY`, and `HONEYBADGER_API_KEY`
 - optional `PORT` must be an integer between `1` and `65535` when provided
 
 Frontend runtime contract:
@@ -612,7 +647,7 @@ Frontend runtime contract:
 Run container smoke checks:
 
 ```powershell
-docker run --rm -d --name aapr-backend-smoke -e NODE_ENV=production -e DATABASE_URL="postgresql://aapr_user:aapr_password@host.docker.internal:5432/aapr" -e JWT_SECRET="replace-with-strong-secret" -p 3000:3000 aapr-backend:7.1
+docker run --rm -d --name aapr-backend-smoke -e NODE_ENV=production -e DATABASE_URL="postgresql://aapr_user:aapr_password@host.docker.internal:5432/aapr" -e JWT_SECRET="replace-with-strong-secret" -e EVENT_EXPORT_API_KEY="replace-with-strong-export-key" -e HONEYBADGER_API_KEY="hbp_replace_with_real_key" -p 3000:3000 aapr-backend:7.1
 
 docker run --rm -d --name aapr-frontend-smoke -e VITE_API_URL="http://localhost:3000" -p 8080:80 aapr-frontend:7.1
 
@@ -882,7 +917,7 @@ bash scripts/deploy-remote.sh --host <server> --user <ssh-user> --repo-path <pat
 
 ### Secret Boundaries for Operations (Story 7.8)
 
-- Never commit or echo values of `POSTGRES_PASSWORD`, `JWT_SECRET`, SMTP credentials, or SSH private keys.
+- Never commit or echo values of `POSTGRES_PASSWORD`, `JWT_SECRET`, `EVENT_EXPORT_API_KEY`, SMTP credentials, or SSH private keys.
 - Env files in `deploy/compose/*.env` are operator-managed inputs; treat them as secrets-bearing operational assets.
 - Documentation and tickets must reference secret names and responsibilities, not literal values.
 - Use CI/host secret stores and SSH agents for injection; avoid plaintext values in command history whenever possible.
@@ -950,6 +985,7 @@ app.listen(3000);
 ### Pre-Deployment
 
 - [ ] Update `JWT_SECRET` with production secret
+- [ ] Update `EVENT_EXPORT_API_KEY` with production operator key
 - [ ] Update `DATABASE_URL` with production credentials
 - [ ] Configure production SMTP (SendGrid/AWS SES)
 - [ ] Set `NODE_ENV=production`
@@ -966,6 +1002,7 @@ app.listen(3000);
 # Backend
 DATABASE_URL="postgresql://user:pass@prod-db.example.com:5432/aapr"
 JWT_SECRET="[64-char random string]"
+EVENT_EXPORT_API_KEY="[64-char random string]"
 NODE_ENV="production"
 PORT=3000
 

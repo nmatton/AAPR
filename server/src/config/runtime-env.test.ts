@@ -15,7 +15,7 @@ describe('validateRuntimeEnv', () => {
         NODE_ENV: 'production',
         PORT: '3000',
       })
-    ).toThrow('Missing mandatory production environment variables: DATABASE_URL, JWT_SECRET, HONEYBADGER_API_KEY')
+    ).toThrow('Missing mandatory production environment variables: DATABASE_URL, JWT_SECRET, EVENT_EXPORT_API_KEY, HONEYBADGER_API_KEY')
   })
 
   it('throws when PORT is not a positive integer', () => {
@@ -24,6 +24,7 @@ describe('validateRuntimeEnv', () => {
         NODE_ENV: 'production',
         DATABASE_URL: 'postgresql://user:pass@db:5432/aapr',
         JWT_SECRET: 'super-secret-value',
+        EVENT_EXPORT_API_KEY: 'export-secret-value',
         HONEYBADGER_API_KEY: 'hbp_test_key',
         PORT: 'abc',
       })
@@ -36,6 +37,7 @@ describe('validateRuntimeEnv', () => {
         NODE_ENV: 'production',
         DATABASE_URL: 'postgresql://user:pass@db:5432/aapr',
         JWT_SECRET: 'super-secret-value',
+        EVENT_EXPORT_API_KEY: 'export-secret-value',
         HONEYBADGER_API_KEY: 'hbp_test_key',
         PORT: '0',
       })
@@ -48,6 +50,7 @@ describe('validateRuntimeEnv', () => {
         NODE_ENV: 'production',
         DATABASE_URL: 'postgresql://user:pass@db:5432/aapr',
         JWT_SECRET: 'super-secret-value',
+        EVENT_EXPORT_API_KEY: 'export-secret-value',
         HONEYBADGER_API_KEY: 'hbp_test_key',
         PORT: '3000',
       })
