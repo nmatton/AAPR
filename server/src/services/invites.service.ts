@@ -6,6 +6,40 @@ import type { TeamInvite } from '@prisma/client'
 
 export type InviteStatus = 'Pending' | 'Added' | 'Failed'
 
+const isTeamInviteEmailUniqueConstraintError = (error: unknown): boolean => {
+  if (!error || typeof error !== 'object') {
+    return false
+  }
+
+  const maybeCode = (error as { code?: unknown }).code
+  if (maybeCode !== 'P2002') {
+    return false
+  }
+
+  const maybeTarget = (error as { meta?: { target?: unknown } }).meta?.target
+  if (!Array.isArray(maybeTarget)) {
+    return false
+  }
+
+  const target = maybeTarget.filter((value): value is string => typeof value === 'string')
+  const hasEmail = target.includes('email')
+  const hasTeamId = target.includes('teamId') || target.includes('team_id')
+
+  return hasEmail && hasTeamId
+}
+
+const recoverInviteAfterUniqueConflict = async (
+  error: unknown,
+  teamId: number,
+  email: string
+): Promise<TeamInvite | null> => {
+  if (!isTeamInviteEmailUniqueConstraintError(error)) {
+    return null
+  }
+
+  return invitesRepository.findInviteByTeamAndEmail(teamId, email)
+}
+
 const getAppBaseUrl = (): string => {
   return process.env.APP_BASE_URL || 'http://localhost:5173'
 }
@@ -94,44 +128,53 @@ export const createInvite = async (
       )
     }
 
-    const invite = await prisma.$transaction(async (tx) => {
-      const createdInvite = await invitesRepository.createInvite(
-        {
-          teamId,
-          email,
-          status: 'Added',
-          invitedBy,
-          invitedUserId: existingUser.id
-        },
-        tx
-      )
-
-      await tx.teamMember.create({
-        data: {
-          teamId,
-          userId: existingUser.id,
-          role: 'member'
-        }
-      })
-
-      await tx.event.create({
-        data: {
-          eventType: 'team_member.added',
-          actorId: invitedBy,
-          teamId,
-          entityType: 'team_member',
-          entityId: existingUser.id,
-          action: 'added',
-          payload: {
+    let invite: TeamInvite
+    try {
+      invite = await prisma.$transaction(async (tx) => {
+        const createdInvite = await invitesRepository.createInvite(
+          {
             teamId,
-            userId: existingUser.id
+            email,
+            status: 'Added',
+            invitedBy,
+            invitedUserId: existingUser.id
           },
-          schemaVersion: 'v1'
-        }
-      })
+          tx
+        )
 
-      return createdInvite
-    })
+        await tx.teamMember.create({
+          data: {
+            teamId,
+            userId: existingUser.id,
+            role: 'member'
+          }
+        })
+
+        await tx.event.create({
+          data: {
+            eventType: 'team_member.added',
+            actorId: invitedBy,
+            teamId,
+            entityType: 'team_member',
+            entityId: existingUser.id,
+            action: 'added',
+            payload: {
+              teamId,
+              userId: existingUser.id
+            },
+            schemaVersion: 'v1'
+          }
+        })
+
+        return createdInvite
+      })
+    } catch (error) {
+      const existingInviteOnRace = await recoverInviteAfterUniqueConflict(error, teamId, email)
+      if (existingInviteOnRace) {
+        return existingInviteOnRace
+      }
+      throw error
+    }
 
     try {
       await sendAddedToTeamEmail({
@@ -187,37 +230,46 @@ export const createInvite = async (
     return existingInvite
   }
 
-  const invite = await prisma.$transaction(async (tx) => {
-    const createdInvite = await invitesRepository.createInvite(
-      {
-        teamId,
-        email,
-        status: 'Pending',
-        invitedBy
-      },
-      tx
-    )
-
-    await tx.event.create({
-      data: {
-        eventType: 'invite.created',
-        actorId: invitedBy,
-        teamId,
-        entityType: 'team_invite',
-        entityId: createdInvite.id,
-        action: 'created',
-        payload: {
-          inviteId: createdInvite.id,
+  let invite: TeamInvite
+  try {
+    invite = await prisma.$transaction(async (tx) => {
+      const createdInvite = await invitesRepository.createInvite(
+        {
           teamId,
           email,
-          isNewUser: true
+          status: 'Pending',
+          invitedBy
         },
-        schemaVersion: 'v1'
-      }
-    })
+        tx
+      )
 
-    return createdInvite
-  })
+      await tx.event.create({
+        data: {
+          eventType: 'invite.created',
+          actorId: invitedBy,
+          teamId,
+          entityType: 'team_invite',
+          entityId: createdInvite.id,
+          action: 'created',
+          payload: {
+            inviteId: createdInvite.id,
+            teamId,
+            email,
+            isNewUser: true
+          },
+          schemaVersion: 'v1'
+        }
+      })
+
+      return createdInvite
+    })
+  } catch (error) {
+    const existingInviteOnRace = await recoverInviteAfterUniqueConflict(error, teamId, email)
+    if (existingInviteOnRace) {
+      return existingInviteOnRace
+    }
+    throw error
+  }
 
   try {
     await sendInviteEmail({

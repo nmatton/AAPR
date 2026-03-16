@@ -164,4 +164,35 @@ describe('Invites Service', () => {
     expect(result.status).toBe('Failed')
     expect(prisma.$transaction).toHaveBeenCalledTimes(2)
   })
+
+  it('returns existing invite when concurrent create hits unique(team_id,email)', async () => {
+    const existingInvite = {
+      id: 77,
+      teamId,
+      email,
+      status: 'Pending',
+      invitedBy,
+      invitedUserId: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      lastSentAt: null,
+      errorMessage: null
+    }
+
+    ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
+    ;(prisma.team.findUnique as jest.Mock).mockResolvedValue(team)
+    ;(prisma.teamInvite.findUnique as jest.Mock)
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce(existingInvite)
+
+    ;(prisma.$transaction as jest.Mock).mockRejectedValue({
+      code: 'P2002',
+      meta: { target: ['team_id', 'email'] }
+    })
+
+    const result = await createInvite(teamId, email, invitedBy)
+
+    expect(result).toEqual(existingInvite)
+    expect(mailer.sendInviteEmail).not.toHaveBeenCalled()
+  })
 })
