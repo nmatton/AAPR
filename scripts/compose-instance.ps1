@@ -180,14 +180,14 @@ switch ($Action) {
                 }
             }
 
-            # Validate runtime API URL points to profile backend port for localhost contracts
+            # Validate runtime API URL points to profile frontend port for localhost contracts
             $runtimeApiUrl = $env['FRONTEND_RUNTIME_API_URL']
             if ($runtimeApiUrl) {
                 $uri = Parse-Uri -Value $runtimeApiUrl
                 if (-not $uri) {
                     $errors += "  INVALID: FRONTEND_RUNTIME_API_URL must be a valid URL in $($file.Name), got '$runtimeApiUrl'"
-                } elseif (($uri.Host -eq 'localhost' -or $uri.Host -eq '127.0.0.1') -and ($uri.Port -ne [int]$bp)) {
-                    $errors += "  CONTRACT: FRONTEND_RUNTIME_API_URL port '$($uri.Port)' must match BACKEND_HOST_PORT '$bp' in $($file.Name)"
+                } elseif (($uri.Host -eq 'localhost' -or $uri.Host -eq '127.0.0.1') -and ($uri.Port -ne [int]$fp)) {
+                    $errors += "  CONTRACT: FRONTEND_RUNTIME_API_URL port '$($uri.Port)' must match FRONTEND_HOST_PORT '$fp' in $($file.Name)"
                 }
             }
 

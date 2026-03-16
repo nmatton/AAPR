@@ -97,19 +97,19 @@ case "$ACTION" in
       [ -f "$envfile" ] || continue
       fname=$(basename "$envfile")
 
-      instance=$(grep '^INSTANCE_KEY=' "$envfile" | cut -d= -f2)
-      project=$(grep '^COMPOSE_PROJECT_NAME=' "$envfile" | cut -d= -f2)
-      db=$(grep '^POSTGRES_DB=' "$envfile" | cut -d= -f2)
-      fp=$(grep '^FRONTEND_HOST_PORT=' "$envfile" | cut -d= -f2)
-      bp=$(grep '^BACKEND_HOST_PORT=' "$envfile" | cut -d= -f2)
-      pp=$(grep '^POSTGRES_HOST_PORT=' "$envfile" | cut -d= -f2)
-      jwt=$(grep '^JWT_SECRET=' "$envfile" | cut -d= -f2)
+      instance=$(grep '^INSTANCE_KEY=' "$envfile" | cut -d= -f2 | tr -d '\r')
+      project=$(grep '^COMPOSE_PROJECT_NAME=' "$envfile" | cut -d= -f2 | tr -d '\r')
+      db=$(grep '^POSTGRES_DB=' "$envfile" | cut -d= -f2 | tr -d '\r')
+      fp=$(grep '^FRONTEND_HOST_PORT=' "$envfile" | cut -d= -f2 | tr -d '\r')
+      bp=$(grep '^BACKEND_HOST_PORT=' "$envfile" | cut -d= -f2 | tr -d '\r')
+      pp=$(grep '^POSTGRES_HOST_PORT=' "$envfile" | cut -d= -f2 | tr -d '\r')
+      jwt=$(grep '^JWT_SECRET=' "$envfile" | cut -d= -f2 | tr -d '\r')
 
       echo "Profile: $fname (instance=$instance)"
 
       # Check required fields
       for field in INSTANCE_KEY COMPOSE_PROJECT_NAME FRONTEND_IMAGE BACKEND_IMAGE POSTGRES_IMAGE POSTGRES_DB POSTGRES_USER FRONTEND_HOST_PORT BACKEND_HOST_PORT POSTGRES_HOST_PORT POSTGRES_PASSWORD JWT_SECRET FRONTEND_RUNTIME_API_URL; do
-        val=$(grep "^${field}=" "$envfile" | cut -d= -f2)
+        val=$(grep "^${field}=" "$envfile" | cut -d= -f2 | tr -d '\r')
         if [ -z "$val" ]; then
           echo "  MISSING: $field in $fname"
           ERRORS=$((ERRORS + 1))
@@ -127,7 +127,7 @@ case "$ACTION" in
         fi
       done
 
-      # Validate runtime URL aligns with backend host port for localhost contracts
+      # Validate runtime URL aligns with frontend host port for localhost contracts
       runtime_api=$(grep '^FRONTEND_RUNTIME_API_URL=' "$envfile" | cut -d= -f2 | tr -d '\r')
       if [ -n "$runtime_api" ]; then
         if [[ "$runtime_api" =~ ^https?://(localhost|127\.0\.0\.1)(:([0-9]+))?(/.*)?$ ]]; then
@@ -142,8 +142,8 @@ case "$ACTION" in
              fi
           fi
           
-          if [ "$runtime_port" != "$bp" ]; then
-            echo "  CONTRACT: FRONTEND_RUNTIME_API_URL port '${runtime_port}' must match BACKEND_HOST_PORT '${bp}' in $fname"
+          if [ "$runtime_port" != "$fp" ]; then
+            echo "  CONTRACT: FRONTEND_RUNTIME_API_URL port '${runtime_port}' must match FRONTEND_HOST_PORT '${fp}' in $fname"
             ERRORS=$((ERRORS + 1))
           fi
         elif ! [[ "$runtime_api" =~ ^https?://[^[:space:]]+$ ]]; then
