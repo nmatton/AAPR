@@ -36,7 +36,8 @@ sudo chmod 600 /etc/aapr/db-backup-ftp.conf
 sudo nano /etc/aapr/db-backup-ftp.conf
 ```
 
-Set your real FTP values:
+
+Set your real FTP values (and optionally, Honeybadger check-in ID):
 
 ```dotenv
 FTP_PROTOCOL=ftp
@@ -45,6 +46,7 @@ FTP_PORT=21
 FTP_USER=your-user
 FTP_PASS=your-password
 FTP_REMOTE_DIR=aapr-backups
+HONEYBADGER_CHECKIN_ID=your-honeybadger-checkin-id  # optional
 ```
 
 ## 3) Make script executable and test manually
@@ -69,6 +71,7 @@ Expected behavior:
 - Adds checksum comparison for eligible tables (default: tables up to `200000` rows)
 - Uploads file to `FTP_REMOTE_DIR/INSTANCE_KEY/`
 - Removes local dump files older than `--keep-days`
+- If `HONEYBADGER_CHECKIN_ID` is set in the config, pings the Honeybadger check-in endpoint after a successful backup and upload (for external monitoring)
 
 To skip this quality check in exceptional cases (faster but less safe), add:
 
@@ -284,6 +287,11 @@ Checksum behavior:
 
 - Enabled by default, but only on tables with row count less than or equal to `--checksum-max-rows`.
 - This keeps CPU cost bounded on large tables while still adding stronger integrity validation on most operational tables.
+
+
+### Honeybadger check-in (optional)
+
+If you use [Honeybadger check-ins](https://docs.honeybadger.io/guides/check-ins.html) for external monitoring, set `HONEYBADGER_CHECKIN_ID` in your config. The script will send a `curl` request to `https://api.honeybadger.io/v1/check_in/<ID>` after a successful backup and upload. If unset, this step is skipped.
 
 Notes:
 

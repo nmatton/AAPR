@@ -8,3 +8,7 @@ FTP_PASS=replace-with-ftp-password
 # Optional remote root folder.
 # Final upload path becomes: <FTP_REMOTE_DIR>/<INSTANCE_KEY>/<backup-file>
 FTP_REMOTE_DIR=aapr-backups
+
+# Honeybadger check-in (optional)
+# Set to your Honeybadger check-in ID to enable backup success pings
+HONEYBADGER_CHECKIN_ID=

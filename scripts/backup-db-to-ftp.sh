@@ -153,6 +153,7 @@ if [[ ! -f "$CONFIG_FILE" ]]; then
   exit 1
 fi
 
+
 # shellcheck disable=SC1090
 source "$CONFIG_FILE"
 
@@ -163,6 +164,9 @@ source "$CONFIG_FILE"
 FTP_PROTOCOL="${FTP_PROTOCOL:-ftp}"
 FTP_PORT="${FTP_PORT:-}"
 FTP_REMOTE_DIR="${FTP_REMOTE_DIR:-aapr-backups}"
+
+# Honeybadger check-in ID (optional)
+HONEYBADGER_CHECKIN_ID="${HONEYBADGER_CHECKIN_ID:-}"
 
 PROJECT_NAME="$(read_env_var COMPOSE_PROJECT_NAME "$ENV_FILE")"
 INSTANCE_KEY="$(read_env_var INSTANCE_KEY "$ENV_FILE")"
@@ -311,4 +315,11 @@ if [[ "$KEEP_DAYS" =~ ^[0-9]+$ ]] && [[ "$KEEP_DAYS" -gt 0 ]]; then
   find "$BACKUP_DIR" -maxdepth 1 -type f -name "${PROJECT_NAME}_${POSTGRES_DB}_*.dump" -mtime +"$KEEP_DAYS" -delete
 fi
 
+
 log "Backup workflow completed successfully"
+
+# --- Honeybadger check-in (after successful backup+upload) ---
+if [ -n "$HONEYBADGER_CHECKIN_ID" ]; then
+  curl -fsSL "https://api.honeybadger.io/v1/check_in/$HONEYBADGER_CHECKIN_ID" -o /dev/null || \
+    echo "[WARN] Honeybadger check-in failed (ID: $HONEYBADGER_CHECKIN_ID)" >&2
+fi
