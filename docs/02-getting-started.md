@@ -133,6 +133,10 @@ Database connected successfully
 # In a new terminal
 curl http://localhost:3000/api/v1/health
 # Should return: {"status":"ok","timestamp":"...","version":"1.0.0"}
+# For full diagnostics, add either:
+#   -H "X-API-KEY: <ADMIN_API_KEY>"
+# or
+#   -H "Honeybadger-Token: <HONEYBADGER_AUTH_HEADER>"
 ```
 
 ### 8. Install Frontend Dependencies

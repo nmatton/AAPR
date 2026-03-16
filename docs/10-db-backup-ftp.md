@@ -253,6 +253,8 @@ docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" start backend frontend
 docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" ps
 docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" logs --tail=100 backend
 curl -sf http://localhost:3000/api/v1/health
+# Optional for deeper diagnostics during incident analysis:
+# curl -sf -H "X-API-KEY: <ADMIN_API_KEY>" http://localhost:3000/api/v1/health
 ```
 
 If backend host port differs by instance, replace `3000` with the `BACKEND_HOST_PORT` from your env file.

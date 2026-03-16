@@ -1003,15 +1003,34 @@ Required:
 
 ### Health Check
 ```http
-GET http://localhost:3000/health
+GET http://localhost:3000/api/v1/health
 
 Response (200):
 {
   "status": "ok",
-  "database": "connected",
-  "timestamp": "2026-01-19T10:00:00.000Z"
+  "timestamp": "2026-01-19T10:00:00.000Z",
+  "version": "1.0.0"
 }
 ```
+
+Default behavior:
+- public callers receive only `status`, `timestamp`, and `version`
+- endpoint returns HTTP `503` when overall health is `fail`
+
+Detailed diagnostics:
+- full per-service diagnostics are returned only when one of these headers is valid:
+- `Honeybadger-Token: <HONEYBADGER_AUTH_HEADER>`
+- `X-API-KEY: <ADMIN_API_KEY>`
+
+Example privileged request:
+```http
+GET http://localhost:3000/api/v1/health
+X-API-KEY: <ADMIN_API_KEY>
+```
+
+Detailed response adds:
+- `uptimeSeconds`
+- service checks for database, practice catalog, runtime env, SMTP, affinity reference data, export directory, and observability
 
 ---
 

@@ -10,6 +10,7 @@ import { practicesRouter } from './routes/practices.routes'
 import { bigFiveRouter } from './routes/big-five.routes'
 import { eventsRouter } from './routes/events.routes'
 import { adminStatsRouter } from './routes/admin-stats.routes'
+import { getHealthReport } from './services/health.service'
 import { errorHandler } from './middleware/errorHandler'
 
 dotenv.config()
@@ -44,11 +45,29 @@ app.use('/api/v1/big-five', bigFiveRouter)
 app.use('/api/v1/events', eventsRouter)
 app.use('/api/v1/admin', adminStatsRouter)
 
-app.get('/api/v1/health', (_req, res) => {
-  res.json({
-    status: 'ok',
-    timestamp: new Date().toISOString(),
-    version: '1.0.0',
+app.get('/api/v1/health', async (req, res) => {
+  const report = await getHealthReport()
+  const statusCode = report.status === 'fail' ? 503 : 200
+
+  const adminApiKey = process.env.ADMIN_API_KEY?.trim()
+  const honeybadgerToken = process.env.HONEYBADGER_AUTH_HEADER?.trim()
+  const providedApiKey = req.get('x-api-key')?.trim()
+  const providedHoneybadgerToken = req.get('honeybadger-token')?.trim()
+
+  const hasAdminAccess = Boolean(adminApiKey && providedApiKey && providedApiKey === adminApiKey)
+  const hasHoneybadgerAccess = Boolean(
+    honeybadgerToken && providedHoneybadgerToken && providedHoneybadgerToken === honeybadgerToken
+  )
+
+  if (hasAdminAccess || hasHoneybadgerAccess) {
+    res.status(statusCode).json(report)
+    return
+  }
+
+  res.status(statusCode).json({
+    status: report.status,
+    timestamp: report.timestamp,
+    version: report.version,
   })
 })
 
