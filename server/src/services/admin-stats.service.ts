@@ -42,6 +42,7 @@ export type AdminUserListItem = {
   email: string;
   teams: string[];
   status: 'invited' | 'account_created';
+  BFIcompleted: boolean;
 };
 
 export type AdminUsersResponse = {
@@ -172,6 +173,11 @@ export const getAdminUsers = async (): Promise<AdminUsersResponse> => {
       select: {
         name: true,
         email: true,
+        bigFiveScore: {
+          select: {
+            id: true,
+          },
+        },
         teamMembers: {
           select: {
             team: {
@@ -208,6 +214,7 @@ export const getAdminUsers = async (): Promise<AdminUsersResponse> => {
       a.localeCompare(b)
     ),
     status: 'account_created',
+    BFIcompleted: Boolean(user.bigFiveScore),
   }));
 
   const accountEmails = new Set(users.map((user) => user.email.toLowerCase()));
@@ -230,6 +237,7 @@ export const getAdminUsers = async (): Promise<AdminUsersResponse> => {
       email: normalizedEmail,
       teams: [...teams].sort((a, b) => a.localeCompare(b)),
       status: 'invited' as const,
+      BFIcompleted: false,
     }))
     .sort((a, b) => a.email.localeCompare(b.email));
 

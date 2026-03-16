@@ -139,11 +139,13 @@ describe('admin-stats.service', () => {
       {
         name: 'Alice',
         email: 'alice@example.com',
+        bigFiveScore: { id: 10 },
         teamMembers: [{ team: { name: 'Team Atlas' } }, { team: { name: 'Team Beta' } }],
       },
       {
         name: 'Bob',
         email: 'bob@example.com',
+        bigFiveScore: null,
         teamMembers: [],
       },
     ])
@@ -172,18 +174,21 @@ describe('admin-stats.service', () => {
           email: 'alice@example.com',
           teams: ['Team Atlas', 'Team Beta'],
           status: 'account_created',
+          BFIcompleted: true,
         },
         {
           name: 'Bob',
           email: 'bob@example.com',
           teams: [],
           status: 'account_created',
+          BFIcompleted: false,
         },
         {
           name: 'invitee',
           email: 'invitee@example.com',
           teams: ['Team Atlas', 'Team Gamma'],
           status: 'invited',
+          BFIcompleted: false,
         },
       ],
     })

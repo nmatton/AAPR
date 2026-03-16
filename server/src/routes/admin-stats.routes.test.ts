@@ -81,6 +81,7 @@ describe('admin stats route', () => {
           email: 'alice@example.com',
           teams: ['Team Atlas'],
           status: 'account_created',
+          BFIcompleted: true,
         },
       ],
     })
@@ -92,6 +93,7 @@ describe('admin stats route', () => {
     expect(response.status).toBe(200)
     expect(response.body.users).toHaveLength(1)
     expect(response.body.users[0].email).toBe('alice@example.com')
+    expect(response.body.users[0].BFIcompleted).toBe(true)
     expect(adminStatsService.getAdminUsers).toHaveBeenCalledTimes(1)
   })
 
