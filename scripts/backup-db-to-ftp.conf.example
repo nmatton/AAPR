@@ -1,0 +1,10 @@
+# FTP target settings
+FTP_PROTOCOL=ftp
+FTP_HOST=ftp.example.com
+FTP_PORT=21
+FTP_USER=replace-with-ftp-user
+FTP_PASS=replace-with-ftp-password
+
+# Optional remote root folder.
+# Final upload path becomes: <FTP_REMOTE_DIR>/<INSTANCE_KEY>/<backup-file>
+FTP_REMOTE_DIR=aapr-backups
