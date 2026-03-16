@@ -9,6 +9,7 @@ import { teamsRouter } from './routes/teams.routes'
 import { practicesRouter } from './routes/practices.routes'
 import { bigFiveRouter } from './routes/big-five.routes'
 import { eventsRouter } from './routes/events.routes'
+import { adminStatsRouter } from './routes/admin-stats.routes'
 import { errorHandler } from './middleware/errorHandler'
 
 dotenv.config()
@@ -41,6 +42,7 @@ app.use('/api/v1/teams', teamsRouter)
 app.use('/api/v1/practices', practicesRouter)
 app.use('/api/v1/big-five', bigFiveRouter)
 app.use('/api/v1/events', eventsRouter)
+app.use('/api/v1/admin', adminStatsRouter)
 
 app.get('/api/v1/health', (_req, res) => {
   res.json({

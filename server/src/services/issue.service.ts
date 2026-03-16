@@ -2,7 +2,7 @@
 import { prisma } from '../lib/prisma';
 import { AppError } from './auth.service';
 import * as eventService from './events.service';
-import { Priority } from '@prisma/client';
+import { IssueStatus, Priority } from '@prisma/client';
 import * as issueRepository from '../repositories/issue.repository';
 import * as eventRepository from '../repositories/event.repository';
 import * as commentRepository from '../repositories/comment.repository';
@@ -20,6 +20,52 @@ export interface UpdateIssueInput {
     status?: 'OPEN' | 'IN_DISCUSSION' | 'ADAPTATION_IN_PROGRESS' | 'EVALUATED' | 'RESOLVED';
     priority?: 'LOW' | 'MEDIUM' | 'HIGH';
 }
+
+export type NormalizedIssueStatusCounts = {
+    open: number;
+    in_progress: number;
+    adaptation_in_progress: number;
+    evaluated: number;
+    done: number;
+};
+
+const ISSUE_STATUS_API_KEY_MAP: Record<IssueStatus, keyof NormalizedIssueStatusCounts> = {
+    OPEN: 'open',
+    IN_DISCUSSION: 'in_progress',
+    ADAPTATION_IN_PROGRESS: 'adaptation_in_progress',
+    EVALUATED: 'evaluated',
+    RESOLVED: 'done'
+};
+
+export const createEmptyIssueStatusCounts = (): NormalizedIssueStatusCounts => ({
+    open: 0,
+    in_progress: 0,
+    adaptation_in_progress: 0,
+    evaluated: 0,
+    done: 0
+});
+
+export const normalizeIssueStatusCounts = (
+    statusCounts: Array<{ status: string; _count: { _all: number } }>,
+    contextDetails: Record<string, unknown>
+): NormalizedIssueStatusCounts => {
+    const byStatus = createEmptyIssueStatusCounts();
+
+    statusCounts.forEach((stat) => {
+        const key = ISSUE_STATUS_API_KEY_MAP[stat.status as IssueStatus];
+
+        if (!key) {
+            throw new AppError('internal_error', 'Unsupported issue status in stats aggregation', {
+                status: stat.status,
+                ...contextDetails
+            }, 500);
+        }
+
+        byStatus[key] = stat._count._all;
+    });
+
+    return byStatus;
+};
 
 
 export const createIssue = async (input: IssueInput) => {
@@ -319,36 +365,9 @@ export const getIssues = async (teamId: number, options: Omit<issueRepository.Fi
 
 export const getIssueStats = async (teamId: number) => {
     const statusCounts = await issueRepository.countByStatus(teamId);
-    const statusKeyMap = {
-        OPEN: 'open',
-        IN_DISCUSSION: 'in_progress',
-        ADAPTATION_IN_PROGRESS: 'adaptation_in_progress',
-        EVALUATED: 'evaluated',
-        RESOLVED: 'done'
-    } as const;
 
     const total = statusCounts.reduce((acc, curr) => acc + curr._count._all, 0);
-
-    const byStatus = {
-        open: 0,
-        in_progress: 0,
-        adaptation_in_progress: 0,
-        evaluated: 0,
-        done: 0
-    };
-
-    statusCounts.forEach(stat => {
-        const key = statusKeyMap[stat.status as keyof typeof statusKeyMap];
-
-        if (!key) {
-            throw new AppError('internal_error', 'Unsupported issue status in stats aggregation', {
-                status: stat.status,
-                teamId
-            }, 500);
-        }
-
-        byStatus[key] = stat._count._all;
-    });
+    const byStatus = normalizeIssueStatusCounts(statusCounts, { teamId });
 
     return { total, byStatus };
 };

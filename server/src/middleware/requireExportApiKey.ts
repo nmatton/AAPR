@@ -9,12 +9,12 @@ export const requireExportApiKey = (
   res: Response,
   next: NextFunction
 ): Response | void => {
-  const configuredApiKey = process.env.EVENT_EXPORT_API_KEY?.trim()
+  const configuredApiKey = process.env.ADMIN_API_KEY?.trim()
   if (!configuredApiKey) {
     return res.status(500).json({
       code: 'server_misconfigured',
-      message: 'Export API key is not configured',
-      details: { field: 'EVENT_EXPORT_API_KEY' },
+      message: 'Admin API key is not configured',
+      details: { field: 'ADMIN_API_KEY' },
       requestId: res.getHeader('x-request-id'),
     })
   }

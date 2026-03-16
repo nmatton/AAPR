@@ -1,5 +1,5 @@
 process.env.JWT_SECRET = 'test_secret_for_events_export_route_12345678901234567890'
-process.env.EVENT_EXPORT_API_KEY = 'test-export-key'
+process.env.ADMIN_API_KEY = 'test-export-key'
 
 import fs from 'fs/promises'
 import os from 'os'

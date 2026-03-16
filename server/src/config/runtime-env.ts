@@ -2,7 +2,7 @@ type RuntimeEnvSource = {
   NODE_ENV?: string
   DATABASE_URL?: string
   JWT_SECRET?: string
-  EVENT_EXPORT_API_KEY?: string
+  ADMIN_API_KEY?: string
   PORT?: string
   HONEYBADGER_API_KEY?: string
   APP_REVISION?: string
@@ -16,7 +16,7 @@ export const validateRuntimeEnv = (env: RuntimeEnvSource): void => {
   const mandatoryKeys: Array<keyof RuntimeEnvSource> = [
     'DATABASE_URL',
     'JWT_SECRET',
-    'EVENT_EXPORT_API_KEY',
+    'ADMIN_API_KEY',
     'HONEYBADGER_API_KEY',
   ]
   const missing = mandatoryKeys.filter((key) => !env[key]?.trim())

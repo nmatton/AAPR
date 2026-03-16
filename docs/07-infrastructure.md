@@ -1,4 +1,4 @@
-# Infrastructure
+﻿# Infrastructure
 
 **Infrastructure & Deployment Guide for AAPR Platform**
 
@@ -83,8 +83,8 @@ DATABASE_URL="postgresql://aapr_user:aapr_password@localhost:5432/aapr"
 # JWT Authentication
 JWT_SECRET="your-super-secret-jwt-key-min-32-chars"
 
-# Operator export endpoint key
-EVENT_EXPORT_API_KEY="your-strong-export-api-key"
+# Admin API key (shared by export + admin statistics endpoints)
+ADMIN_API_KEY="your-strong-admin-api-key"
 
 # SMTP Email (Mailtrap for dev)
 SMTP_HOST="sandbox.smtp.mailtrap.io"
@@ -100,7 +100,7 @@ PORT=3000
 
 **Security Notes:**
 - `JWT_SECRET`: Minimum 32 characters, random, NEVER commit to Git
-- `EVENT_EXPORT_API_KEY`: Required for operator export endpoint; keep secret and never expose in frontend
+- `ADMIN_API_KEY`: Required for `/api/v1/events/export` and `/api/v1/admin/stats`; keep secret and never expose in frontend
 - `DATABASE_URL`: Update credentials for production
 - `SMTP_*`: Use Mailtrap for dev, SendGrid/AWS SES for production
 
@@ -318,7 +318,28 @@ Example:
 
 ```text
 GET /api/v1/events/export?teamId=3&from=2026-01-15&to=2026-01-22&eventType=issue.created&eventType=issue.evaluated
-X-API-KEY: <EVENT_EXPORT_API_KEY>
+X-API-KEY: <ADMIN_API_KEY>
+```
+
+#### HTTP Admin Statistics Endpoint (JSON)
+
+For admin usage analytics across the whole platform, use:
+
+- `GET /api/v1/admin/stats`
+
+Security boundary:
+- endpoint is protected by `X-API-KEY` header
+- key must match backend `ADMIN_API_KEY`
+
+Behavior:
+- returns JSON statistics for global totals, issue status distribution, and per-team metrics
+- includes teams with zero members/practices/issues and `lastActivityAt: null` when no activity exists
+
+Example:
+
+```text
+GET /api/v1/admin/stats
+X-API-KEY: <ADMIN_API_KEY>
 ```
 
 #### Export Directory
@@ -336,7 +357,7 @@ Directory resolution rules:
 
 #### Local Development Workflow
 
-> **Important:** Do **not** use `npm run events:export -- --flag value` for this script. npm 9/10 fuzzy-matches `--to → --token-description` and `--format → --format-package-lock` before the `--` separator takes effect, consuming flags as npm config options before they reach the script. Use `npx tsx` directly to bypass npm's argument parser.
+> **Important:** Do **not** use `npm run events:export -- --flag value` for this script. npm 9/10 fuzzy-matches `--to -> --token-description` and `--format -> --format-package-lock` before the `--` separator takes effect, consuming flags as npm config options before they reach the script. Use `npx tsx` directly to bypass npm's argument parser.
 
 1. Ensure backend dependencies are installed and database is reachable.
 
@@ -503,7 +524,7 @@ Required/important variables:
 - `FRONTEND_HOST_PORT`, `BACKEND_HOST_PORT`, `POSTGRES_HOST_PORT`: host-exposed ports, must be unique per instance
 - `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`: per-instance database contract
 - `JWT_SECRET`: required by backend runtime validation (must be non-empty)
-- `EVENT_EXPORT_API_KEY`: required by backend runtime validation (must be non-empty)
+- `ADMIN_API_KEY`: required by backend runtime validation (must be non-empty)
 - `POSTGRES_PASSWORD`: required per profile (must be non-empty)
 - `FRONTEND_RUNTIME_API_URL`: runtime API URL injected into frontend `runtime-config.js`
 
@@ -565,9 +586,9 @@ Every instance is fully isolated at the Docker resource level:
 | Database | `<POSTGRES_DB>` | `aapr_stu` | `aapr_hms` |
 
 **Isolation guarantees:**
-- Each instance has its own Docker bridge network — containers cannot communicate across instances
-- Each instance has its own named volume — database data is physically isolated
-- Each instance uses a unique database name — backup/restore/teardown operations are scoped
+- Each instance has its own Docker bridge network - containers cannot communicate across instances
+- Each instance has its own named volume - database data is physically isolated
+- Each instance uses a unique database name - backup/restore/teardown operations are scoped
 - Teardown (`down`) of one instance does not remove another instance's resources
 - Clean (`down --volumes`) of one instance only removes that instance's network and volume
 
@@ -576,7 +597,7 @@ Every instance is fully isolated at the Docker resource level:
 - `POSTGRES_DB` (database-level data isolation)
 - `FRONTEND_HOST_PORT`, `BACKEND_HOST_PORT`, `POSTGRES_HOST_PORT` (no port conflicts)
 - `JWT_SECRET` (recommended unique per instance in production)
-- `EVENT_EXPORT_API_KEY` (recommended unique per instance in production)
+- `ADMIN_API_KEY` (recommended unique per instance in production)
 
 **Active Instance Profiles (Story 7.4 Contracts):**
 
@@ -589,12 +610,12 @@ Every instance is fully isolated at the Docker resource level:
 **Adding a new instance (e.g., `new-instance`):**
 
 1. Use `deploy/compose/elia.env` (baseline contract is also documented in `deploy/compose/elia.env.example`)
-2. Set production-grade unique values for `POSTGRES_PASSWORD`, `JWT_SECRET`, and `EVENT_EXPORT_API_KEY`
+2. Set production-grade unique values for `POSTGRES_PASSWORD`, `JWT_SECRET`, and `ADMIN_API_KEY`
 3. Verify no port conflicts: `npm run compose:validate-isolation`
 4. Validate config: `docker compose --env-file deploy/compose/elia.env -f docker-compose.yml config`
 5. Start: `docker compose --env-file deploy/compose/elia.env -f docker-compose.yml up -d`
 
-No compose file changes are needed — isolation is entirely env-driven.
+No compose file changes are needed - isolation is entirely env-driven.
 
 **Isolation validation commands:**
 
@@ -635,7 +656,7 @@ docker build -f client/Dockerfile -t aapr-frontend:7.1 ./client
 Backend runtime contract:
 - image exposes internal port `3000`
 - startup command runs compiled app: `node dist/index.js`
-- production env validation enforces `DATABASE_URL`, `JWT_SECRET`, `EVENT_EXPORT_API_KEY`, and `HONEYBADGER_API_KEY`
+- production env validation enforces `DATABASE_URL`, `JWT_SECRET`, `ADMIN_API_KEY`, and `HONEYBADGER_API_KEY`
 - optional `PORT` must be an integer between `1` and `65535` when provided
 
 Frontend runtime contract:
@@ -647,7 +668,7 @@ Frontend runtime contract:
 Run container smoke checks:
 
 ```powershell
-docker run --rm -d --name aapr-backend-smoke -e NODE_ENV=production -e DATABASE_URL="postgresql://aapr_user:aapr_password@host.docker.internal:5432/aapr" -e JWT_SECRET="replace-with-strong-secret" -e EVENT_EXPORT_API_KEY="replace-with-strong-export-key" -e HONEYBADGER_API_KEY="hbp_replace_with_real_key" -p 3000:3000 aapr-backend:7.1
+docker run --rm -d --name aapr-backend-smoke -e NODE_ENV=production -e DATABASE_URL="postgresql://aapr_user:aapr_password@host.docker.internal:5432/aapr" -e JWT_SECRET="replace-with-strong-secret" -e ADMIN_API_KEY="replace-with-strong-export-key" -e HONEYBADGER_API_KEY="hbp_replace_with_real_key" -p 3000:3000 aapr-backend:7.1
 
 docker run --rm -d --name aapr-frontend-smoke -e VITE_API_URL="http://localhost:3000" -p 8080:80 aapr-frontend:7.1
 
@@ -663,7 +684,7 @@ docker stop aapr-backend-smoke aapr-frontend-smoke
 
 ### SSH Remote Deployment (Story 7.5)
 
-The `scripts/deploy-remote.sh` script provides idempotent SSH-based deployment for CI-triggered rollouts. It orchestrates a remote update cycle: git sync → compose validation → image build → rollout → health check.
+The `scripts/deploy-remote.sh` script provides idempotent SSH-based deployment for CI-triggered rollouts. It orchestrates a remote update cycle: git sync -> compose validation -> image build -> rollout -> health check.
 
 **Prerequisites:**
 
@@ -917,7 +938,7 @@ bash scripts/deploy-remote.sh --host <server> --user <ssh-user> --repo-path <pat
 
 ### Secret Boundaries for Operations (Story 7.8)
 
-- Never commit or echo values of `POSTGRES_PASSWORD`, `JWT_SECRET`, `EVENT_EXPORT_API_KEY`, SMTP credentials, or SSH private keys.
+- Never commit or echo values of `POSTGRES_PASSWORD`, `JWT_SECRET`, `ADMIN_API_KEY`, SMTP credentials, or SSH private keys.
 - Env files in `deploy/compose/*.env` are operator-managed inputs; treat them as secrets-bearing operational assets.
 - Documentation and tickets must reference secret names and responsibilities, not literal values.
 - Use CI/host secret stores and SSH agents for injection; avoid plaintext values in command history whenever possible.
@@ -954,7 +975,7 @@ npm run build
 **Option 1: Separate Servers**
 1. Serve `client/dist/` with Nginx/Apache/Caddy
 2. Run `server/dist/index.js` with PM2/systemd
-3. Configure reverse proxy: `/api/*` → Backend
+3. Configure reverse proxy: `/api/*` -> Backend
 
 **Option 2: Express Serves Frontend**
 ```typescript
@@ -985,7 +1006,7 @@ app.listen(3000);
 ### Pre-Deployment
 
 - [ ] Update `JWT_SECRET` with production secret
-- [ ] Update `EVENT_EXPORT_API_KEY` with production operator key
+- [ ] Update `ADMIN_API_KEY` with production operator key
 - [ ] Update `DATABASE_URL` with production credentials
 - [ ] Configure production SMTP (SendGrid/AWS SES)
 - [ ] Set `NODE_ENV=production`
@@ -1002,7 +1023,7 @@ app.listen(3000);
 # Backend
 DATABASE_URL="postgresql://user:pass@prod-db.example.com:5432/aapr"
 JWT_SECRET="[64-char random string]"
-EVENT_EXPORT_API_KEY="[64-char random string]"
+ADMIN_API_KEY="[64-char random string]"
 NODE_ENV="production"
 PORT=3000
 
@@ -1124,7 +1145,7 @@ Response (200):
 - [ ] Input validation (validator.js)
 - [ ] SQL injection prevention (Prisma parameterized queries)
 - [ ] CORS whitelist (only production domain)
-- [ ] HTTPS only (redirect HTTP → HTTPS)
+- [ ] HTTPS only (redirect HTTP -> HTTPS)
 - [ ] Secure cookies (`httpOnly=true`, `secure=true`, `sameSite=strict`)
 
 **Database:**
@@ -1204,3 +1225,4 @@ Response (200):
 ---
 
 **Last Updated:** March 13, 2026
+
