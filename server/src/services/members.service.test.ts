@@ -21,7 +21,7 @@ describe('members.service', () => {
     jest.clearAllMocks()
   })
 
-  it('builds membership list with members and pending invites', async () => {
+  it('builds membership list with members only', async () => {
     const members: membersRepository.TeamMemberWithUser[] = [
       {
         id: 1,
@@ -37,30 +37,13 @@ describe('members.service', () => {
       }
     ]
 
-    const invites = [
-      {
-        id: 10,
-        teamId,
-        email: 'invitee@example.com',
-        status: 'Pending',
-        invitedUserId: null,
-        createdAt: new Date('2026-01-16T10:00:00.000Z'),
-        updatedAt: new Date('2026-01-16T10:00:00.000Z'),
-        invitedBy: 1,
-        lastSentAt: null,
-        errorMessage: null
-      }
-    ]
-
     const listTeamMembers = membersRepository.listTeamMembers as jest.MockedFunction<typeof membersRepository.listTeamMembers>
-    const listTeamInvites = membersRepository.listTeamInvites as jest.MockedFunction<typeof membersRepository.listTeamInvites>
 
     listTeamMembers.mockResolvedValue(members)
-    listTeamInvites.mockResolvedValue(invites)
 
     const result = await getTeamMembers(teamId)
 
-    expect(result).toHaveLength(2)
+    expect(result).toHaveLength(1)
     expect(result).toEqual([
       {
         id: userId,
@@ -68,14 +51,6 @@ describe('members.service', () => {
         email: 'alex@example.com',
         joinDate: '2026-01-15T10:00:00.000Z',
         inviteStatus: 'Added',
-        bigFiveCompleted: false
-      },
-      {
-        id: 10,
-        name: 'invitee@example.com',
-        email: 'invitee@example.com',
-        joinDate: '2026-01-16T10:00:00.000Z',
-        inviteStatus: 'Pending',
         bigFiveCompleted: false
       }
     ])

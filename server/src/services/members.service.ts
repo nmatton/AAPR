@@ -28,13 +28,9 @@ export interface MemberDetail {
 }
 
 const buildMemberListItems = (
-  members: membersRepository.TeamMemberWithUser[],
-  invites: Array<{ id: number; email: string; status: string; invitedUserId: number | null; createdAt: Date }>
+  members: membersRepository.TeamMemberWithUser[]
 ): MembershipListItem[] => {
-  const memberIds = new Set(members.map((member) => member.userId))
-  const memberEmails = new Set(members.map((member) => member.user.email))
-
-  const memberItems: MembershipListItem[] = members.map((member) => ({
+  return members.map((member) => ({
     id: member.userId,
     name: member.user.name,
     email: member.user.email,
@@ -42,21 +38,6 @@ const buildMemberListItems = (
     inviteStatus: 'Added',
     bigFiveCompleted: false
   }))
-
-  const inviteItems: MembershipListItem[] = invites
-    .filter((invite) => invite.status !== 'Added')
-    .filter((invite) => !invite.invitedUserId || !memberIds.has(invite.invitedUserId))
-    .filter((invite) => !memberEmails.has(invite.email))
-    .map((invite) => ({
-      id: invite.id,
-      name: invite.email,
-      email: invite.email,
-      joinDate: invite.createdAt.toISOString(),
-      inviteStatus: invite.status as InviteStatus,
-      bigFiveCompleted: false
-    }))
-
-  return [...memberItems, ...inviteItems]
 }
 
 /**
@@ -67,12 +48,9 @@ const buildMemberListItems = (
  * @throws Never throws (returns empty array if no members)
  */
 export const getTeamMembers = async (teamId: number): Promise<MembershipListItem[]> => {
-  const [members, invites] = await Promise.all([
-    membersRepository.listTeamMembers(teamId),
-    membersRepository.listTeamInvites(teamId)
-  ])
+  const members = await membersRepository.listTeamMembers(teamId)
 
-  return buildMemberListItems(members, invites)
+  return buildMemberListItems(members)
 }
 
 /**
