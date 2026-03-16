@@ -9,3 +9,9 @@ export const adminStatsRouter = Router();
  * Admin-only global usage statistics secured via X-API-KEY.
  */
 adminStatsRouter.get('/stats', requireExportApiKey, adminStatsController.getGlobalStats);
+
+/**
+ * GET /api/v1/admin/users
+ * Admin-only user listing secured via X-API-KEY.
+ */
+adminStatsRouter.get('/users', requireExportApiKey, adminStatsController.getAdminUsersList);

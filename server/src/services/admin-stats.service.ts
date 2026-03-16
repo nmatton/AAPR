@@ -37,6 +37,17 @@ export type GlobalPlatformStats = {
   }>;
 };
 
+export type AdminUserListItem = {
+  name: string;
+  email: string;
+  teams: string[];
+  status: 'invited' | 'account_created';
+};
+
+export type AdminUsersResponse = {
+  users: AdminUserListItem[];
+};
+
 const getLatestDate = (current: Date | null, candidate?: Date | null): Date | null => {
   if (!candidate) {
     return current;
@@ -147,5 +158,82 @@ export const getGlobalPlatformStats = async (): Promise<GlobalPlatformStats> => 
         lastActivityAt: activityMap.get(team.id)?.toISOString() ?? null,
       };
     }),
+  };
+};
+
+const deriveNameFromEmail = (email: string): string => {
+  const localPart = email.split('@')[0]?.trim();
+  return localPart && localPart.length > 0 ? localPart : email;
+};
+
+export const getAdminUsers = async (): Promise<AdminUsersResponse> => {
+  const [users, invites] = await Promise.all([
+    prisma.user.findMany({
+      select: {
+        name: true,
+        email: true,
+        teamMembers: {
+          select: {
+            team: {
+              select: {
+                name: true,
+              },
+            },
+          },
+        },
+      },
+      orderBy: {
+        email: 'asc',
+      },
+    }),
+    prisma.teamInvite.findMany({
+      where: {
+        invitedUserId: null,
+      },
+      select: {
+        email: true,
+        team: {
+          select: {
+            name: true,
+          },
+        },
+      },
+    }),
+  ]);
+
+  const accountUsers: AdminUserListItem[] = users.map((user) => ({
+    name: user.name,
+    email: user.email,
+    teams: [...new Set(user.teamMembers.map((member) => member.team.name))].sort((a, b) =>
+      a.localeCompare(b)
+    ),
+    status: 'account_created',
+  }));
+
+  const accountEmails = new Set(users.map((user) => user.email.toLowerCase()));
+  const inviteTeamsByEmail = new Map<string, Set<string>>();
+
+  invites.forEach((invite) => {
+    const normalizedEmail = invite.email.toLowerCase();
+    if (accountEmails.has(normalizedEmail)) {
+      return;
+    }
+
+    const teams = inviteTeamsByEmail.get(normalizedEmail) ?? new Set<string>();
+    teams.add(invite.team.name);
+    inviteTeamsByEmail.set(normalizedEmail, teams);
+  });
+
+  const invitedUsers: AdminUserListItem[] = [...inviteTeamsByEmail.entries()]
+    .map(([normalizedEmail, teams]) => ({
+      name: deriveNameFromEmail(normalizedEmail),
+      email: normalizedEmail,
+      teams: [...teams].sort((a, b) => a.localeCompare(b)),
+      status: 'invited' as const,
+    }))
+    .sort((a, b) => a.email.localeCompare(b.email));
+
+  return {
+    users: [...accountUsers, ...invitedUsers],
   };
 };

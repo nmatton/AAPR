@@ -8,6 +8,7 @@ import * as adminStatsService from '../services/admin-stats.service'
 
 jest.mock('../services/admin-stats.service', () => ({
   getGlobalPlatformStats: jest.fn(),
+  getAdminUsers: jest.fn(),
 }))
 
 describe('admin stats route', () => {
@@ -70,5 +71,34 @@ describe('admin stats route', () => {
     expect(response.status).toBe(500)
     expect(response.body.code).toBe('server_misconfigured')
     expect(response.body.details).toEqual({ field: 'ADMIN_API_KEY' })
+  })
+
+  it('GET /api/v1/admin/users returns JSON payload when API key is valid', async () => {
+    ;(adminStatsService.getAdminUsers as jest.MockedFunction<typeof adminStatsService.getAdminUsers>).mockResolvedValue({
+      users: [
+        {
+          name: 'Alice',
+          email: 'alice@example.com',
+          teams: ['Team Atlas'],
+          status: 'account_created',
+        },
+      ],
+    })
+
+    const response = await request(app)
+      .get('/api/v1/admin/users')
+      .set('X-API-KEY', 'test-admin-key')
+
+    expect(response.status).toBe(200)
+    expect(response.body.users).toHaveLength(1)
+    expect(response.body.users[0].email).toBe('alice@example.com')
+    expect(adminStatsService.getAdminUsers).toHaveBeenCalledTimes(1)
+  })
+
+  it('GET /api/v1/admin/users returns 401 when X-API-KEY header is missing', async () => {
+    const response = await request(app).get('/api/v1/admin/users')
+
+    expect(response.status).toBe(401)
+    expect(response.body.code).toBe('invalid_api_key')
   })
 })

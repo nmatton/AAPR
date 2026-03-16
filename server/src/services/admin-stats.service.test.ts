@@ -1,13 +1,14 @@
 process.env.JWT_SECRET = 'test_secret_for_admin_stats_service_12345678901234567890'
 
 import { describe, it, expect, beforeEach, jest } from '@jest/globals'
-import { getGlobalPlatformStats } from './admin-stats.service'
+import { getAdminUsers, getGlobalPlatformStats } from './admin-stats.service'
 import { prisma } from '../lib/prisma'
 
 jest.mock('../lib/prisma', () => ({
   prisma: {
-    user: { count: jest.fn() },
+    user: { count: jest.fn(), findMany: jest.fn() },
     team: { count: jest.fn(), findMany: jest.fn() },
+    teamInvite: { findMany: jest.fn() },
     issue: { count: jest.fn(), groupBy: jest.fn() },
     teamPractice: { count: jest.fn() },
     event: { groupBy: jest.fn() },
@@ -131,5 +132,60 @@ describe('admin-stats.service', () => {
     ;(prisma.event.groupBy as jest.Mock<any>).mockResolvedValue([])
 
     await expect(getGlobalPlatformStats()).rejects.toThrow('Unsupported issue status in stats aggregation')
+  })
+
+  it('returns account_created and invited users with team aggregation', async () => {
+    ;(prisma.user.findMany as jest.Mock<any>).mockResolvedValue([
+      {
+        name: 'Alice',
+        email: 'alice@example.com',
+        teamMembers: [{ team: { name: 'Team Atlas' } }, { team: { name: 'Team Beta' } }],
+      },
+      {
+        name: 'Bob',
+        email: 'bob@example.com',
+        teamMembers: [],
+      },
+    ])
+
+    ;(prisma.teamInvite.findMany as jest.Mock<any>).mockResolvedValue([
+      {
+        email: 'invitee@example.com',
+        team: { name: 'Team Atlas' },
+      },
+      {
+        email: 'invitee@example.com',
+        team: { name: 'Team Gamma' },
+      },
+      {
+        email: 'alice@example.com',
+        team: { name: 'Team Delta' },
+      },
+    ])
+
+    const result = await getAdminUsers()
+
+    expect(result).toEqual({
+      users: [
+        {
+          name: 'Alice',
+          email: 'alice@example.com',
+          teams: ['Team Atlas', 'Team Beta'],
+          status: 'account_created',
+        },
+        {
+          name: 'Bob',
+          email: 'bob@example.com',
+          teams: [],
+          status: 'account_created',
+        },
+        {
+          name: 'invitee',
+          email: 'invitee@example.com',
+          teams: ['Team Atlas', 'Team Gamma'],
+          status: 'invited',
+        },
+      ],
+    })
   })
 })
