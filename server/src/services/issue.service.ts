@@ -67,6 +67,31 @@ export const normalizeIssueStatusCounts = (
     return byStatus;
 };
 
+const roundTo2 = (value: number): number => Number(value.toFixed(2));
+
+const safeRate = (numerator: number, denominator: number): number => {
+    if (denominator <= 0) {
+        return 0;
+    }
+    return roundTo2(numerator / denominator);
+};
+
+export const buildIssueFlowRates = (byStatus: NormalizedIssueStatusCounts) => ({
+    open_to_in_progress_rate: safeRate(byStatus.in_progress, byStatus.open),
+    in_progress_to_adaptation_in_progress_rate: safeRate(byStatus.adaptation_in_progress, byStatus.in_progress),
+    adaptation_in_progress_to_evaluated_rate: safeRate(byStatus.evaluated, byStatus.adaptation_in_progress),
+    evaluated_to_done_rate: safeRate(byStatus.done, byStatus.evaluated),
+});
+
+export const meanDurationHours = (durationsMs: number[]): number => {
+    if (durationsMs.length === 0) {
+        return 0;
+    }
+
+    const averageMs = durationsMs.reduce((sum, value) => sum + value, 0) / durationsMs.length;
+    return roundTo2(averageMs / (1000 * 60 * 60));
+};
+
 
 export const createIssue = async (input: IssueInput) => {
     const { title, description, priority, teamId, createdBy, practiceIds } = input;
