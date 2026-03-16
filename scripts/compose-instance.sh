@@ -3,7 +3,7 @@ set -euo pipefail
 
 usage() {
   echo "Usage: $0 <action> [env-file]"
-  echo "  action:   up | rebuild | down | clean | ps | logs | config | health | inspect | validate-isolation"
+  echo "  action:   up | rebuild | down | clean | ps | logs | config | health | inspect | validate-isolation | stats-to-notion"
   echo "  env-file: path to instance env file (default: deploy/compose/stu.env)"
   exit 1
 }
@@ -82,6 +82,14 @@ case "$ACTION" in
     echo "--- Database ---"
     echo "Database name: $DB_NAME"
     echo "Container: ${PROJECT_NAME}-db"
+    ;;
+  stats-to-notion)
+    if [ -z "$(docker compose $COMPOSE_ARGS ps -q backend)" ]; then
+      echo "Error: Backend service is not running for env file '$ENV_FILE'. Start it first with: ./scripts/compose-instance.sh up $ENV_FILE" >&2
+      exit 1
+    fi
+    echo "Running admin stats export to Notion inside backend container..."
+    docker compose $COMPOSE_ARGS exec backend npm run admin-stats:export:notion:runtime
     ;;
   validate-isolation)
     echo "=== Isolation Validation Across All Instance Profiles ==="

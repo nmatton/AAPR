@@ -11,6 +11,8 @@
     "test:coverage": "jest --coverage",
     "db:seed": "tsx src/scripts/seed-all.ts",
     "events:export": "tsx src/scripts/export-events.ts",
+    "admin-stats:export:notion": "tsx src/scripts/export-admin-stats-to-notion.ts",
+    "admin-stats:export:notion:runtime": "node dist/scripts/export-admin-stats-to-notion.js",
     "events:purge": "tsx src/scripts/purge-events-batch.ts",
     "events:verify-restore": "tsx src/scripts/verify-events-restore.ts"
   },

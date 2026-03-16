@@ -1,6 +1,6 @@
 param(
     [Parameter(Mandatory = $true)]
-    [ValidateSet('up', 'down', 'clean', 'ps', 'logs', 'config', 'health', 'validate-isolation', 'inspect')]
+    [ValidateSet('up', 'down', 'clean', 'ps', 'logs', 'config', 'health', 'validate-isolation', 'inspect', 'stats-to-notion')]
     [string]$Action,
 
     [Parameter(Mandatory = $false)]
@@ -122,6 +122,15 @@ switch ($Action) {
         $dbName = $envMap['POSTGRES_DB']
         Write-Host "Database name: $dbName"
         Write-Host "Container: $projectName-db"
+    }
+    'stats-to-notion' {
+        $backendContainerId = docker compose @composeArgs ps -q backend
+        if (-not $backendContainerId) {
+            throw "Backend service is not running for env file '$EnvFile'. Start it first with: ./scripts/compose-instance.ps1 up $EnvFile"
+        }
+
+        Write-Host "Running admin stats export to Notion inside backend container..."
+        docker compose @composeArgs exec backend npm run admin-stats:export:notion:runtime
     }
     'validate-isolation' {
         Write-Host "=== Isolation Validation Across All Instance Profiles ==="
