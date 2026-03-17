@@ -3,13 +3,109 @@ set -euo pipefail
 
 usage() {
   echo "Usage: $0 <action> [env-file]"
-  echo "  action:   up | rebuild | down | clean | ps | logs | config | health | inspect | validate-isolation | stats-to-notion"
+  echo "  action:   up | rebuild | update | down | clean | ps | logs | config | health | inspect | validate-isolation | stats-to-notion"
   echo "  env-file: path to instance env file (default: deploy/compose/stu.env)"
   exit 1
 }
 
 ACTION="${1:-}"
 ENV_FILE="${2:-deploy/compose/stu.env}"
+
+get_env_value() {
+  local key="$1"
+  grep "^${key}=" "$ENV_FILE" | cut -d= -f2- | tr -d '\r'
+}
+
+TEMP_MAINTENANCE_CONTAINER=""
+
+stop_maintenance_container() {
+  if [ -n "$TEMP_MAINTENANCE_CONTAINER" ] && docker ps -a --format "{{.Names}}" | grep -Fxq "$TEMP_MAINTENANCE_CONTAINER"; then
+    docker rm -f "$TEMP_MAINTENANCE_CONTAINER" > /dev/null 2>&1 || true
+  fi
+}
+
+start_maintenance_container() {
+  local frontend_port project_name instance_key
+
+  frontend_port=$(get_env_value FRONTEND_HOST_PORT)
+  project_name=$(get_env_value COMPOSE_PROJECT_NAME)
+  instance_key=$(get_env_value INSTANCE_KEY)
+
+  if [ -z "$frontend_port" ] || [ -z "$project_name" ]; then
+    echo "Error: FRONTEND_HOST_PORT and COMPOSE_PROJECT_NAME must be defined in env file" >&2
+    exit 1
+  fi
+
+  TEMP_MAINTENANCE_CONTAINER="${project_name}-frontend-maintenance"
+  stop_maintenance_container
+
+  docker run -d \
+    --name "$TEMP_MAINTENANCE_CONTAINER" \
+    --label "com.aapr.instance=${instance_key:-maintenance}" \
+    --label "com.aapr.resource.scope=temporary-maintenance" \
+    -p "${frontend_port}:80" \
+    nginx:alpine \
+    /bin/sh -c "cat > /usr/share/nginx/html/index.html <<'EOF'
+<!doctype html>
+<html lang=\"en\">
+<head>
+  <meta charset=\"utf-8\">
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
+  <title>Maintenance in progress</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #f7f2ea, #efe4d6);
+      color: #1f2933;
+    }
+    main {
+      max-width: 42rem;
+      margin: 2rem;
+      padding: 2.5rem;
+      border-radius: 1.25rem;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 20px 45px rgba(67, 42, 17, 0.12);
+      text-align: center;
+    }
+    h1 {
+      margin-top: 0;
+      font-size: clamp(2rem, 5vw, 3rem);
+      line-height: 1.1;
+    }
+    p {
+      margin: 1rem 0 0;
+      font-size: 1.1rem;
+      line-height: 1.7;
+    }
+    strong {
+      color: #8a3b12;
+    }
+    a {
+      color: inherit;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Maintenance in progress</h1>
+    <p><strong>We're back very soon!</strong></p>
+    <p>Thank you for your patience.</p>
+    <p>If it lasts for more than 15 minutes, please contact <a href=\"mailto:nicolas.matton@unamur.be\">nicolas.matton@unamur.be</a>.</p>
+  </main>
+</body>
+</html>
+EOF
+exec nginx -g 'daemon off;'" > /dev/null
+
+  echo "Maintenance page available on http://localhost:${frontend_port}/"
+}
 
 if [ -z "$ACTION" ]; then
   usage
@@ -25,6 +121,46 @@ COMPOSE_ARGS="--env-file $ENV_FILE -f docker-compose.yml"
 case "$ACTION" in
   up)      docker compose $COMPOSE_ARGS up -d --build ;;
   rebuild) docker compose $COMPOSE_ARGS build --no-cache && docker compose $COMPOSE_ARGS up -d ;;
+  update)
+    echo "Pulling latest base images and building application images..."
+    # 1. Build FIRST while the app is still live. 
+    # Use --pull to ensure upstream base images are updated.
+    if ! docker compose $COMPOSE_ARGS build --pull; then
+      echo "Build failed. Application is still running normally. Aborting update." >&2
+      exit 1
+    fi
+
+    # 2. Ensure the maintenance image is available locally before taking the app down
+    docker pull nginx:alpine > /dev/null 2>&1
+
+    echo "Stopping application stack for env file '$ENV_FILE'..."
+    docker compose $COMPOSE_ARGS down --remove-orphans
+    
+    # Optional: Give the OS a moment to release the host port completely
+    #sleep 1 
+
+    #echo "Starting temporary maintenance frontend..."
+    #start_maintenance_container
+
+    # ---
+    # NOTE: If you have database migrations or specific pre-launch scripts, 
+    # run them here while the maintenance page is up.
+    # ---
+
+    #echo "Update prepped. Restoring application stack..."
+    #stop_maintenance_container
+
+    # Optional: Give the OS a moment to release the port from the maintenance container
+    sleep 1
+
+    if ! docker compose $COMPOSE_ARGS up -d; then
+      echo "Failed to start updated stack. Attempting to restore maintenance page..." >&2
+      start_maintenance_container
+      exit 1
+    fi
+    
+    echo "Update completed successfully."
+    ;;
   down)    docker compose $COMPOSE_ARGS down --remove-orphans ;;
   clean)  docker compose $COMPOSE_ARGS down --remove-orphans --volumes ;;
   ps)     docker compose $COMPOSE_ARGS ps ;;
