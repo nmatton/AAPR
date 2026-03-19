@@ -155,7 +155,8 @@ export const loginUser = async (
         name: user.name,
         email: user.email,
         createdAt: user.createdAt,
-        hasCompletedBigFive: user.hasCompletedBigFive
+        hasCompletedBigFive: user.hasCompletedBigFive,
+        isAdminMonitor: user.isAdminMonitor
       },
       message: 'Login successful'
     })
@@ -222,6 +223,7 @@ export const getCurrentUser = async (
       email: user.email,
       createdAt: user.createdAt,
       hasCompletedBigFive: user.hasCompletedBigFive,
+      isAdminMonitor: user.isAdminMonitor,
       requestId: res.getHeader('x-request-id')
     })
   } catch (error) {

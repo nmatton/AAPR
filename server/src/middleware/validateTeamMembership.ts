@@ -43,6 +43,18 @@ export const validateTeamMembership = async (
       )
     }
 
+    // DB-backed admin-monitor check to avoid stale JWT authorization decisions
+    const userRecord = await prisma.user.findUnique({
+      where: { id: req.user.userId },
+      select: { isAdminMonitor: true }
+    })
+
+    if (userRecord?.isAdminMonitor) {
+      // Admin-monitor users bypass team membership checks; they can access all teams
+      res.locals.teamId = teamId
+      return next()
+    }
+
     const membership = await prisma.teamMember.findUnique({
       where: {
         teamId_userId: {

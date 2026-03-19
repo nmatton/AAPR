@@ -1,5 +1,5 @@
 import { prisma } from '../lib/prisma'
-import { AppError } from './auth.service'
+import { AppError, checkIsAdminMonitor } from './auth.service'
 import * as eventService from './events.service'
 
 /**
@@ -122,6 +122,17 @@ export async function saveResponses(
 ) {
     if (!userId || userId <= 0) {
         throw new AppError('invalid_user_id', 'User ID is required', {}, 400)
+    }
+
+    // Defense in depth: block admin-monitor users at the service layer
+    const isAdminMonitor = await checkIsAdminMonitor(userId)
+    if (isAdminMonitor) {
+        throw new AppError(
+            'forbidden',
+            'Admin monitor users cannot submit the Big Five questionnaire',
+            { userId },
+            403
+        )
     }
 
     // Calculate scores (validates responses)

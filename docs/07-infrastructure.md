@@ -937,6 +937,28 @@ bash scripts/deploy-remote.sh --host <server> --user <ssh-user> --repo-path <pat
 
 5. Re-run smoke to confirm recovery and archive evidence (`DEPLOY_RESULT`, `SMOKE_RESULT`, `SMOKE_SUMMARY`) for incident notes.
 
+**Phase 5 - Provision global admin-monitor account (trusted DB context):**
+
+Use the script below to enable one monitoring/support account that can access all teams without membership rows while being excluded from members list, affinity aggregation, and Big Five submission.
+
+```bash
+# Fresh account: set flag directly
+bash scripts/set-admin-monitoring-account.sh admin-monitor@example.com
+
+# Non-fresh account: cleanup + explicit confirmation prompt
+bash scripts/set-admin-monitoring-account.sh admin-monitor@example.com --cleanup
+
+# Non-interactive cleanup mode (automation only)
+bash scripts/set-admin-monitoring-account.sh admin-monitor@example.com --cleanup --yes
+```
+
+Operational notes:
+
+- Requires Docker + Docker Compose on the execution host and a running `db` service for the targeted env profile.
+- Script exits without changes when fresh-state checks fail and `--cleanup` is not provided.
+- Cleanup mode removes rows from `team_members`, `big_five_responses`, and `big_five_scores` for the target account before setting `is_admin_monitor=true`.
+- Revoke access by setting `is_admin_monitor=false` for the user.
+
 ### Secret Boundaries for Operations (Story 7.8)
 
 - Never commit or echo values of `POSTGRES_PASSWORD`, `JWT_SECRET`, `ADMIN_API_KEY`, SMTP credentials, or SSH private keys.

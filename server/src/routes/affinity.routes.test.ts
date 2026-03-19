@@ -6,6 +6,8 @@ import { app } from '../app'
 import * as authService from '../services/auth.service'
 import { prisma } from '../lib/prisma'
 
+const prismaMock = prisma as any
+
 jest.mock('../services/auth.service', () => {
   const actual = jest.requireActual('../services/auth.service') as typeof import('../services/auth.service')
   return {
@@ -19,6 +21,9 @@ jest.mock('../lib/prisma', () => ({
     teamMember: {
       findUnique: jest.fn(),
       findMany: jest.fn(),
+    },
+    user: {
+      findUnique: jest.fn(),
     },
     practice: {
       findFirst: jest.fn(),
@@ -37,6 +42,8 @@ describe('affinity routes', () => {
       userId: 1,
       email: 'test@example.com',
     })
+
+    prismaMock.user.findUnique.mockResolvedValue({ isAdminMonitor: false })
 
     ;(prisma.teamMember.findUnique as jest.MockedFunction<typeof prisma.teamMember.findUnique>).mockResolvedValue({
       id: 1,
@@ -145,6 +152,8 @@ describe('GET /api/v1/teams/:teamId/practices/:practiceId/affinity/team', () => 
       userId: 1,
       email: 'test@example.com',
     })
+
+    prismaMock.user.findUnique.mockResolvedValue({ isAdminMonitor: false })
 
     ;(prisma.teamMember.findUnique as jest.MockedFunction<typeof prisma.teamMember.findUnique>).mockResolvedValue({
       id: 1,

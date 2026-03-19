@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express'
 import { z } from 'zod'
 import * as bigFiveService from '../services/big-five.service'
-import { AppError } from '../services/auth.service'
+import { AppError, checkIsAdminMonitor } from '../services/auth.service'
 
 // Extend Express Request type for middleware-added properties
 declare global {
@@ -40,6 +40,16 @@ export const submitQuestionnaire = async (
 ): Promise<void> => {
     try {
         const userId = req.user!.userId
+
+        // Block admin-monitor users from submitting Big Five questionnaire
+        if (await checkIsAdminMonitor(userId)) {
+            throw new AppError(
+                'forbidden',
+                'Admin monitor users cannot submit the Big Five questionnaire',
+                { userId },
+                403
+            )
+        }
 
         // Validate request body
         const validationResult = submitQuestionnaireSchema.safeParse(req.body)

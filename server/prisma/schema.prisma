@@ -23,6 +23,8 @@ model User {
   createdAt       DateTime     @default(now()) @map("created_at")
   /// Last update timestamp
   updatedAt       DateTime     @updatedAt @map("updated_at")
+  /// Global monitoring admin flag - bypasses team membership checks, excluded from member listings/affinity/Big Five
+  isAdminMonitor  Boolean      @default(false) @map("is_admin_monitor")
   invitesSent       TeamInvite[]       @relation("invites_sent")
   invitesReceived   TeamInvite[]       @relation("invites_received")
   teamMembers       TeamMember[]

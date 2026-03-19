@@ -49,6 +49,17 @@ describe('getTeamPracticeAffinity', () => {
     expect(result.status).toBe('insufficient_profile_data')
     expect(result.score).toBeNull()
     expect(result.aggregation).toEqual({ includedMembers: 0, excludedMembers: 0 })
+      expect(prisma.teamMember.findMany).toHaveBeenCalledWith({
+        where: { teamId: 1, user: { isAdminMonitor: false } },
+        select: {
+          userId: true,
+          user: {
+            select: {
+              bigFiveScore: true,
+            },
+          },
+        },
+      })
   })
 
   it('returns insufficient_profile_data when all members lack Big Five profiles', async () => {
@@ -64,6 +75,18 @@ describe('getTeamPracticeAffinity', () => {
     expect(result.status).toBe('insufficient_profile_data')
     expect(result.score).toBeNull()
     expect(result.aggregation).toEqual({ includedMembers: 0, excludedMembers: 3 })
+  })
+
+  it('returns insufficient_profile_data when effective member set is empty after admin-monitor exclusion', async () => {
+    ;(prisma.practice.findFirst as jest.Mock).mockResolvedValue(PRACTICE_WITH_TAGS)
+    // Repository-layer query excludes admin-monitor users, so service receives no effective members.
+    ;(prisma.teamMember.findMany as jest.Mock).mockResolvedValue([])
+
+    const result = await getTeamPracticeAffinity(1, 42)
+
+    expect(result.status).toBe('insufficient_profile_data')
+    expect(result.score).toBeNull()
+    expect(result.aggregation).toEqual({ includedMembers: 0, excludedMembers: 0 })
   })
 
   it('calculates correct team score when all members are eligible (N=3)', async () => {

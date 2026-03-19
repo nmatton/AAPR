@@ -5,7 +5,7 @@ import * as coverageService from './coverage.service';
 
 import type { TeamWithStats, TeamPracticeWithPillars } from '../repositories/teams.repository';
 import { prisma } from '../lib/prisma';
-import { AppError } from './auth.service';
+import { AppError, checkIsAdminMonitor } from './auth.service';
 import type { PracticeDto } from './practices.service';
 import { Prisma } from '@prisma/client';
 
@@ -192,7 +192,10 @@ export const calculateTeamCoverage = async (teamId: number): Promise<number> => 
  * @returns Array of teams with stats
  */
 export const getUserTeams = async (userId: number): Promise<TeamDto[]> => {
-  const teams = await teamsRepository.findTeamsByUserId(userId);
+  const isAdminMonitor = await checkIsAdminMonitor(userId);
+  const teams = isAdminMonitor
+    ? await teamsRepository.findAllTeamsWithUserRoleContext(userId)
+    : await teamsRepository.findTeamsByUserId(userId);
 
   // Calculate coverage for each team
   const teamsWithCoverage = teams.map((team: TeamWithStats) => {
@@ -212,7 +215,7 @@ export const getUserTeams = async (userId: number): Promise<TeamDto[]> => {
       memberCount: team._count.teamMembers,
       practiceCount: team._count.teamPractices,
       coverage,
-      role: team.teamMembers[0].role as 'owner' | 'member',
+      role: (team.teamMembers[0]?.role as 'owner' | 'member' | undefined) ?? 'member',
       createdAt: team.createdAt.toISOString(),
     };
   });

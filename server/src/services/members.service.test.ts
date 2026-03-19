@@ -21,6 +21,15 @@ describe('members.service', () => {
     jest.clearAllMocks()
   })
 
+  it('returns an empty list when no effective members are returned by repository', async () => {
+    const listTeamMembers = membersRepository.listTeamMembers as jest.MockedFunction<typeof membersRepository.listTeamMembers>
+    listTeamMembers.mockResolvedValue([])
+
+    const result = await getTeamMembers(teamId)
+
+    expect(result).toEqual([])
+  })
+
   it('builds membership list with members only', async () => {
     const members: membersRepository.TeamMemberWithUser[] = [
       {

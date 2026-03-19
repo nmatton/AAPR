@@ -79,6 +79,46 @@ export const findTeamsByUserId = async (userId: number): Promise<TeamWithStats[]
 };
 
 /**
+ * Find all teams while still selecting role for a given user when membership exists.
+ * Used by admin-monitor accounts that can access teams without team_members rows.
+ *
+ * @param userId - User identifier used only for role selection context
+ * @returns Array of all teams with counts and practice→pillar data
+ */
+export const findAllTeamsWithUserRoleContext = async (userId: number): Promise<TeamWithStats[]> => {
+  return prisma.team.findMany({
+    include: {
+      _count: {
+        select: {
+          teamMembers: true,
+          teamPractices: true
+        }
+      },
+      teamMembers: {
+        where: { userId },
+        select: { role: true }
+      },
+      teamPractices: {
+        include: {
+          practice: {
+            include: {
+              practicePillars: {
+                include: {
+                  pillar: true
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    orderBy: {
+      createdAt: 'desc'
+    }
+  });
+};
+
+/**
  * Get team practices with their pillar associations
  * Used for coverage calculation
  * @param teamId - Team identifier

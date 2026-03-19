@@ -252,7 +252,7 @@ export async function getTeamPracticeAffinity(
 
   // Load all team members with their Big Five scores
   const teamMembers = await prisma.teamMember.findMany({
-    where: { teamId },
+    where: { teamId, user: { isAdminMonitor: false } },
     select: {
       userId: true,
       user: {

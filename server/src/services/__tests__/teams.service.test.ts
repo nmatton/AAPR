@@ -1,5 +1,6 @@
 import * as teamsService from '../teams.service';
 import * as teamsRepository from '../../repositories/teams.repository';
+import * as authService from '../auth.service';
 
 // Mock the repository
 jest.mock('../../repositories/teams.repository');
@@ -7,6 +8,7 @@ jest.mock('../../repositories/teams.repository');
 describe('teamsService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    jest.spyOn(authService, 'checkIsAdminMonitor').mockResolvedValue(false);
   });
 
   describe('calculateTeamCoverage', () => {
@@ -221,6 +223,41 @@ describe('teamsService', () => {
 
       expect(teamsRepository.findTeamsByUserId).toHaveBeenCalledWith(42);
       expect(teamsRepository.findTeamsByUserId).toHaveBeenCalledTimes(1);
+    });
+
+    it('returns all teams for admin-monitor users', async () => {
+      jest.spyOn(authService, 'checkIsAdminMonitor').mockResolvedValue(true);
+
+      const mockTeams = [
+        {
+          id: 99,
+          name: 'Cross Team',
+          version: 7,
+          createdAt: new Date('2026-03-01T12:00:00Z'),
+          _count: { teamMembers: 4, teamPractices: 2 },
+          teamMembers: [],
+          teamPractices: []
+        }
+      ];
+
+      (teamsRepository.findAllTeamsWithUserRoleContext as jest.Mock).mockResolvedValue(mockTeams as any);
+
+      const result = await teamsService.getUserTeams(1);
+
+      expect(teamsRepository.findAllTeamsWithUserRoleContext).toHaveBeenCalledWith(1);
+      expect(teamsRepository.findTeamsByUserId).not.toHaveBeenCalled();
+      expect(result).toEqual([
+        {
+          id: 99,
+          name: 'Cross Team',
+          version: 7,
+          memberCount: 4,
+          practiceCount: 2,
+          coverage: 0,
+          role: 'member',
+          createdAt: '2026-03-01T12:00:00.000Z'
+        }
+      ]);
     });
   });
 });

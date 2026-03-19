@@ -52,7 +52,8 @@ const AppRoutes = () => {
             name: user.name,
             email: user.email,
             createdAt: user.createdAt,
-            hasCompletedBigFive: user.hasCompletedBigFive
+            hasCompletedBigFive: user.hasCompletedBigFive,
+            isAdminMonitor: user.isAdminMonitor
           })
         }
       } catch (error) {

@@ -16,6 +16,9 @@ const createMockPrisma = () => ({
     bigFiveScore: {
         upsert: jest.fn(),
         findUnique: jest.fn()
+        },
+        user: {
+            findUnique: jest.fn()
     },
     $transaction: jest.fn((callback: any) => callback(createMockPrisma()))
 });
@@ -34,6 +37,9 @@ jest.mock('../lib/prisma', () => {
         },
         bigFiveScore: {
             upsert: jest.fn(),
+            findUnique: jest.fn()
+        },
+        user: {
             findUnique: jest.fn()
         },
         $transaction: jest.fn()
@@ -169,7 +175,27 @@ describe('bigFiveService.calculateScores', () => {
 describe('bigFiveService.saveResponses', () => {
     beforeEach(() => {
         jest.clearAllMocks()
+        prismaMock.user.findUnique.mockResolvedValue({ isAdminMonitor: false })
         prismaMock.bigFiveResponse.count.mockResolvedValue(0)
+    })
+
+    it('rejects admin-monitor users and does not write any Big Five data', async () => {
+        const userId = 101
+        const responses = Array.from({ length: 44 }, (_, i) => ({
+            itemNumber: i + 1,
+            response: 3
+        }))
+
+        prismaMock.user.findUnique.mockResolvedValue({ isAdminMonitor: true })
+
+        await expect(bigFiveService.saveResponses(userId, responses)).rejects.toMatchObject({
+            code: 'forbidden'
+        })
+
+        expect(prismaMock.$transaction).not.toHaveBeenCalled()
+        expect(prismaMock.bigFiveResponse.deleteMany).not.toHaveBeenCalled()
+        expect(prismaMock.bigFiveResponse.createMany).not.toHaveBeenCalled()
+        expect(prismaMock.bigFiveScore.upsert).not.toHaveBeenCalled()
     })
 
     it('saves responses and calculates scores in a transaction', async () => {

@@ -36,6 +36,7 @@ interface UserResponse {
   email: string
   createdAt: Date
   hasCompletedBigFive: boolean
+  isAdminMonitor: boolean
 }
 
 /**
@@ -116,7 +117,8 @@ export const registerUser = async (dto: RegisterUserDto): Promise<UserResponse> 
         id: true,
         name: true,
         email: true,
-        createdAt: true
+        createdAt: true,
+        isAdminMonitor: true
       }
     })
 
@@ -210,6 +212,7 @@ export const verifyCredentials = async (
       email: true,
       password: true,
       createdAt: true,
+      isAdminMonitor: true,
       bigFiveScore: {
         select: {
           id: true
@@ -260,6 +263,7 @@ export const verifyCredentials = async (
     name: user.name,
     email: user.email,
     createdAt: user.createdAt,
+    isAdminMonitor: user.isAdminMonitor,
     hasCompletedBigFive: !!user.bigFiveScore
   }
 }
@@ -303,6 +307,7 @@ export const getUserById = async (userId: number): Promise<UserResponse> => {
       name: true,
       email: true,
       createdAt: true,
+      isAdminMonitor: true,
       bigFiveScore: {
         select: {
           id: true
@@ -319,4 +324,19 @@ export const getUserById = async (userId: number): Promise<UserResponse> => {
     ...user,
     hasCompletedBigFive: !!user.bigFiveScore
   }
+}
+
+/**
+ * DB-backed check for admin-monitor status.
+ * Always queries the database to avoid stale authorization decisions.
+ *
+ * @param userId - User identifier
+ * @returns true if the user has the isAdminMonitor flag set
+ */
+export const checkIsAdminMonitor = async (userId: number): Promise<boolean> => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { isAdminMonitor: true }
+  })
+  return user?.isAdminMonitor ?? false
 }

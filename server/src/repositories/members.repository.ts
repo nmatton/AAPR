@@ -22,7 +22,7 @@ export const listTeamMembers = async (
   db?: PrismaClientLike
 ): Promise<TeamMemberWithUser[]> => {
   return getDb(db).teamMember.findMany({
-    where: { teamId },
+    where: { teamId, user: { isAdminMonitor: false } },
     include: {
       user: {
         select: {
@@ -75,7 +75,7 @@ export const countTeamMembers = async (
   db?: PrismaClientLike
 ): Promise<number> => {
   return getDb(db).teamMember.count({
-    where: { teamId }
+    where: { teamId, user: { isAdminMonitor: false } }
   })
 }
 
