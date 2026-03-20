@@ -34,16 +34,24 @@ describe('PillarContextPopover', () => {
             ; (practicesApi.fetchPractices as any).mockResolvedValue({ items: [], total: 0 })
     })
 
-    it('renders pillar details correctly', () => {
+    it('renders pillar details correctly', async () => {
         render(<PillarContextPopover {...defaultProps} />)
+
+        await waitFor(() => {
+            expect(practicesApi.fetchPractices).toHaveBeenCalled();
+        });
 
         expect(screen.getByText('Test Pillar')).toBeInTheDocument()
         expect(screen.getByText('Test Category')).toBeInTheDocument()
         expect(screen.getByText('Initial description')).toBeInTheDocument()
     })
 
-    it('calls onClose when close button is clicked', () => {
+    it('calls onClose when close button is clicked', async () => {
         render(<PillarContextPopover {...defaultProps} />)
+
+        await waitFor(() => {
+            expect(practicesApi.fetchPractices).toHaveBeenCalled();
+        });
 
         fireEvent.click(screen.getByRole('button', { name: /close/i }))
         expect(defaultProps.onClose).toHaveBeenCalled()
@@ -134,8 +142,13 @@ describe('PillarContextPopover', () => {
         expect(defaultProps.onNavigateToPractice).toHaveBeenCalledWith(12);
         expect(defaultProps.onClose).toHaveBeenCalled();
     });
-    it('logs view event on mount', () => {
+    it('logs view event on mount', async () => {
         render(<PillarContextPopover {...defaultProps} />)
+
+        await waitFor(() => {
+            expect(practicesApi.fetchPractices).toHaveBeenCalled();
+        });
+
         expect(practicesApi.logPillarDetailViewed).toHaveBeenCalledWith(expect.objectContaining({
             teamId: null, // Implementation converts undefined to null
             practiceId: 10,
@@ -143,12 +156,17 @@ describe('PillarContextPopover', () => {
         }))
     })
 
-    it('applies correct color class based on category', () => {
+    it('applies correct color class based on category', async () => {
         const props = {
             ...defaultProps,
             pillar: { ...mockPillar, category: 'VALEURS_HUMAINES' } // Should correspond to red
         }
         render(<PillarContextPopover {...props} />)
+
+        await waitFor(() => {
+            expect(practicesApi.fetchPractices).toHaveBeenCalled();
+        });
+
         const categoryBadge = screen.getByText('VALEURS_HUMAINES')
         expect(categoryBadge).toHaveClass('bg-red-100')
     })

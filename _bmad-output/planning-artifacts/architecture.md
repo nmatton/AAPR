@@ -259,29 +259,30 @@ CREATE TABLE schema_migrations (
 
 ---
 
-### Decision 1.5: Practice Recommendation Engine
+### Decision 1.5: Directed Tag-Based Recommendation Engine
 
-**Chosen Approach:** TypeScript Service Layer (`services/recommendation.service.ts`) using SQL queries on existing `practice_associations`, `team_coverage`, and `affinity_scores` tables.
+**Chosen Approach:** TypeScript Service Layer (`services/recommendation.service.ts`) utilizing the new `tags`, `tag_candidates`, and `tag_recommendations` schema alongside Big Five affinity scores.
 
 **Algorithm Logic Pipeline:**
-1. **Target Identification:** Identify the practice the team is currently having friction with.
-2. **Retrieve Current State:** Fetch the team's `team_affinity_score` for the target practice and the team's current `team_coverage`.
-3. **Filtering Alternative Practices:**
-   - **Condition 1 (Affinity):** `alternative_practice.team_affinity_score > target_practice.team_affinity_score`
-   - **Condition 2 (Coverage):** The combined coverage of the team's current portfolio minus the target practice plus the alternative practice must be ≥ the current overall coverage. Ideally, it covers the exact same pillars.
-4. **Ranking & Prioritization (Heuristics):**
-   - **Tier 1:** Practices linked to the target practice via `practice_associations` where `association_type = 'Equivalence'`.
-   - **Tier 2:** Practices in the same `category` or "type" as the target practice.
-   - **Tier 3:** All other practices that meet Conditions 1 & 2.
-5. **Selection:** Return the top 3 practices from the prioritized list.
+1. **Target Identification:** Read the "problematic tags" or "missing tags" from the currently viewed Issue.
+2. **Candidate Mapping:** Pull associated candidate resolution tags using the `tag_candidates` table.
+3. **Delta (Δ) Calculation:** For each pair (Current Tag → Candidate Tag), calculate the team's (or individual's) affinity for both tags.
+4. **Discrete Gain Evaluation:** Map the affinity transition to a discrete gain score:
+   - From `-` to `+` => +1.0
+   - From `-` to `0` or `0` to `+` => +0.5
+   - From `0` to `-` => -0.5
+   - From `+` to `-` => -1.0
+5. **Negative Guardrail:** Reject any Candidate Tag whose absolute affinity score for the user/team evaluation is strictly negative (`-`), even if the overall delta is positive.
+6. **Selection:** Sort surviving Candidate Tags by their `Δ` score descending, tie-breaking by positive absolute affinity. Return the highest-scoring tags.
+7. **Hydration:** Fetch the descriptive `recommendation_text` and `implementation_example` for the winning tags from `tag_recommendations`.
 
 **Rationale:**
-- Computations can be done strictly in the service layer, keeping the database schema lean.
-- Fulfills the requirement to provide immediate value on the Issue Detail page without waiting for Phase 2.
-- "Equivalence" associations act as manual expert overrides that guarantee relevance if affinity also aligns.
+- Computations are mathematically bounded and conceptually explainable to the user.
+- The negative guardrail prevents tone-deaf recommendations (e.g. suggesting highly verbal solutions to an extremely introverted team).
+- Direct alignment with the explicit logic rules requested for directed recommendations.
 
 **Trade-offs Accepted:**
-- Real-time calculation on the Issue Detail page might add ~50-100ms latency. Acceptable for MVP.
+- Increased schema footprint to house Tag relationships, generating slightly more complex join paths.
 
 ---
 

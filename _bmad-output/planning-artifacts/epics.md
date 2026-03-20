@@ -2102,6 +2102,73 @@ This epic pulls forward the practice recommendation feature into the MVP scope. 
 
 ---
 
+### Epic 4.3: Directed Tag-Based Recommendations
+
+**Epic Goal:** Provide highly targeted practice adaptation advice using explicit tag dependencies and personality-affinity delta calculations.
+
+**User Value:** Teams receive actionable, explainable recommendations that account for what exactly is failing (problematic tags) and what solutions best fit their personality profile.
+
+**Dependencies:** Epic 4.1 (Affinity Scoring Foundation), Epic 4.2 (Practice Recommendations on Issues)
+
+**Stories:**
+
+#### Story 4.3.1: Enhance Issue Submission with Tag Identification
+- **Description:** Allow users to specify exactly which tags are causing issues with a practice, or which tags are missing when not linked to a specific practice. This builds on top of the original issue submission (Story 4.1), adding granular problem identification.
+- **Acceptance Criteria:**
+  - **Given** I am creating a new Issue
+    **When** I select a linked Practice
+    **Then** I am presented with a multi-select list of Tags associated with that practice (labeled "Select problem sources").
+  - **Given** I am creating a new Issue *not* linked to a practice
+    **When** I select "not listed practice"
+    **Then** I am presented with a global multi-select list of all system tags (labeled "Select missing capabilities").
+  - **Given** I hover over a tag in the selection list
+    **Then** a tooltip displays the tag's description.
+  - **Given** I submit the issue
+    **Then** the selected tags are saved in a new `issue_tags` relational table linked to this Issue.
+
+#### Story 4.3.2: Seed Tag Relations, Candidates, and Recommendation Data
+- **Description:** Extend the database schema and initialize it with reference data containing personality-tag affinities, candidate solution tags, and textual recommendations for each tag.
+- **Acceptance Criteria:**
+  - **Given** an empty or existing database
+    **When** the migration and seeder script runs
+    **Then** the following new tables are created: `tags`, `tag_personality_relations`, `tag_candidates` (problem_tag_id, solution_tag_id), and `tag_recommendations` (tag_id, recommendation_text).
+  - **Given** the seed script runs
+    **Then** all matrices from `tags_personality_relation.csv`, `tags_issue_candidates.csv`, and `tag_recommendations.md` are correctly parsed and inserted into the database.
+  - **Given** I query the API for a practice's tags
+    **Then** it returns the `tag` details including description and category.
+
+#### Story 4.3.3: Implement Delta Affinity Calculation Engine
+- **Description:** Update the `RecommendationService` to process the Delta (`Δ`) logic that evaluates the distance between a problematic tag and a candidate tag concerning a team's Big Five personality profile.
+- **Acceptance Criteria:**
+  - **Given** a set of "problematic" or "missing" tags for an issue
+    **When** the recommendation engine is invoked
+    **Then** it queries the `tag_candidates` table to compile a list of Candidate Tags.
+  - **Given** a Candidate Tag and a Problematic Tag
+    **When** calculating the Delta score for the team
+    **Then** it correctly maps the team's average personality affinity transitions to absolute values (`- to +` = +1.0, `- to 0` / `0 to +` = +0.5, `0 to -` = -0.5, `+ to -` = -1.0).
+  - **Given** a Candidate Tag where the absolute team affinity is negative (`-` indicating clear friction)
+    **When** evaluating recommendations
+    **Then** that Candidate Tag is strictly disqualified, regardless of a potentially high comparative Delta score.
+  - **Given** the final evaluation
+    **Then** the service returns a list of candidate tags sorted descending by their Delta score, breaking ties using positive absolute affinity.
+
+#### Story 4.3.4: Integrate Tag Recommendations into Issue Detail UI
+- **Description:** Build a dedicated UI panel inside the Issue Detail view to present the top directed tags, their implementation advice, and why they were recommended.
+- **Acceptance Criteria:**
+  - **Given** the Issue Detail page loads
+    **When** directed tag recommendations are successfully fetched from the backend
+    **Then** a new panel appears: "Targeted Adaptations".
+  - **Given** the "Targeted Adaptations" panel
+    **Then** it displays up to 3 winning Candidate Tags.
+  - **Given** a Candidate Tag recommendation
+    **Then** the UI shows the specific *Recommendation Text* (e.g., "Implement a Sprint Newsletter") and *Implementation Options* retrieved from the `tag_recommendations` matrix.
+  - **Given** a Candidate Tag recommendation
+    **Then** it visually indicates why it was suggested (which problematic tag it resolves) and its Delta Affinity improvement score via a green/grey badge.
+  - **Given** an issue has no candidate recommendations available
+    **Then** this panel remains hidden gracefully.
+
+---
+
 ### Epic 5: Adaptation Decision & Tracking
 
 **Epic Goal:** Record team decisions on practice adaptations, track resolution progress, and surface coverage-aware plus affinity-aware alternatives.

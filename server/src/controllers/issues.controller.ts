@@ -4,13 +4,12 @@ import * as issueService from '../services/issue.service';
 import { AuthenticatedRequest } from '../middleware/requireAuth';
 import { AppError } from '../services/auth.service';
 import { IssueStatus } from '@prisma/client';
-import { recordDecisionSchema, evaluateIssueSchema } from '../schemas/issue.schema';
+import { createIssueSchema, recordDecisionSchema, evaluateIssueSchema } from '../schemas/issue.schema';
 
 export const createIssue = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const { teamId } = req.params;
-        const { title, description, priority, practiceIds } = req.body;
-        const userId = (req as AuthenticatedRequest).user?.userId; // Assumes requireAuth middleware attaches user
+        const userId = (req as AuthenticatedRequest).user?.userId;
 
         if (!teamId || isNaN(Number(teamId))) {
             throw new AppError('validation_error', 'Invalid team ID', {}, 400);
@@ -20,13 +19,22 @@ export const createIssue = async (req: Request, res: Response, next: NextFunctio
             throw new AppError('unauthorized', 'User not authenticated', {}, 401);
         }
 
+        const validation = createIssueSchema.safeParse(req.body);
+        if (!validation.success) {
+            throw new AppError('validation_error', 'Invalid input data', { errors: validation.error.format() }, 400);
+        }
+
+        const { title, description, priority, practiceIds, tagIds, isStandalone } = validation.data;
+
         const issue = await issueService.createIssue({
             title,
             description,
             priority,
             teamId: Number(teamId),
             createdBy: userId,
-            practiceIds
+            practiceIds,
+            tagIds,
+            isStandalone
         });
 
         res.status(201).json(issue);

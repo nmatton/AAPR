@@ -1,5 +1,18 @@
 import { z } from 'zod';
 
+export const createIssueSchema = z.object({
+    title: z.string().min(5, 'Title must be at least 5 characters').max(255),
+    description: z.string().min(10, 'Description must be at least 10 characters'),
+    priority: z.enum(['LOW', 'MEDIUM', 'HIGH'], {
+        message: 'Priority must be LOW, MEDIUM, or HIGH'
+    }),
+    practiceIds: z.array(z.number().int().positive()).max(50).optional(),
+    tagIds: z.array(z.number().int().positive()).max(50).optional(),
+    isStandalone: z.boolean().optional().default(false),
+});
+
+export type CreateIssueInput = z.infer<typeof createIssueSchema>;
+
 export const recordDecisionSchema = z.object({
     decisionText: z.string()
         .min(10, 'Decision text must be at least 10 characters')

@@ -153,6 +153,10 @@ describe('PracticeEditForm', () => {
       />
     )
 
+    await waitFor(() => {
+      expect(coverageApi.getTeamPillarCoverage).toHaveBeenCalled()
+    })
+
     fireEvent.change(screen.getByDisplayValue('Sprint Planning'), { target: { value: 'New Title' } })
     fireEvent.click(screen.getByRole('button', { name: /cancel/i }))
 

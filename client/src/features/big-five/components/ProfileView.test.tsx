@@ -3,6 +3,10 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { ProfileView } from './ProfileView';
 import { BrowserRouter } from 'react-router-dom';
 
+vi.mock('./ProfileRadarChart', () => ({
+    ProfileRadarChart: () => <div data-testid="profile-radar-chart" />,
+}));
+
 describe('ProfileView', () => {
     const mockScores = {
         id: 1,

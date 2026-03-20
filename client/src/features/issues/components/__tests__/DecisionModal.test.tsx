@@ -3,6 +3,21 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { DecisionModal } from '../DecisionModal';
 
+vi.mock('@headlessui/react', () => {
+    const DialogRoot = ({ open, children, ...props }: any) => (
+        open ? <div {...props}>{children}</div> : null
+    );
+    const DialogPanel = ({ children, ...props }: any) => <div {...props}>{children}</div>;
+    const DialogTitle = ({ children, ...props }: any) => <h2 {...props}>{children}</h2>;
+
+    return {
+        Dialog: Object.assign(DialogRoot, {
+            Panel: DialogPanel,
+            Title: DialogTitle,
+        }),
+    };
+});
+
 describe('DecisionModal', () => {
     it('renders correctly when open', () => {
         render(<DecisionModal isOpen={true} onClose={vi.fn()} onSubmit={vi.fn()} />);

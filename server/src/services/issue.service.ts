@@ -14,6 +14,8 @@ export interface IssueInput {
     teamId: number;
     createdBy: number;
     practiceIds?: number[];
+    tagIds?: number[];
+    isStandalone?: boolean;
 }
 
 export interface UpdateIssueInput {
@@ -94,7 +96,7 @@ export const meanDurationHours = (durationsMs: number[]): number => {
 
 
 export const createIssue = async (input: IssueInput) => {
-    const { title, description, priority, teamId, createdBy, practiceIds } = input;
+    const { title, description, priority, teamId, createdBy, practiceIds, tagIds, isStandalone } = input;
 
     // Validation
     if (!title || title.length < 5) {
@@ -110,19 +112,33 @@ export const createIssue = async (input: IssueInput) => {
         throw new AppError('not_found', 'Team not found', { teamId }, 404);
     }
 
-    // Validate practice IDs belong to team
-    if (practiceIds && practiceIds.length > 0) {
-        for (const pid of practiceIds) {
-            const teamPractice = await prisma.teamPractice.findFirst({
-                where: { teamId, practiceId: pid }
+    return await prisma.$transaction(async (tx) => {
+        // Validate practice IDs belong to team (batch query inside tx prevents TOCTOU)
+        if (practiceIds && practiceIds.length > 0) {
+            const validPractices = await tx.teamPractice.findMany({
+                where: { teamId, practiceId: { in: practiceIds } },
+                select: { practiceId: true }
             });
-            if (!teamPractice) {
-                throw new AppError('validation_error', 'One or more practices are not valid for this team', { practiceId: pid }, 400);
+            if (validPractices.length !== practiceIds.length) {
+                const validIds = new Set(validPractices.map(tp => tp.practiceId));
+                const invalidId = practiceIds.find(pid => !validIds.has(pid));
+                throw new AppError('validation_error', 'One or more practices are not valid for this team', { practiceId: invalidId }, 400);
             }
         }
-    }
 
-    return await prisma.$transaction(async (tx) => {
+        // Validate tag IDs exist (inside tx prevents TOCTOU)
+        if (tagIds && tagIds.length > 0) {
+            const existingTags = await tx.tag.findMany({
+                where: { id: { in: tagIds } },
+                select: { id: true }
+            });
+            const existingTagIds = new Set(existingTags.map(t => t.id));
+            const invalidTagIds = tagIds.filter(id => !existingTagIds.has(id));
+            if (invalidTagIds.length > 0) {
+                throw new AppError('validation_error', 'One or more tags do not exist', { invalidTagIds }, 400);
+            }
+        }
+
         // Create Issue
         const issue = await tx.issue.create({
             data: {
@@ -132,14 +148,22 @@ export const createIssue = async (input: IssueInput) => {
                 status: 'OPEN',
                 teamId,
                 createdBy,
+                isStandalone: isStandalone ?? false,
                 // Link practices if provided
                 linkedPractices: practiceIds && practiceIds.length > 0 ? {
                     create: practiceIds.map(pid => ({ practiceId: pid }))
+                } : undefined,
+                // Link tags if provided
+                issueTags: tagIds && tagIds.length > 0 ? {
+                    create: tagIds.map(tid => ({ tagId: tid }))
                 } : undefined
             },
             include: {
                 linkedPractices: {
                     include: { practice: true }
+                },
+                issueTags: {
+                    include: { tag: true }
                 }
             }
         });
@@ -159,6 +183,8 @@ export const createIssue = async (input: IssueInput) => {
                 priority: issue.priority,
                 status: issue.status,
                 linkedPracticeIds: practiceIds || [],
+                linkedTagIds: tagIds || [],
+                isStandalone: isStandalone ?? false,
                 actorId: createdBy,
                 teamId,
                 timestamp: new Date().toISOString(),
@@ -340,6 +366,12 @@ export const getIssueDetails = async (teamId: number, issueId: number) => {
                 id: lp.practice.id,
                 title: lp.practice.title,
             })),
+            tags: (issue as any).issueTags?.map((it: any) => ({
+                id: it.tag.id,
+                name: it.tag.name,
+                description: it.tag.description,
+            })) || [],
+            isStandalone: issue.isStandalone,
         },
         comments: comments.map(c => ({
             id: c.id,
@@ -382,6 +414,11 @@ export const getIssues = async (teamId: number, options: Omit<issueRepository.Fi
             id: lp.practice.id,
             title: lp.practice.title,
         })),
+        tags: (issue as any).issueTags?.map((it: any) => ({
+            id: it.tag.id,
+            name: it.tag.name,
+        })) || [],
+        isStandalone: (issue as any).isStandalone,
         _count: {
             comments: issue._count.comments
         }

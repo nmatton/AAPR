@@ -10,6 +10,7 @@ import { practicesRouter } from './routes/practices.routes'
 import { bigFiveRouter } from './routes/big-five.routes'
 import { eventsRouter } from './routes/events.routes'
 import { adminStatsRouter } from './routes/admin-stats.routes'
+import tagsRouter from './routes/tags.routes'
 import { getHealthReport } from './services/health.service'
 import { errorHandler } from './middleware/errorHandler'
 
@@ -38,12 +39,15 @@ app.use((req, res, next) => {
   next()
 })
 
+
+
 app.use('/api/v1/auth', authRouter)
 app.use('/api/v1/teams', teamsRouter)
 app.use('/api/v1/practices', practicesRouter)
 app.use('/api/v1/big-five', bigFiveRouter)
 app.use('/api/v1/events', eventsRouter)
 app.use('/api/v1/admin', adminStatsRouter)
+app.use('/api/v1/tags', tagsRouter)
 
 app.get('/api/v1/health', async (req, res) => {
   const report = await getHealthReport()

@@ -1,6 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { InvitePanel } from '../components/InvitePanel'
 import * as invitesApi from '../api/invitesApi'
 import { useInvitesStore } from '../state/invitesSlice'
@@ -10,14 +9,25 @@ vi.mock('../api/invitesApi')
 
 describe('InvitePanel', () => {
   beforeEach(() => {
+    vi.restoreAllMocks()
     vi.clearAllMocks()
     useInvitesStore.setState({
       invites: [],
       isLoading: false,
       isCreating: false,
       isResending: false,
-      error: null
+      error: null,
+      createNewInvite: vi.fn().mockResolvedValue({
+        id: 1,
+        teamId: 1,
+        email: 'new@example.com',
+        status: 'Pending'
+      })
     })
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   it('renders invite panel form', () => {
@@ -49,8 +59,8 @@ describe('InvitePanel', () => {
     render(<InvitePanel teamId={1} onInviteSent={mockCallback} />)
 
     const emailInput = screen.getByLabelText(/Email Address/i) as HTMLInputElement
-    
-    await userEvent.type(emailInput, 'invalid-email')
+
+    fireEvent.change(emailInput, { target: { value: 'invalid-email' } })
 
     expect(screen.getByText('Please enter a valid email address')).toBeInTheDocument()
   })
@@ -62,7 +72,7 @@ describe('InvitePanel', () => {
     const emailInput = screen.getByLabelText(/Email Address/i) as HTMLInputElement
     const submitButton = screen.getByRole('button', { name: /Send invitation/i })
 
-    await userEvent.type(emailInput, 'valid@example.com')
+    fireEvent.change(emailInput, { target: { value: 'valid@example.com' } })
 
     expect(submitButton).not.toBeDisabled()
   })
@@ -74,12 +84,12 @@ describe('InvitePanel', () => {
     const emailInput = screen.getByLabelText(/Email Address/i) as HTMLInputElement
 
     // Type invalid email
-    await userEvent.type(emailInput, 'invalid')
+    fireEvent.change(emailInput, { target: { value: 'invalid' } })
     expect(screen.getByText('Please enter a valid email address')).toBeInTheDocument()
 
     // Clear and type valid email
-    await userEvent.clear(emailInput)
-    await userEvent.type(emailInput, 'valid@example.com')
+    fireEvent.change(emailInput, { target: { value: '' } })
+    fireEvent.change(emailInput, { target: { value: 'valid@example.com' } })
 
     expect(screen.queryByText('Please enter a valid email address')).not.toBeInTheDocument()
   })
@@ -101,11 +111,15 @@ describe('InvitePanel', () => {
     const emailInput = screen.getByLabelText(/Email Address/i)
     const submitButton = screen.getByRole('button', { name: /Send invitation/i })
 
-    await userEvent.type(emailInput, 'new@example.com')
+    fireEvent.change(emailInput, { target: { value: 'new@example.com' } })
     fireEvent.click(submitButton)
 
-    // Note: Toast notification behavior depends on Zustand store setup
-    // This test validates the component's form handling
+    await waitFor(() => {
+      expect(mockCallback).toHaveBeenCalledWith('new@example.com')
+    })
+
+    expect(screen.getByText('Invite sent to new@example.com')).toBeInTheDocument()
+
   })
 
   it('clears email input after successful submission', async () => {
@@ -115,27 +129,27 @@ describe('InvitePanel', () => {
     const emailInput = screen.getByLabelText(/Email Address/i) as HTMLInputElement
     const submitButton = screen.getByRole('button', { name: /Send invitation/i })
 
-    await userEvent.type(emailInput, 'test@example.com')
+    fireEvent.change(emailInput, { target: { value: 'test@example.com' } })
     
-    // Mock successful submit
     fireEvent.click(submitButton)
 
-    // After successful submission, input should be cleared
-    // (This depends on proper Zustand mock setup)
+    await waitFor(() => {
+      expect(emailInput.value).toBe('')
+    })
   })
 
   it('prevents multiple submissions', async () => {
     const mockCallback = vi.fn()
+    useInvitesStore.setState({
+      isCreating: true,
+      createNewInvite: vi.fn()
+    })
     render(<InvitePanel teamId={1} onInviteSent={mockCallback} />)
 
-    const emailInput = screen.getByLabelText(/Email Address/i)
     const submitButton = screen.getByRole('button', { name: /Send invitation/i })
 
-    await userEvent.type(emailInput, 'test@example.com')
-    
-    // Submit button should show "Sending..." state when disabled
-    fireEvent.click(submitButton)
-    // Second click should not be possible if button is properly disabled
+    expect(submitButton).toBeDisabled()
+    expect(submitButton).toHaveTextContent('Sending...')
   })
 
   it('displays placeholder text', () => {
@@ -160,7 +174,7 @@ describe('InvitePanel', () => {
 
     const emailInput = screen.getByLabelText(/Email Address/i)
 
-    await userEvent.type(emailInput, 'invalid')
+    fireEvent.change(emailInput, { target: { value: 'invalid' } })
 
     expect(emailInput).toHaveAttribute('aria-invalid', 'true')
   })

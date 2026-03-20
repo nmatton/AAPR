@@ -115,6 +115,14 @@ development_status:
   4-2-2-issue-detail-recommendations-ui: done
   epic-4-2-retrospective: optional
 
+  # Epic 4.3: Directed Tag-Based Recommendations
+  epic-4-3: in-progress
+  4-3-1-enhance-issue-submission-with-tag-identification: done
+  4-3-2-seed-tag-relations-candidates-and-recommendation-data: backlog
+  4-3-3-implement-delta-affinity-calculation-engine: backlog
+  4-3-4-integrate-tag-recommendations-into-issue-detail-ui: backlog
+  epic-4-3-retrospective: optional
+
   # Epic 5: Adaptation Decision & Tracking
   epic-5: in-progress
   5-1-record-adaptation-decision-on-issue: done

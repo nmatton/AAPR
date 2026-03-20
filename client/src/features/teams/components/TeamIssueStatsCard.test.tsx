@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { describe, test, expect, vi, beforeEach } from 'vitest';
 import { TeamIssueStatsCard } from './TeamIssueStatsCard';
 import { getIssueStats } from '../../issues/api/issuesApi';
@@ -21,7 +21,9 @@ vi.mock('react-router-dom', async () => {
 
 describe('TeamIssueStatsCard', () => {
     beforeEach(() => {
+        vi.restoreAllMocks();
         vi.clearAllMocks();
+        vi.spyOn(console, 'error').mockImplementation(() => {});
     });
 
     test('renders loading state initially', () => {
@@ -103,7 +105,7 @@ describe('TeamIssueStatsCard', () => {
             expect(screen.getByText('View All Issues')).toBeInTheDocument();
         });
 
-        screen.getByText('View All Issues').click();
+        fireEvent.click(screen.getByText('View All Issues'));
         expect(mockNavigate).toHaveBeenCalledWith('/teams/1/issues');
     });
 

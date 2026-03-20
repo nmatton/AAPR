@@ -5,6 +5,8 @@ export interface CreateIssueDto {
     description: string;
     priority: 'LOW' | 'MEDIUM' | 'HIGH';
     practiceIds?: number[];
+    tagIds?: number[];
+    isStandalone?: boolean;
 }
 
 
@@ -46,6 +48,8 @@ export interface IssueDetails {
         createdAt: string;
         author: { id: number; name: string };
         practices: { id: number; title: string }[];
+        isStandalone: boolean;
+        tags: { id: number; name: string; description: string | null }[];
     };
     comments: {
         id: number;
@@ -119,6 +123,8 @@ export interface IssueSummary {
     author: { id: number; name: string };
     practices: { id: number; title: string }[];
     _count: { comments: number };
+    isStandalone: boolean;
+    tags: { id: number; name: string }[];
 }
 
 export const getIssues = async (teamId: number, filters?: IssueFilters): Promise<IssueSummary[]> => {

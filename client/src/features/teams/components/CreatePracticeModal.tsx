@@ -61,8 +61,19 @@ export const CreatePracticeModal = ({ teamId, onClose, onCreated }: CreatePracti
     associatedPractices: []
   });
 
-  const joinValues = (values?: string[] | null) =>
-    values?.map((value) => value.trim()).filter(Boolean).join(', ') ?? '';
+  const normalizeValueToText = (value: unknown): string => {
+    if (typeof value === 'string') return value.trim();
+    if (typeof value === 'number' || typeof value === 'boolean') return String(value).trim();
+    if (value && typeof value === 'object') {
+      const maybeRecord = value as Record<string, unknown>;
+      const preferredText = maybeRecord.name ?? maybeRecord.title ?? maybeRecord.description;
+      if (typeof preferredText === 'string') return preferredText.trim();
+    }
+    return '';
+  };
+
+  const joinValues = (values?: unknown[] | null) =>
+    values?.map(normalizeValueToText).filter(Boolean).join(', ') ?? '';
 
   const normalizeListInput = (value: string): string[] | undefined => {
     const parts = value
@@ -223,12 +234,14 @@ export const CreatePracticeModal = ({ teamId, onClose, onCreated }: CreatePracti
     let detail: Practice = selected;
     try {
       const { practice: fullDetail } = await fetchPracticeDetail(selected.id);
-      detail = { ...selected, ...fullDetail } as Practice;
+      if (fullDetail?.id === selected.id) {
+        detail = { ...selected, ...fullDetail } as Practice;
+      }
     } catch {
       // Fall back to shallow template data if detail fetch fails
     }
 
-    const uniqueTitle = generateUniqueCopyTitle(detail.title);
+    const uniqueTitle = generateUniqueCopyTitle(selected.title);
 
     const safeActivities = Array.isArray(detail.activities) ? detail.activities as ActivityInput[] : [];
     const safeRoles = Array.isArray(detail.roles) ? detail.roles as RoleInput[] : [];
@@ -238,15 +251,16 @@ export const CreatePracticeModal = ({ teamId, onClose, onCreated }: CreatePracti
 
     setFormState({
       title: uniqueTitle,
-      goal: detail.goal,
-      description: detail.description ?? '',
-      categoryId: detail.categoryId,
-      pillarIds: detail.pillars.map((pillar) => pillar.id),
-      tags: normalizeValidTags(detail.tags),
-      method: detail.method ?? '',
-      benefits: joinValues(detail.benefits ?? undefined),
-      pitfalls: joinValues(detail.pitfalls ?? undefined),
-      workProducts: joinValues(detail.workProducts ?? undefined),
+      // Keep primary identity fields from the selected template row for deterministic duplication
+      goal: selected.goal,
+      description: selected.description ?? detail.description ?? '',
+      categoryId: selected.categoryId,
+      pillarIds: selected.pillars.map((pillar) => pillar.id),
+      tags: normalizeValidTags(selected.tags ?? detail.tags),
+      method: selected.method ?? detail.method ?? '',
+      benefits: joinValues(selected.benefits ?? detail.benefits ?? undefined),
+      pitfalls: joinValues(selected.pitfalls ?? detail.pitfalls ?? undefined),
+      workProducts: joinValues(selected.workProducts ?? detail.workProducts ?? undefined),
       activities: safeActivities,
       roles: safeRoles,
       completionCriteria: (detail.completionCriteria as string) ?? '',

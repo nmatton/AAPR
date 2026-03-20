@@ -212,23 +212,28 @@ Resolution: Export completes; user verifies sample rows. No account or team comp
 - Event exports are not a team-member UI capability in MVP; they are executed by authorized researchers/operators from the server command line.
 - No permission restrictions or owner-only actions in MVP.
 
-### Practice Recommendation Logic (MVP - Coverage & Affinity-Based)
+### Practice Recommendation Logic (Directed Tag-Based)
 
-**Scope:** The MVP includes an integrated recommendation engine on the issue detail page. It combines coverage gap analysis, pillar matching, and the newly established affinity scoring foundation. 
+**Scope:** The MVP includes an integrated directed recommendation engine on the issue detail page. It uses explicit Tag selection and personality-affinity deltas to provide highly targeted practice adaptation advice. 
 
 **Algorithm Criteria:**
-1. **Maintain or Increase Coverage:** The recommended practice must cover the same pillars as the current practice OR provide coverage that doesn't reduce the team's overall agility score.
-2. **Increase Affinity:** Evaluates the `team_affinity_score` (computed from existing team members' Big Five profiles against the practice's tag-personality relations). The recommended practice must have a strictly higher score than the practice causing friction.
-3. **Practice Type Matching:** Prioritize practices from the same category or type (e.g. replacing a discussion practice with another discussion practice) to maintain team dynamics.
-4. **Explicit Equivalence Associations:** Heavily weight alternative practices that are linked to the current practice via the `practice_associations` table with an `association_type` of `'Equivalence'`.
+1. **Tag Identification:** When creating an issue, users select "problematic tags" (associated with the failing practice) or "missing tags" (if it's a standalone issue without a current practice).
+2. **Candidate Selection:** The system maps the identified tags to "candidate tags" (solutions) using the `tags_issue_candidates` matrix.
+3. **Delta Affinity Calculation:** A Delta (`Δ`) score is calculated for each candidate: `Affinity(Candidate Tag) - Affinity(Current Tag)`. The delta is mapped to discrete gains:
+   - `- to +` => +1 (Maximum Relief)
+   - `- to 0` => +0.5
+   - `0 to +` => +0.5
+   - `0 to -` => -0.5 (Creates Friction)
+   - `+ to -` => -1 (Creates Major Friction)
+4. **Rejection Rule:** If the absolute affinity of a Candidate Tag for the team/user is strictly negative (`-`), it is immediately rejected, regardless of the relative Delta score.
+5. **Ranking:** The remaining Candidate Tags are ranked by their highest `Δ` score.
 
 **Presentation Rules:**
-- Recommendations (max 3) appear as a panel within the Issue Detail sidebar.
-- Each recommendation highlights the "Why?" (e.g., "Covers the same pillars, but matches your team's personality better").
-- Continues to provide general gap-filling suggestions on the overall team coverage dashboard.
+- Recommendations appear as a panel within the Issue Detail sidebar.
+- The system displays the *Specific Textual Recommendation* and *Implementation Examples* associated with the winning Candidate Tag(s) derived from the `tag_recommendations` matrix.
+- The UI highlights the exact modalities recommended (e.g., "We recommend trying the following modalities: Sprint Newsletter, Async Demo, or reduced oral formalism.").
 
 **Future (Phase 2 - Post-MVP):**
-- Personality-informed ranking: Expand from team-level secondary ordering to richer per-user ranking and explanation patterns.
 - Correlation analysis: Track which practice-personality combinations lead to successful adaptations.
 - Personalized suggestions: "Based on your [Introversion, Low Conscientiousness], consider practices with [Async, Flexible] characteristics."
 

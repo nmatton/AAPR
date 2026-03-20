@@ -1,0 +1,19 @@
+﻿tag_issue;tag_candidates;justification
+Verbal-Heavy;Written / Async, Visual / Tactile;Replace oral bandwidth with delayed writing or visual aids to reduce social fatigue and interruption.
+Written / Async;Verbal-Heavy, Co-located / On-Site;Excessive writing creates isolation or misunderstandings. Return to rich and direct communication.
+Whole Crowd;Small Group / Pair, Solo-Capable;Drastically reduce social density to restore psychological safety or concentration.
+Solo-Capable;Small Group / Pair, Whole Crowd;Break down silos to force knowledge transfer or global alignment.
+Spontaneous / Improv;Structured / Facilitated, Documented / Traceable;Informal chaos is becoming unmanageable. A clear framework must be imposed and a record of decisions must be kept.
+Structured / Facilitated;Spontaneous / Improv, Role-Fluid;"The framework has become a stifling bureaucracy. Roles must be streamlined and technical ""shortcuts"" should be permitted."
+Co-located / On-Site;Written / Async, Solo-Capable, Remote-Friendly;Physical over-presence generates constant interruptions. Need for isolation and asynchrony.
+Remote-Friendly;Co-located / On-Site;Performing too many tasks in physical isolation becomes problematic for scheduling and in-person collaboration.
+Public / High Visib. (Ex: High Exposure);Written / Async, Small Group / Pair;Protect the individual from pressure from the large group by moving the feedback to writing or a very small committee.
+Consensus-Driven;Spontaneous / Improv, Time-Boxed;The need for unanimous agreement paralyzes the team. Force a decision through a strict time limit or allow temporary unilateral action.
+Critical / Introspect. (Ex: Code Review);Gamified, Small Group / Pair;Excessive cold criticism hurts sensitive profiles. Depersonalize via gaming or humanize via direct Pair Programming.
+Time-Boxed;Maintenance-Aware, Spontaneous / Improv;The permanent stopwatch generates delivery stress (Guilt). The constraint must be loosened or deliberate buffers must be provided.
+Gamified;Structured / Facilitated, Documented / Traceable;Games (e.g., Poker Planning) lose their meaning for rational profiles. Return to factual arguments that are tracked and framed seriously.
+Role-Fluid;Structured / Facilitated;The constant switching of roles (e.g., Dev + Scrum Master) erodes technical expertise. Strict role boundaries must be redefined.
+Fast-Feedback;Time-Boxed;Too many CI/CD alerts or constant feedback fragment attention. Feedback should be batched into defined time slots.
+User-Feedback Orient.;Structured / Facilitated, Time-Boxed;The client changes their mind every day (scope creep). A facilitator (PO) must act as a barrier and limit feedback to key moments.
+Documented / Traceable;Verbal-Heavy, Spontaneous / Improv;The team spends more time maintaining Jira/Wiki than coding. Replace documentation with direct informal exchanges.
+Maintenance-Aware;User-Feedback Oriented, Fast-Feedback;The team is getting bogged down in pure refactoring and is no longer delivering business value. Reconnect them to the user.

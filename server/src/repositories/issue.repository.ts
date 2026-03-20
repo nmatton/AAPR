@@ -43,6 +43,11 @@ export const findById = async (id: number, teamId: number) => {
                     },
                 },
             },
+            issueTags: {
+                include: {
+                    tag: true,
+                },
+            },
         },
     });
 };
@@ -95,6 +100,11 @@ export const findAll = async (options: FindIssuesOptions) => {
                     },
                 },
             },
+            issueTags: {
+                include: {
+                    tag: true,
+                },
+            },
             _count: {
                 select: { comments: true }
             }
@@ -145,6 +155,11 @@ export const update = async (id: number, teamId: number, data: Prisma.IssueUpdat
                             title: true,
                         },
                     },
+                },
+            },
+            issueTags: {
+                include: {
+                    tag: true,
                 },
             },
         },

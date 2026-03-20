@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { TeamMembersView } from '../pages/TeamMembersView'
 import * as teamsApi from '../api/teamsApi'
@@ -138,6 +138,12 @@ describe('TeamMembersView', () => {
     vi.mocked(teamsApi.getTeams).mockImplementation(
       () => new Promise<typeof mockTeam[]>(() => {}) // Never resolves
     )
+    vi.mocked(membersApi.getMembers).mockImplementation(
+      () => new Promise<typeof mockMembers>(() => {})
+    )
+    vi.mocked(invitesApi.getInvites).mockImplementation(
+      () => new Promise<typeof mockInvites>(() => {})
+    )
     useTeamsStore.setState({ teams: [], isLoading: true, isCreating: false, error: null })
 
     renderWithRoute()
@@ -155,7 +161,7 @@ describe('TeamMembersView', () => {
     })
 
     const removeButtons = screen.getAllByLabelText(/Remove/i)
-    removeButtons[0].click()
+    fireEvent.click(removeButtons[0])
 
     await waitFor(() => {
       expect(screen.getByText(/Are you sure/i)).toBeInTheDocument()

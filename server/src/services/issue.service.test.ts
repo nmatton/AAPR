@@ -23,11 +23,14 @@ jest.mock('../lib/prisma', () => ({
             findUnique: jest.fn(),
         },
         teamPractice: {
-            findFirst: jest.fn(),
+            findMany: jest.fn(),
         },
         teamMember: {
             findUnique: jest.fn(),
-        }
+        },
+        tag: {
+            findMany: jest.fn(),
+        },
     },
 }));
 
@@ -64,12 +67,15 @@ describe('IssueService', () => {
             teamId: 1,
             createdBy: 1,
             practiceIds: [100],
+            tagIds: [1, 2],
+            isStandalone: false,
         };
 
         it('should create an issue, link practices, and log event in a transaction', async () => {
             // Setup mocks
             (prisma.team.findUnique as jest.Mock<any>).mockResolvedValue({ id: 1 });
-            (prisma.teamPractice.findFirst as jest.Mock<any>).mockResolvedValue({ id: 1 }); // Practice linked to team
+            (prisma.teamPractice.findMany as jest.Mock<any>).mockResolvedValue([{ practiceId: 100 }]); // Practice linked to team
+            (prisma.tag.findMany as jest.Mock<any>).mockResolvedValue([{ id: 1 }, { id: 2 }]); // Tags exist
             (prisma.issue.create as jest.Mock<any>).mockResolvedValue({
                 id: 1,
                 ...validInput,
@@ -82,24 +88,31 @@ describe('IssueService', () => {
             const result = await createIssue(validInput);
 
             expect(prisma.$transaction).toHaveBeenCalled();
-            expect(prisma.issue.create).toHaveBeenCalledWith({
-                data: {
+            expect(prisma.issue.create).toHaveBeenCalledWith(expect.objectContaining({
+                data: expect.objectContaining({
                     title: validInput.title,
                     description: validInput.description,
                     priority: validInput.priority,
                     teamId: validInput.teamId,
                     createdBy: validInput.createdBy,
                     status: 'OPEN',
+                    isStandalone: false,
                     linkedPractices: {
                         create: validInput.practiceIds!.map(pid => ({ practiceId: pid }))
+                    },
+                    issueTags: {
+                        create: validInput.tagIds!.map(tid => ({ tagId: tid }))
                     }
-                },
-                include: {
+                }),
+                include: expect.objectContaining({
                     linkedPractices: {
                         include: { practice: true }
+                    },
+                    issueTags: {
+                        include: { tag: true }
                     }
-                }
-            });
+                })
+            }));
 
             expect(eventService.logEvent).toHaveBeenCalledWith(
                 expect.objectContaining({
@@ -113,6 +126,8 @@ describe('IssueService', () => {
                         priority: validInput.priority,
                         status: 'OPEN',
                         linkedPracticeIds: validInput.practiceIds,
+                        linkedTagIds: validInput.tagIds,
+                        isStandalone: false,
                         actorId: validInput.createdBy,
                         teamId: validInput.teamId,
                         timestamp: expect.any(String),
@@ -124,20 +139,53 @@ describe('IssueService', () => {
             expect(result).toBeDefined();
         });
 
+        it('should create a standalone issue and link tags without practices', async () => {
+            const standaloneInput: IssueInput = {
+                title: 'Standalone Issue',
+                description: 'No practice linked explicitly',
+                priority: 'LOW',
+                teamId: 1,
+                createdBy: 1,
+                isStandalone: true,
+                tagIds: [5]
+            };
+            (prisma.team.findUnique as jest.Mock<any>).mockResolvedValue({ id: 1 });
+            (prisma.tag.findMany as jest.Mock<any>).mockResolvedValue([{ id: 5 }]); // Tag exists
+            (prisma.issue.create as jest.Mock<any>).mockResolvedValue({
+                id: 2, ...standaloneInput, status: 'OPEN', createdAt: new Date(), version: 1
+            });
+
+            await createIssue(standaloneInput);
+            
+            expect(prisma.issue.create).toHaveBeenCalledWith(expect.objectContaining({
+                data: expect.objectContaining({
+                    isStandalone: true,
+                    issueTags: {
+                        create: [{ tagId: 5 }]
+                    }
+                })
+            }));
+            
+            const callArgs = (prisma.issue.create as jest.Mock<any>).mock.calls.slice(-1)[0][0] as any;
+            expect(callArgs.data.linkedPractices).toBeUndefined();
+        });
+
         it('should throw error if title is too short', async () => {
             const invalidInput = { ...validInput, title: 'No' };
             await expect(createIssue(invalidInput)).rejects.toThrow('Validation failed');
         });
 
         it('should throw error if practice is not enabled for the team', async () => {
-            (prisma.teamPractice.findFirst as jest.Mock<any>).mockResolvedValue(null); // Practice NOT linked to team
+            (prisma.team.findUnique as jest.Mock<any>).mockResolvedValue({ id: 1 });
+            (prisma.teamPractice.findMany as jest.Mock<any>).mockResolvedValue([]); // No valid practices for team
 
             await expect(createIssue(validInput)).rejects.toThrow('One or more practices are not valid for this team');
         });
 
         it('should propagate error and maintain transactional integrity if event logging fails', async () => {
             (prisma.team.findUnique as jest.Mock<any>).mockResolvedValue({ id: 1 });
-            (prisma.teamPractice.findFirst as jest.Mock<any>).mockResolvedValue({ id: 1 });
+            (prisma.teamPractice.findMany as jest.Mock<any>).mockResolvedValue([{ practiceId: 100 }]);
+            (prisma.tag.findMany as jest.Mock<any>).mockResolvedValue([{ id: 1 }, { id: 2 }]); // Tags exist
             (prisma.issue.create as jest.Mock<any>).mockResolvedValue({
                 id: 1,
                 ...validInput,

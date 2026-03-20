@@ -169,7 +169,6 @@ export const PillarContextPopover: React.FC<PillarContextPopoverProps> = ({
                     <li key={practice.id}>
                         <button
                             onClick={() => {
-                                console.log('[PillarContextPopover] Navigating to practice:', practice.id, practice.title)
                                 onNavigateToPractice(practice.id)
                                 onClose()
                             }}

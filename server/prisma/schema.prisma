@@ -428,6 +428,8 @@ model Issue {
   updatedAt   DateTime @updatedAt @map("updated_at")
   /// Optimistic locking version
   version     Int      @default(1)
+  /// Standalone issue flag (not linked to practice)
+  isStandalone Boolean @default(false) @map("is_standalone")
   
   team           Team            @relation(fields: [teamId], references: [id], onDelete: Cascade)
   createdByUser  User            @relation("created_issues", fields: [createdBy], references: [id])
@@ -435,6 +437,7 @@ model Issue {
   evaluationRecorder User?       @relation("recorded_evaluations", fields: [evaluationRecordedBy], references: [id])
   linkedPractices IssuePractice[]
   comments       Comment[]
+  issueTags      IssueTag[]
 
   @@index([teamId], map: "idx_issues_team")
   @@index([status], map: "idx_issues_status")
@@ -478,4 +481,42 @@ model IssuePractice {
   @@index([issueId], map: "idx_issue_practices_issue")
   @@index([practiceId], map: "idx_issue_practices_practice")
   @@map("issue_practices")
+}
+
+/// Tag entity - system-wide tags for directed recommendations
+/// Isolation: Tags are global reference data
+model Tag {
+  /// Auto-incrementing tag identifier
+  id          Int      @id @default(autoincrement())
+  /// Tag name
+  name        String   @unique @db.VarChar(100)
+  /// Description for tooltips
+  description String?  @db.Text
+  /// Tag type (e.g. Activity, Artifact, Problem, Missing Capability)
+  type        String   @default("System") @db.VarChar(50)
+  /// Is this a global tag
+  isGlobal    Boolean  @default(true) @map("is_global")
+  /// Tag creation timestamp
+  createdAt   DateTime @default(now()) @map("created_at")
+  /// Last update timestamp
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  issueTags   IssueTag[]
+
+  @@map("tags")
+}
+
+/// IssueTag entity - links issues to specific tags
+/// Isolation: implicitly linked via issue_id -> team_id
+model IssueTag {
+  issueId Int @map("issue_id")
+  tagId   Int @map("tag_id")
+
+  issue Issue @relation(fields: [issueId], references: [id], onDelete: Cascade)
+  tag   Tag   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([issueId, tagId])
+  @@index([issueId], map: "idx_issue_tags_issue")
+  @@index([tagId], map: "idx_issue_tags_tag")
+  @@map("issue_tags")
 }

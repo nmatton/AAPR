@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Practice } from '../../practices/types';
 import { XMarkIcon } from '@heroicons/react/24/outline';
+import { getTags, Tag } from '../api/tagsApi';
 
 const issueSchema = z.object({
     title: z.string().min(5, 'Title must be at least 5 characters'),
@@ -12,7 +13,9 @@ const issueSchema = z.object({
     priority: z.enum(['LOW', 'MEDIUM', 'HIGH'], {
         message: 'Please select a priority'
     }),
-    practiceIds: z.array(z.coerce.number()).optional(),
+    practiceIds: z.array(z.coerce.number()).max(50).optional(),
+    tagIds: z.array(z.coerce.number()).max(50).optional(),
+    isStandalone: z.boolean().optional(),
 });
 
 type IssueFormData = z.infer<typeof issueSchema>;
@@ -35,13 +38,57 @@ export const IssueSubmissionModal: React.FC<IssueSubmissionModalProps> = ({
         handleSubmit,
         formState: { errors, isSubmitting },
         reset,
+        watch,
+        setValue,
     } = useForm<IssueFormData>({
-        resolver: zodResolver(issueSchema),
+        resolver: zodResolver(issueSchema) as any,
         defaultValues: {
             priority: 'MEDIUM',
             practiceIds: [],
+            tagIds: [],
+            isStandalone: false,
         },
     });
+
+    const [tags, setTags] = useState<Tag[]>([]);
+    const [isLoadingTags, setIsLoadingTags] = useState(false);
+
+    const selectedPracticeIds = watch('practiceIds') || [];
+    const isStandalone = watch('isStandalone') || false;
+
+    // Derive a stable key for the effect based on sorted practice selection
+    const selectedPracticeKey = [...selectedPracticeIds].sort().join(',');
+
+    useEffect(() => {
+        const fetchTags = async () => {
+            if (!isStandalone && selectedPracticeIds.length === 0) {
+                setTags([]);
+                return;
+            }
+
+            setIsLoadingTags(true);
+            try {
+                let fetchedTags;
+                if (isStandalone) {
+                    // Standalone issue: show all global tags
+                    fetchedTags = await getTags();
+                } else {
+                    // Practice-linked issue: show only tags associated with selected practices
+                    fetchedTags = await getTags({
+                        practiceIds: selectedPracticeIds.map(Number).filter(n => n > 0),
+                    });
+                }
+                setTags(fetchedTags);
+            } catch (error) {
+                console.error('Failed to fetch tags', error);
+            } finally {
+                setIsLoadingTags(false);
+            }
+        };
+
+        fetchTags();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isStandalone, selectedPracticeKey]);
 
     const onFormSubmit = async (data: IssueFormData) => {
         try {
@@ -131,9 +178,10 @@ export const IssueSubmissionModal: React.FC<IssueSubmissionModalProps> = ({
                                             id={`practice-${practice.id}`}
                                             value={practice.id}
                                             {...register('practiceIds')}
-                                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                            disabled={isStandalone}
+                                            className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 disabled:opacity-50"
                                         />
-                                        <label htmlFor={`practice-${practice.id}`} className="ml-2 text-sm text-gray-700">
+                                        <label htmlFor={`practice-${practice.id}`} className={`ml-2 text-sm text-gray-700 ${isStandalone ? 'opacity-50' : ''}`}>
                                             {practice.title}
                                         </label>
                                     </div>
@@ -142,10 +190,58 @@ export const IssueSubmissionModal: React.FC<IssueSubmissionModalProps> = ({
                                     <p className="text-sm text-gray-500">No practices available to link.</p>
                                 )}
                             </div>
+                            <div className="mt-2 flex items-center">
+                                <input
+                                    type="checkbox"
+                                    id="isStandalone"
+                                    {...register('isStandalone')}
+                                    onChange={(e) => {
+                                        register('isStandalone').onChange(e);
+                                        if (e.target.checked) {
+                                            setValue('practiceIds', []); // clear practices if standalone
+                                        }
+                                    }}
+                                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                />
+                                <label htmlFor="isStandalone" className="ml-2 text-sm text-gray-700 italic">
+                                    Practice not listed
+                                </label>
+                            </div>
                             {errors.practiceIds?.message && (
                                 <p className="mt-1 text-sm text-red-600">{errors.practiceIds.message}</p>
                             )}
                         </div>
+
+                        {(isStandalone || selectedPracticeIds.length > 0) && (
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    {isStandalone ? 'Select missing capabilities' : 'Select problem sources'}
+                                </label>
+                                {isLoadingTags ? (
+                                    <p className="text-sm text-gray-500">Loading tags...</p>
+                                ) : (
+                                    <div className="max-h-40 overflow-y-auto border rounded-md p-2 space-y-2">
+                                        {tags.map((tag) => (
+                                            <div key={tag.id} className="flex items-center" title={tag.description || ''}>
+                                                <input
+                                                    type="checkbox"
+                                                    id={`tag-${tag.id}`}
+                                                    value={tag.id}
+                                                    {...register('tagIds')}
+                                                    className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                                />
+                                                <label htmlFor={`tag-${tag.id}`} className="ml-2 text-sm text-gray-700">
+                                                    {tag.name}
+                                                </label>
+                                            </div>
+                                        ))}
+                                        {tags.length === 0 && (
+                                            <p className="text-sm text-gray-500">No tags available.</p>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         <div className="flex justify-end pt-4">
                             <button
