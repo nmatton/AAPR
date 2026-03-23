@@ -1,11 +1,12 @@
+import { type Prisma, type PrismaClient } from '@prisma/client'
 import { prisma } from '../lib/prisma';
 import { TAG_DESCRIPTIONS, VALID_TAGS } from '../constants/tags.constants';
 
 const GLOBAL_TAG_FILTER = { isGlobal: true };
 const TAG_ORDER_BY = { name: 'asc' } as const;
 
-export const ensureTagCatalog = async () => {
-    await prisma.tag.createMany({
+export const ensureTagCatalog = async (client: PrismaClient | Prisma.TransactionClient = prisma) => {
+    await client.tag.createMany({
         data: VALID_TAGS.map((name) => ({
             name,
             description: TAG_DESCRIPTIONS[name],

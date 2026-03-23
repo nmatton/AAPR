@@ -5,11 +5,16 @@
 
 import { seedCategoriesAndPillars } from './seed-categories-pillars';
 import { seedPractices } from './seed-practices';
+import { seedTagReferenceData } from './seed-tag-reference-data';
 
 export async function seedAll(): Promise<number> {
   try {
     await seedCategoriesAndPillars();
     const practicesExitCode = await seedPractices();
+    if (practicesExitCode !== 0) {
+      return practicesExitCode;
+    }
+    await seedTagReferenceData();
     return practicesExitCode;
   } catch (error) {
     console.error('[ERROR] Seed-all failed:', error);

@@ -501,9 +501,56 @@ model Tag {
   /// Last update timestamp
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  issueTags   IssueTag[]
+  issueTags             IssueTag[]
+  personalityRelations  TagPersonalityRelation[]
+  problemCandidates     TagCandidate[]           @relation("problem_tag_candidates")
+  solutionCandidates    TagCandidate[]           @relation("solution_tag_candidates")
+  recommendation        TagRecommendation?
 
   @@map("tags")
+}
+
+/// TagPersonalityRelation entity - maps each tag to high/low trait poles
+model TagPersonalityRelation {
+  tagId     Int      @map("tag_id")
+  trait     String   @db.Char(1)
+  highPole  Int      @map("high_pole") @db.SmallInt
+  lowPole   Int      @map("low_pole") @db.SmallInt
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([tagId, trait])
+  @@index([tagId], map: "idx_tag_personality_relations_tag")
+  @@map("tag_personality_relations")
+}
+
+/// TagCandidate entity - maps a problem tag to candidate solution tags
+model TagCandidate {
+  problemTagId  Int      @map("problem_tag_id")
+  solutionTagId Int      @map("solution_tag_id")
+  justification String   @db.Text
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+  problemTag    Tag      @relation("problem_tag_candidates", fields: [problemTagId], references: [id], onDelete: Cascade)
+  solutionTag   Tag      @relation("solution_tag_candidates", fields: [solutionTagId], references: [id], onDelete: Cascade)
+
+  @@id([problemTagId, solutionTagId])
+  @@index([problemTagId], map: "idx_tag_candidates_problem")
+  @@index([solutionTagId], map: "idx_tag_candidates_solution")
+  @@map("tag_candidates")
+}
+
+/// TagRecommendation entity - stores recommendation content for a tag
+model TagRecommendation {
+  tagId                  Int      @id @map("tag_id")
+  recommendationText     String   @map("recommendation_text") @db.Text
+  implementationExample  String   @map("implementation_example") @db.Text
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+  tag                    Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@map("tag_recommendations")
 }
 
 /// IssueTag entity - links issues to specific tags
