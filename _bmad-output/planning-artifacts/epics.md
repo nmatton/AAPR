@@ -2145,7 +2145,7 @@ This epic pulls forward the practice recommendation feature into the MVP scope. 
     **Then** it queries the `tag_candidates` table to compile a list of Candidate Tags.
   - **Given** a Candidate Tag and a Problematic Tag
     **When** calculating the Delta score for the team
-    **Then** it correctly maps the team's average personality affinity transitions to absolute values (`- to +` = +1.0, `- to 0` / `0 to +` = +0.5, `0 to -` = -0.5, `+ to -` = -1.0).
+    **Then** it correctly maps the team's average personality affinity transitions to absolute values (see affinity scoring with high/low values and interpolation).
   - **Given** a Candidate Tag where the absolute team affinity is negative (`-` indicating clear friction)
     **When** evaluating recommendations
     **Then** that Candidate Tag is strictly disqualified, regardless of a potentially high comparative Delta score.

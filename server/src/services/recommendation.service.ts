@@ -1,6 +1,10 @@
 import { prisma } from '../lib/prisma'
 import { AppError } from './auth.service'
 import { getTeamPracticeAffinity } from './affinity.service'
+import { getReferenceData } from './affinity/affinity-reference-data'
+import { computeTraitContribution } from './affinity/affinity-scoring'
+import type { UserProfile, BoundsConfig } from './affinity/affinity.types'
+import { TRAIT_KEYS, TRAIT_ITEM_COUNTS, type TraitKey } from './affinity/affinity.types'
 
 /** Shape of a single practice recommendation returned by the API. */
 export interface PracticeRecommendation {
@@ -264,4 +268,272 @@ export async function getRecommendations(
     affinityDelta: c.affinityScore - targetScore,
     reason: c.reason,
   }))
+}
+
+// ============================================================
+//  Directed Tag-Based Recommendation Engine (Story 4.3.3)
+// ============================================================
+
+/** Shape of a single directed tag recommendation returned by the engine. */
+export interface DirectedTagRecommendation {
+  candidateTagId: number
+  candidateTagName: string
+  sourceProblematicTagId: number
+  sourceProblematicTagName: string
+  absoluteAffinity: number
+  deltaScore: number
+  reason: string
+}
+
+/**
+ * Map an affinity value to its sign class for delta transition categorization.
+ */
+function getAffinitySignClass(value: number): '-' | '0' | '+' {
+  if (value < 0) return '-'
+  if (value > 0) return '+'
+  return '0'
+}
+
+/**
+ * Compute the delta gain class for a transition from current (problematic) to candidate affinity.
+ *
+ * Transition table (per directed recommendation contract):
+ *   - → + : +1.0
+ *   - → 0 : +0.5
+ *   0 → + : +0.5
+ *   0 → - : -0.5
+ *   + → - : -1.0
+ *   Same-sign / unlisted : 0 (neutral, falls through to tie-break ordering)
+ */
+export function computeDeltaGainClass(
+  currentAffinity: number,
+  candidateAffinity: number
+): number {
+  const from = getAffinitySignClass(currentAffinity)
+  const to = getAffinitySignClass(candidateAffinity)
+
+  if (from === '-' && to === '+') return 1.0
+  if ((from === '-' && to === '0') || (from === '0' && to === '+')) return 0.5
+  if (from === '0' && to === '-') return -0.5
+  if (from === '+' && to === '-') return -1.0
+
+  return 0
+}
+
+/**
+ * Compute team-average affinity for a single tag using DB-sourced personality relation data.
+ * Reuses the exact piecewise clamp/interpolation model from the affinity foundation (Epic 4.1).
+ */
+function computeTeamTagAffinityFromTraits(
+  tagTraits: Record<TraitKey, { highPole: number; lowPole: number }>,
+  teamProfiles: UserProfile[],
+  bounds: BoundsConfig
+): number | null {
+  if (teamProfiles.length === 0) return null
+
+  let totalScore = 0
+  for (const profile of teamProfiles) {
+    let traitSum = 0
+    for (const trait of TRAIT_KEYS) {
+      const contribution = computeTraitContribution(
+        profile[trait],
+        bounds[trait].lowBound,
+        bounds[trait].highBound,
+        tagTraits[trait].lowPole,
+        tagTraits[trait].highPole
+      )
+      traitSum += contribution
+    }
+    totalScore += traitSum / 5
+  }
+
+  return totalScore / teamProfiles.length
+}
+
+/**
+ * Get directed tag recommendations for an issue's problematic/missing tags.
+ *
+ * Implements the Delta Affinity Calculation Engine (Story 4.3.3) following
+ * the directed recommendation pipeline from Architecture Decision 1.5:
+ *   1. Target/problem tag identification (from issue tags)
+ *   2. Candidate mapping (via tag_candidates table)
+ *   3. Delta computation (gain class scoring)
+ *   4. Negative guardrail (hard rejection of negative-affinity candidates)
+ *   5. Sort and hydrate for downstream UI (Story 4.3.4)
+ *
+ * Response contract for Story 4.3.4 UI consumption:
+ *   - candidateTagId/Name: the recommended solution tag
+ *   - sourceProblematicTagId/Name: which issue tag triggered this recommendation
+ *   - absoluteAffinity: team's average affinity for the candidate tag [-1, 1]
+ *   - deltaScore: gain class value used as primary ranking score
+ *   - reason: human-readable transition description
+ */
+export async function getDirectedTagRecommendations(
+  teamId: number,
+  issueId: number
+): Promise<DirectedTagRecommendation[]> {
+  // 1. Get issue tags (problematic/missing tags assigned via Story 4.3.1)
+  //    Filters by teamId via issue relation to prevent IDOR
+  const issueTags = await prisma.issueTag.findMany({
+    where: { issueId, issue: { teamId } },
+    include: { tag: { select: { id: true, name: true } } },
+  })
+
+  if (issueTags.length === 0) return []
+
+  const problemTagIds = issueTags.map((it) => it.tagId)
+
+  // 2. Resolve candidate solution tags via tag_candidates (seeded in Story 4.3.2)
+  const candidates = await prisma.tagCandidate.findMany({
+    where: { problemTagId: { in: problemTagIds } },
+    include: {
+      solutionTag: { select: { id: true, name: true } },
+      problemTag: { select: { id: true, name: true } },
+    },
+  })
+
+  if (candidates.length === 0) return []
+
+  // 3. Batch-load personality relations from DB for all involved tags (no N+1)
+  const allTagIds = new Set<number>()
+  for (const it of issueTags) allTagIds.add(it.tagId)
+  for (const c of candidates) allTagIds.add(c.solutionTagId)
+
+  const personalityRelations = await prisma.tagPersonalityRelation.findMany({
+    where: { tagId: { in: Array.from(allTagIds) } },
+  })
+
+  // Build trait map: tagId → Record<TraitKey, {highPole, lowPole}>
+  const tagTraitsMap = new Map<
+    number,
+    Record<TraitKey, { highPole: number; lowPole: number }>
+  >()
+
+  for (const rel of personalityRelations) {
+    if (!tagTraitsMap.has(rel.tagId)) {
+      tagTraitsMap.set(
+        rel.tagId,
+        {} as Record<TraitKey, { highPole: number; lowPole: number }>
+      )
+    }
+    tagTraitsMap.get(rel.tagId)![rel.trait as TraitKey] = {
+      highPole: rel.highPole,
+      lowPole: rel.lowPole,
+    }
+  }
+
+  // Discard tags without all 5 traits
+  for (const [tagId, traits] of tagTraitsMap) {
+    if (!TRAIT_KEYS.every((k) => traits[k] !== undefined)) {
+      tagTraitsMap.delete(tagId)
+    }
+  }
+
+  // 4. Load team members with Big Five scores (batched)
+  const teamMembers = await prisma.teamMember.findMany({
+    where: { teamId, user: { isAdminMonitor: false } },
+    select: {
+      user: {
+        select: { bigFiveScore: true },
+      },
+    },
+  })
+
+  // Build team profiles using same conversion as affinity foundation (Epic 4.1)
+  const teamProfiles: UserProfile[] = []
+  for (const member of teamMembers) {
+    if (!member.user.bigFiveScore) continue
+    const scores = member.user.bigFiveScore
+    const profile: UserProfile = {
+      E: scores.extraversion / TRAIT_ITEM_COUNTS.E,
+      A: scores.agreeableness / TRAIT_ITEM_COUNTS.A,
+      C: scores.conscientiousness / TRAIT_ITEM_COUNTS.C,
+      N: scores.neuroticism / TRAIT_ITEM_COUNTS.N,
+      O: scores.openness / TRAIT_ITEM_COUNTS.O,
+    }
+    if (TRAIT_KEYS.every((k) => !isNaN(profile[k]))) {
+      teamProfiles.push(profile)
+    }
+  }
+
+  if (teamProfiles.length === 0) return []
+
+  // Load bounds config from reference data (same source as affinity foundation)
+  const { bounds } = getReferenceData()
+
+  // 5. Evaluate each (problemTag, candidateTag) pair
+  const bestByCandidate = new Map<
+    number,
+    DirectedTagRecommendation & { provenanceTagIds: number[] }
+  >()
+
+  for (const candidate of candidates) {
+    const problemTagTraits = tagTraitsMap.get(candidate.problemTagId)
+    const candidateTagTraits = tagTraitsMap.get(candidate.solutionTagId)
+
+    if (!problemTagTraits || !candidateTagTraits) continue
+
+    const currentAffinity = computeTeamTagAffinityFromTraits(
+      problemTagTraits,
+      teamProfiles,
+      bounds
+    )
+    const candidateAffinity = computeTeamTagAffinityFromTraits(
+      candidateTagTraits,
+      teamProfiles,
+      bounds
+    )
+
+    if (currentAffinity === null || candidateAffinity === null) continue
+
+    // Hard rejection: candidate with negative absolute team affinity (AC 3)
+    if (candidateAffinity < 0) continue
+
+    const gainClass = computeDeltaGainClass(currentAffinity, candidateAffinity)
+    const fromSign = getAffinitySignClass(currentAffinity)
+    const toSign = getAffinitySignClass(candidateAffinity)
+    const reason = `Transition ${fromSign}\u2192${toSign}: ${candidate.problemTag.name} \u2192 ${candidate.solutionTag.name}`
+
+    // Deduplication: keep best scoring pair per candidate tag
+    const existing = bestByCandidate.get(candidate.solutionTagId)
+    if (existing) {
+      if (!existing.provenanceTagIds.includes(candidate.problemTagId)) {
+        existing.provenanceTagIds.push(candidate.problemTagId)
+      }
+      if (
+        gainClass > existing.deltaScore ||
+        (gainClass === existing.deltaScore &&
+          candidateAffinity > existing.absoluteAffinity)
+      ) {
+        existing.sourceProblematicTagId = candidate.problemTagId
+        existing.sourceProblematicTagName = candidate.problemTag.name
+        existing.absoluteAffinity = candidateAffinity
+        existing.deltaScore = gainClass
+        existing.reason = reason
+      }
+    } else {
+      bestByCandidate.set(candidate.solutionTagId, {
+        candidateTagId: candidate.solutionTagId,
+        candidateTagName: candidate.solutionTag.name,
+        sourceProblematicTagId: candidate.problemTagId,
+        sourceProblematicTagName: candidate.problemTag.name,
+        absoluteAffinity: candidateAffinity,
+        deltaScore: gainClass,
+        reason,
+        provenanceTagIds: [candidate.problemTagId],
+      })
+    }
+  }
+
+  // 6. Sort: primary deltaScore desc, secondary absoluteAffinity desc, tertiary candidateTagId asc
+  const results = Array.from(bestByCandidate.values())
+  results.sort((a, b) => {
+    if (a.deltaScore !== b.deltaScore) return b.deltaScore - a.deltaScore
+    if (a.absoluteAffinity !== b.absoluteAffinity)
+      return b.absoluteAffinity - a.absoluteAffinity
+    return a.candidateTagId - b.candidateTagId
+  })
+
+  // 7. Return with explainability fields (strip internal provenance tracking)
+  return results.map(({ provenanceTagIds, ...rec }) => rec)
 }
