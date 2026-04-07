@@ -67,9 +67,37 @@ export interface IssueDetails {
     }[];
 }
 
+export interface DirectedTagRecommendation {
+    candidateTagId: number;
+    candidateTagName: string;
+    recommendationText: string;
+    implementationOptions: string[];
+    sourceProblematicTagId: number;
+    sourceProblematicTagName: string;
+    absoluteAffinity: number;
+    deltaScore: number;
+    reason: string;
+}
+
+interface DirectedTagRecommendationsResponse {
+    items: DirectedTagRecommendation[];
+    requestId?: string;
+}
+
 export const getIssueDetails = async (teamId: number, issueId: number): Promise<IssueDetails> => {
     // The apiClient wrapper likely handles response.json rejection?
     return apiClient(`/api/v1/teams/${teamId}/issues/${issueId}`);
+};
+
+export const getDirectedTagRecommendations = async (
+    teamId: number,
+    issueId: number
+): Promise<DirectedTagRecommendation[]> => {
+    const response = await apiClient<DirectedTagRecommendationsResponse>(
+        `/api/v1/teams/${teamId}/issues/${issueId}/recommendations/directed`
+    );
+
+    return response.items;
 };
 
 

@@ -1,6 +1,7 @@
 
 import { Router } from 'express';
 import * as issuesController from '../controllers/issues.controller';
+import * as recommendationController from '../controllers/recommendation.controller';
 
 
 // mergeParams: true is required to access :teamId from parent router
@@ -32,6 +33,11 @@ issuesRouter.get('/stats', issuesController.getStats);
  */
 
 issuesRouter.get('/:issueId', issuesController.getIssue);
+
+issuesRouter.get(
+	'/:issueId/recommendations/directed',
+	recommendationController.getIssueDirectedRecommendations
+);
 
 /**
  * PATCH /api/v1/teams/:teamId/issues/:issueId

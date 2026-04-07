@@ -5,13 +5,17 @@
 
 import { prisma } from '../lib/prisma';
 import { seedAll } from './seed-all';
+import { seedTagReferenceData } from './seed-tag-reference-data';
 
 export async function bootstrapDb(): Promise<number> {
   try {
     const practiceCount = await prisma.practice.count();
 
     if (practiceCount > 0) {
-      console.log(`[INFO] Practice catalog already initialized (${practiceCount} practices). Skipping seed.`);
+      console.log(
+        `[INFO] Practice catalog already initialized (${practiceCount} practices). Ensuring tag reference data is seeded.`
+      );
+      await seedTagReferenceData(prisma);
       return 0;
     }
 

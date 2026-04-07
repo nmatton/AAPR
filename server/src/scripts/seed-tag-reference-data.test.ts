@@ -98,9 +98,10 @@ describe('seed-tag-reference-data', () => {
       const capturedData: unknown[] = []
       const mockClient = {
         tagPersonalityRelation: {
-          createMany: jest.fn().mockImplementation(({ data }: { data: unknown[] }) => {
+          createMany: jest.fn(async (args: { data: unknown[] }) => {
+            const { data } = args
             capturedData.push(...data)
-            return Promise.resolve({ count: data.length })
+            return { count: data.length }
           }),
         },
       } as any
@@ -120,9 +121,10 @@ describe('seed-tag-reference-data', () => {
     it('seedTagCandidates generates 34 candidate rows from real CSV', async () => {
       const mockClient = {
         tagCandidate: {
-          createMany: jest.fn().mockImplementation(({ data }: { data: unknown[] }) =>
-            Promise.resolve({ count: data.length })
-          ),
+          createMany: jest.fn(async (args: { data: unknown[] }) => {
+            const { data } = args
+            return { count: data.length }
+          }),
         },
       } as any
 
@@ -134,7 +136,7 @@ describe('seed-tag-reference-data', () => {
     it('seedTagRecommendations generates 19 rows from real CSV (Remote-Friendly excluded)', async () => {
       const mockClient = {
         tagRecommendation: {
-          upsert: jest.fn().mockResolvedValue({}),
+          upsert: jest.fn(async () => ({})),
         },
       } as any
 

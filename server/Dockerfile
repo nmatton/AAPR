@@ -12,6 +12,8 @@ COPY server/. .
 COPY docs/raw_practices/practices_reference.json /app/docs/raw_practices/practices_reference.json
 COPY docs/tag_personality_affinity/personality_score_bounds.csv /app/docs/tag_personality_affinity/personality_score_bounds.csv
 COPY docs/tag_personality_affinity/tags_personality_relation.csv /app/docs/tag_personality_affinity/tags_personality_relation.csv
+COPY docs/tag_personality_affinity/tags_issue_candidates.csv /app/docs/tag_personality_affinity/tags_issue_candidates.csv
+COPY docs/tag_personality_affinity/tag_recommendations.md /app/docs/tag_personality_affinity/tag_recommendations.md
 RUN npx prisma generate
 RUN npm run build
 RUN npm prune --omit=dev
@@ -31,6 +33,8 @@ COPY --from=builder /app/server/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/docs/raw_practices/practices_reference.json /app/docs/raw_practices/practices_reference.json
 COPY --from=builder /app/docs/tag_personality_affinity/personality_score_bounds.csv /app/docs/tag_personality_affinity/personality_score_bounds.csv
 COPY --from=builder /app/docs/tag_personality_affinity/tags_personality_relation.csv /app/docs/tag_personality_affinity/tags_personality_relation.csv
+COPY --from=builder /app/docs/tag_personality_affinity/tags_issue_candidates.csv /app/docs/tag_personality_affinity/tags_issue_candidates.csv
+COPY --from=builder /app/docs/tag_personality_affinity/tag_recommendations.md /app/docs/tag_personality_affinity/tag_recommendations.md
 
 EXPOSE 3000
 

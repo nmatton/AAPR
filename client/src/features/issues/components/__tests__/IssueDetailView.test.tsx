@@ -15,11 +15,21 @@ describe('IssueDetailView', () => {
             id: 100,
             title: 'Test Issue',
             description: '# Marked Description',
+            decisionText: null,
+            decisionRecordedAt: null,
+            decisionRecordedBy: null,
+            evaluationOutcome: null,
+            evaluationComments: null,
+            evaluationRecordedAt: null,
+            evaluationRecordedBy: null,
+            version: 1,
             priority: 'HIGH' as const,
             status: 'OPEN',
             createdAt: '2023-01-01',
             author: { id: 1, name: 'Alice' },
             practices: [{ id: 1, title: 'Practice A' }],
+            isStandalone: false,
+            tags: [{ id: 5, name: 'Low autonomy', description: null }],
         },
         history: [],
         comments: [],
@@ -27,6 +37,7 @@ describe('IssueDetailView', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
+        vi.mocked(issuesApi.getDirectedTagRecommendations).mockResolvedValue([]);
     });
 
     it('renders issue details after loading', async () => {
@@ -106,5 +117,37 @@ describe('IssueDetailView', () => {
         // Both "For: Practice X" labels should be visible
         expect(screen.getByText('For: Practice A')).toBeInTheDocument();
         expect(screen.getByText('For: Practice B')).toBeInTheDocument();
+    });
+
+    it('renders the targeted adaptations panel when directed recommendations exist', async () => {
+        vi.mocked(issuesApi.getIssueDetails).mockResolvedValue(mockIssueDetails);
+        vi.mocked(issuesApi.getDirectedTagRecommendations).mockResolvedValue([
+            {
+                candidateTagId: 20,
+                candidateTagName: 'Decision ownership',
+                recommendationText: 'Delegate local decisions to the team.',
+                implementationOptions: ['Rotate ownership'],
+                sourceProblematicTagId: 5,
+                sourceProblematicTagName: 'Low autonomy',
+                absoluteAffinity: 1,
+                deltaScore: 1,
+                reason: 'Transition -→+: Low autonomy → Decision ownership',
+            },
+        ]);
+
+        render(
+            <MemoryRouter initialEntries={['/teams/1/issues/100']}>
+                <Routes>
+                    <Route path="/teams/:teamId/issues/:issueId" element={<IssueDetailView />} />
+                </Routes>
+            </MemoryRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText('Targeted Adaptations')).toBeInTheDocument();
+        });
+
+        expect(screen.getByText('Decision ownership')).toBeInTheDocument();
+        expect(issuesApi.getDirectedTagRecommendations).toHaveBeenCalledWith(1, 100);
     });
 });

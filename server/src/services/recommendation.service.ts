@@ -278,11 +278,29 @@ export async function getRecommendations(
 export interface DirectedTagRecommendation {
   candidateTagId: number
   candidateTagName: string
+  recommendationText: string
+  implementationOptions: string[]
   sourceProblematicTagId: number
   sourceProblematicTagName: string
   absoluteAffinity: number
   deltaScore: number
   reason: string
+}
+
+function parseImplementationOptions(implementationExample: string): string[] {
+  const normalized = implementationExample.trim()
+  if (!normalized) return []
+
+  const lineItems = normalized
+    .split(/\r?\n+/)
+    .map((line) => line.replace(/^[-*]\s*/, '').trim())
+    .filter((line) => line.length > 0)
+
+  if (lineItems.length > 1) {
+    return lineItems
+  }
+
+  return [normalized]
 }
 
 /**
@@ -394,6 +412,27 @@ export async function getDirectedTagRecommendations(
 
   if (candidates.length === 0) return []
 
+  const recommendationRecords = await prisma.tagRecommendation.findMany({
+    where: {
+      tagId: { in: candidates.map((candidate) => candidate.solutionTagId) },
+    },
+    select: {
+      tagId: true,
+      recommendationText: true,
+      implementationExample: true,
+    },
+  })
+
+  const recommendationContentByTagId = new Map(
+    recommendationRecords.map((record) => [
+      record.tagId,
+      {
+        recommendationText: record.recommendationText,
+        implementationOptions: parseImplementationOptions(record.implementationExample),
+      },
+    ])
+  )
+
   // 3. Batch-load personality relations from DB for all involved tags (no N+1)
   const allTagIds = new Set<number>()
   for (const it of issueTags) allTagIds.add(it.tagId)
@@ -468,6 +507,12 @@ export async function getDirectedTagRecommendations(
   >()
 
   for (const candidate of candidates) {
+    const recommendationContent = recommendationContentByTagId.get(
+      candidate.solutionTagId
+    )
+
+    if (!recommendationContent) continue
+
     const problemTagTraits = tagTraitsMap.get(candidate.problemTagId)
     const candidateTagTraits = tagTraitsMap.get(candidate.solutionTagId)
 
@@ -507,6 +552,8 @@ export async function getDirectedTagRecommendations(
       ) {
         existing.sourceProblematicTagId = candidate.problemTagId
         existing.sourceProblematicTagName = candidate.problemTag.name
+        existing.recommendationText = recommendationContent.recommendationText
+        existing.implementationOptions = recommendationContent.implementationOptions
         existing.absoluteAffinity = candidateAffinity
         existing.deltaScore = gainClass
         existing.reason = reason
@@ -515,6 +562,8 @@ export async function getDirectedTagRecommendations(
       bestByCandidate.set(candidate.solutionTagId, {
         candidateTagId: candidate.solutionTagId,
         candidateTagName: candidate.solutionTag.name,
+        recommendationText: recommendationContent.recommendationText,
+        implementationOptions: recommendationContent.implementationOptions,
         sourceProblematicTagId: candidate.problemTagId,
         sourceProblematicTagName: candidate.problemTag.name,
         absoluteAffinity: candidateAffinity,

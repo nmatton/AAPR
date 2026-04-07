@@ -39,3 +39,35 @@ export const getRecommendations = async (
     next(error)
   }
 }
+
+export const getIssueDirectedRecommendations = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { issueId } = req.params
+    const teamId = res.locals.teamId as number
+
+    if (!issueId || isNaN(Number(issueId))) {
+      throw new AppError(
+        'validation_error',
+        'Validation failed',
+        [{ path: 'issueId', message: 'Valid issue ID is required', code: 'invalid_type' }],
+        400
+      )
+    }
+
+    const recommendations = await recommendationService.getDirectedTagRecommendations(
+      teamId,
+      Number(issueId)
+    )
+
+    res.json({
+      items: recommendations.slice(0, 3),
+      requestId: res.getHeader('x-request-id'),
+    })
+  } catch (error) {
+    next(error)
+  }
+}

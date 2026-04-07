@@ -6,6 +6,7 @@ import { CommentList } from './CommentList';
 import { CommentForm } from './CommentForm';
 import { PracticeDetailSidebar } from '../../practices/components/PracticeDetailSidebar';
 import { RecommendationWidget } from './RecommendationWidget';
+import { TargetedAdaptationsPanel } from './TargetedAdaptationsPanel';
 import ReactMarkdown from 'react-markdown';
 import rehypeSanitize from 'rehype-sanitize';
 import { formatDistanceToNow } from 'date-fns';
@@ -321,6 +322,11 @@ export const IssueDetailView = () => {
                     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                         <IssueTimeline events={details.history} />
                     </div>
+
+                    <TargetedAdaptationsPanel
+                        teamId={Number(teamId)}
+                        issueId={Number(issueId)}
+                    />
 
                     {/* Alternative Practices — one widget per linked practice */}
                     {issue.practices.length > 0 && issue.practices.map((practice) => (

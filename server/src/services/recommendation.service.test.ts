@@ -13,10 +13,13 @@ jest.mock('../lib/prisma', () => ({
     practiceAssociation: { findMany: jest.fn() },
     issueTag: { findMany: jest.fn() },
     tagCandidate: { findMany: jest.fn() },
+    tagRecommendation: { findMany: jest.fn() },
     tagPersonalityRelation: { findMany: jest.fn() },
     teamMember: { findMany: jest.fn() },
   },
 }))
+
+const mockTagRecommendationFindMany = prisma.tagRecommendation.findMany as jest.Mock
 
 jest.mock('./affinity.service', () => ({
   getTeamPracticeAffinity: jest.fn(),
@@ -458,6 +461,7 @@ describe('getDirectedTagRecommendations', () => {
   beforeEach(() => {
     jest.clearAllMocks()
     mockGetReferenceData.mockReturnValue({ bounds: TEST_BOUNDS, relations: [] })
+    mockTagRecommendationFindMany.mockResolvedValue([])
   })
 
   it('returns empty array when issue has no tags', async () => {
@@ -538,9 +542,16 @@ describe('getDirectedTagRecommendations', () => {
         solutionTag: { id: 2, name: 'Alignment Tag' },
       },
     ])
+    mockTagRecommendationFindMany.mockResolvedValue([
+      {
+        tagId: 2,
+        recommendationText: 'Shift decision-making closer to the work.',
+        implementationExample: 'Rotate facilitation of local decisions.',
+      },
+    ])
     ;(prisma.tagPersonalityRelation.findMany as jest.Mock).mockResolvedValue([
-      ...makeTagRelations(1, -1, -1), // problem: affinity -1
-      ...makeTagRelations(2, 1, 1),   // candidate: affinity +1
+      ...makeTagRelations(1, -1, -1),
+      ...makeTagRelations(2, 1, 1),
     ])
     ;(prisma.teamMember.findMany as jest.Mock).mockResolvedValue([makeMidRangeMember()])
 
@@ -548,6 +559,8 @@ describe('getDirectedTagRecommendations', () => {
     expect(result).toHaveLength(1)
     expect(result[0].candidateTagId).toBe(2)
     expect(result[0].candidateTagName).toBe('Alignment Tag')
+    expect(result[0].recommendationText).toBe('Shift decision-making closer to the work.')
+    expect(result[0].implementationOptions).toEqual(['Rotate facilitation of local decisions.'])
     expect(result[0].sourceProblematicTagId).toBe(1)
     expect(result[0].absoluteAffinity).toBe(1)
     expect(result[0].deltaScore).toBe(1.0)
@@ -563,6 +576,11 @@ describe('getDirectedTagRecommendations', () => {
       { problemTagId: 1, solutionTagId: 4, justification: '', problemTag: { id: 1, name: 'Problem' }, solutionTag: { id: 4, name: 'Zero Tag' } },
       { problemTagId: 1, solutionTagId: 3, justification: '', problemTag: { id: 1, name: 'Problem' }, solutionTag: { id: 3, name: 'Strong Positive' } },
       { problemTagId: 1, solutionTagId: 5, justification: '', problemTag: { id: 1, name: 'Problem' }, solutionTag: { id: 5, name: 'Moderate Positive' } },
+    ])
+    mockTagRecommendationFindMany.mockResolvedValue([
+      { tagId: 3, recommendationText: 'Use a strong positive intervention.', implementationExample: 'Pilot the stronger change first.' },
+      { tagId: 4, recommendationText: 'Neutral fallback option.', implementationExample: 'Use a lighter-weight variant.' },
+      { tagId: 5, recommendationText: 'Use a moderate positive intervention.', implementationExample: 'Pilot a moderate change first.' },
     ])
     ;(prisma.tagPersonalityRelation.findMany as jest.Mock).mockResolvedValue([
       ...makeTagRelations(1, -1, -1),  // problem: -1
@@ -593,6 +611,10 @@ describe('getDirectedTagRecommendations', () => {
       { problemTagId: 1, solutionTagId: 5, justification: '', problemTag: { id: 1, name: 'Problem' }, solutionTag: { id: 5, name: 'Tag B' } },
       { problemTagId: 1, solutionTagId: 3, justification: '', problemTag: { id: 1, name: 'Problem' }, solutionTag: { id: 3, name: 'Tag A' } },
     ])
+    mockTagRecommendationFindMany.mockResolvedValue([
+      { tagId: 3, recommendationText: 'Apply Tag A.', implementationExample: 'Try option A first.' },
+      { tagId: 5, recommendationText: 'Apply Tag B.', implementationExample: 'Try option B first.' },
+    ])
     ;(prisma.tagPersonalityRelation.findMany as jest.Mock).mockResolvedValue([
       ...makeTagRelations(1, 1, -1),  // problem: 0
       ...makeTagRelations(3, 1, 1),   // candidate: +1
@@ -614,6 +636,9 @@ describe('getDirectedTagRecommendations', () => {
     ;(prisma.tagCandidate.findMany as jest.Mock).mockResolvedValue([
       { problemTagId: 1, solutionTagId: 2, justification: '', problemTag: { id: 1, name: 'Problem A' }, solutionTag: { id: 2, name: 'Solution' } },
       { problemTagId: 10, solutionTagId: 2, justification: '', problemTag: { id: 10, name: 'Problem B' }, solutionTag: { id: 2, name: 'Solution' } },
+    ])
+    mockTagRecommendationFindMany.mockResolvedValue([
+      { tagId: 2, recommendationText: 'Use the shared solution.', implementationExample: 'Start with one team-owned experiment.' },
     ])
     ;(prisma.tagPersonalityRelation.findMany as jest.Mock).mockResolvedValue([
       ...makeTagRelations(1, -1, -1),   // problem A: -1
@@ -637,6 +662,11 @@ describe('getDirectedTagRecommendations', () => {
       { problemTagId: 1, solutionTagId: 2, justification: '', problemTag: { id: 1, name: 'Problem' }, solutionTag: { id: 2, name: 'Good' } },
       { problemTagId: 1, solutionTagId: 3, justification: '', problemTag: { id: 1, name: 'Problem' }, solutionTag: { id: 3, name: 'Bad' } },
       { problemTagId: 1, solutionTagId: 4, justification: '', problemTag: { id: 1, name: 'Problem' }, solutionTag: { id: 4, name: 'Moderate' } },
+    ])
+    mockTagRecommendationFindMany.mockResolvedValue([
+      { tagId: 2, recommendationText: 'Adopt the stronger option.', implementationExample: 'Start with a pilot.' },
+      { tagId: 3, recommendationText: 'This one should be filtered.', implementationExample: 'Do not use.' },
+      { tagId: 4, recommendationText: 'Use the moderate option.', implementationExample: 'Apply it in one workflow first.' },
     ])
     ;(prisma.tagPersonalityRelation.findMany as jest.Mock).mockResolvedValue([
       ...makeTagRelations(1, -1, -1),  // problem: -1
@@ -663,6 +693,10 @@ describe('getDirectedTagRecommendations', () => {
       { problemTagId: 1, solutionTagId: 2, justification: '', problemTag: { id: 1, name: 'Problem' }, solutionTag: { id: 2, name: 'Bad A' } },
       { problemTagId: 1, solutionTagId: 3, justification: '', problemTag: { id: 1, name: 'Problem' }, solutionTag: { id: 3, name: 'Bad B' } },
     ])
+    mockTagRecommendationFindMany.mockResolvedValue([
+      { tagId: 2, recommendationText: 'Filtered option A.', implementationExample: 'Should not appear.' },
+      { tagId: 3, recommendationText: 'Filtered option B.', implementationExample: 'Should not appear.' },
+    ])
     ;(prisma.tagPersonalityRelation.findMany as jest.Mock).mockResolvedValue([
       ...makeTagRelations(1, 1, -1),   // problem: 0
       ...makeTagRelations(2, -1, -1),  // candidate: -1 (disqualified)
@@ -687,6 +721,13 @@ describe('getDirectedTagRecommendations', () => {
         solutionTag: { id: 2, name: 'Solution Tag' },
       },
     ])
+    mockTagRecommendationFindMany.mockResolvedValue([
+      {
+        tagId: 2,
+        recommendationText: 'Try a lighter coordination mechanism.',
+        implementationExample: 'Introduce a short weekly alignment slot.',
+      },
+    ])
     ;(prisma.tagPersonalityRelation.findMany as jest.Mock).mockResolvedValue([
       ...makeTagRelations(1, -1, -1),
       ...makeTagRelations(2, 1, 1),
@@ -698,6 +739,8 @@ describe('getDirectedTagRecommendations', () => {
     const rec = result[0]
     expect(rec).toHaveProperty('candidateTagId', 2)
     expect(rec).toHaveProperty('candidateTagName', 'Solution Tag')
+    expect(rec).toHaveProperty('recommendationText', 'Try a lighter coordination mechanism.')
+    expect(rec).toHaveProperty('implementationOptions')
     expect(rec).toHaveProperty('sourceProblematicTagId', 1)
     expect(rec).toHaveProperty('sourceProblematicTagName', 'Issue Tag')
     expect(rec).toHaveProperty('absoluteAffinity')
@@ -705,8 +748,41 @@ describe('getDirectedTagRecommendations', () => {
     expect(rec).toHaveProperty('reason')
     expect(typeof rec.reason).toBe('string')
     expect(rec.reason.length).toBeGreaterThan(0)
-    // Internal tracking fields must not leak
     expect(rec).not.toHaveProperty('provenanceTagIds')
+  })
+
+  it('hydrates implementationOptions from multiline recommendation examples', async () => {
+    ;(prisma.issueTag.findMany as jest.Mock).mockResolvedValue([
+      { issueId: ISSUE_ID, tagId: 1, tag: { id: 1, name: 'Issue Tag' } },
+    ])
+    ;(prisma.tagCandidate.findMany as jest.Mock).mockResolvedValue([
+      {
+        problemTagId: 1,
+        solutionTagId: 2,
+        justification: 'test',
+        problemTag: { id: 1, name: 'Issue Tag' },
+        solutionTag: { id: 2, name: 'Solution Tag' },
+      },
+    ])
+    mockTagRecommendationFindMany.mockResolvedValue([
+      {
+        tagId: 2,
+        recommendationText: 'Improve collaboration habits.',
+        implementationExample: '- Pair on complex stories\n- Run a weekly sync',
+      },
+    ])
+    ;(prisma.tagPersonalityRelation.findMany as jest.Mock).mockResolvedValue([
+      ...makeTagRelations(1, -1, -1),
+      ...makeTagRelations(2, 1, 1),
+    ])
+    ;(prisma.teamMember.findMany as jest.Mock).mockResolvedValue([makeMidRangeMember()])
+
+    const result = await getDirectedTagRecommendations(TEAM_ID, ISSUE_ID)
+    expect(result).toHaveLength(1)
+    expect(result[0].implementationOptions).toEqual([
+      'Pair on complex stories',
+      'Run a weekly sync',
+    ])
   })
 
   it('correctly chains issue_tags → tag_candidates → personality relations (AC 1)', async () => {
@@ -717,6 +793,10 @@ describe('getDirectedTagRecommendations', () => {
     ;(prisma.tagCandidate.findMany as jest.Mock).mockResolvedValue([
       { problemTagId: 1, solutionTagId: 2, justification: 'TDD addresses lack of tests', problemTag: { id: 1, name: 'Lack of Tests' }, solutionTag: { id: 2, name: 'TDD' } },
       { problemTagId: 10, solutionTagId: 3, justification: 'Pairing improves communication', problemTag: { id: 10, name: 'Poor Communication' }, solutionTag: { id: 3, name: 'Pair Programming' } },
+    ])
+    mockTagRecommendationFindMany.mockResolvedValue([
+      { tagId: 2, recommendationText: 'Introduce test-first habits.', implementationExample: 'Add a red-green-refactor checkpoint.' },
+      { tagId: 3, recommendationText: 'Increase collaborative problem solving.', implementationExample: 'Pair on tricky work twice a week.' },
     ])
     ;(prisma.tagPersonalityRelation.findMany as jest.Mock).mockResolvedValue([
       ...makeTagRelations(1, 0, -1),   // Lack of Tests: -0.5
@@ -738,6 +818,14 @@ describe('getDirectedTagRecommendations', () => {
       include: {
         solutionTag: { select: { id: true, name: true } },
         problemTag: { select: { id: true, name: true } },
+      },
+    })
+    expect(prisma.tagRecommendation.findMany).toHaveBeenCalledWith({
+      where: { tagId: { in: [2, 3] } },
+      select: {
+        tagId: true,
+        recommendationText: true,
+        implementationExample: true,
       },
     })
     expect(prisma.tagPersonalityRelation.findMany).toHaveBeenCalledWith({
