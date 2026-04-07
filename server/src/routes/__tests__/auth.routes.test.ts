@@ -13,6 +13,8 @@ jest.mock('../../services/auth.service', () => {
     registerUser: jest.fn(),
     generateTokens: jest.fn(),
     verifyCredentials: jest.fn(),
+    requestPasswordReset: jest.fn(),
+    resetPassword: jest.fn(),
     generateRefreshToken: jest.fn(),
     verifyToken: jest.fn(),
     getUserById: jest.fn()
@@ -291,6 +293,77 @@ describe('POST /api/v1/auth/login', () => {
     expect(response.body).toMatchObject({
       code: 'validation_error',
       message: 'Invalid input'
+    })
+  })
+})
+
+describe('POST /api/v1/auth/forgot-password', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should return generic success response for valid email payload', async () => {
+    ;(authService.requestPasswordReset as jest.Mock).mockResolvedValue({
+      message: 'If an account exists for that email, a reset link has been sent.'
+    })
+
+    const response = await request(app)
+      .post('/api/v1/auth/forgot-password')
+      .send({ email: 'known@example.com' })
+
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({
+      message: 'If an account exists for that email, a reset link has been sent.'
+    })
+  })
+
+  it('should return 400 Bad Request for invalid email payload', async () => {
+    const response = await request(app)
+      .post('/api/v1/auth/forgot-password')
+      .send({ email: 'bad-email' })
+
+    expect(response.status).toBe(400)
+    expect(response.body).toMatchObject({
+      code: 'validation_error',
+      message: 'Invalid input'
+    })
+  })
+})
+
+describe('POST /api/v1/auth/reset-password', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should return 200 OK when reset succeeds', async () => {
+    ;(authService.resetPassword as jest.Mock).mockResolvedValue({
+      message: 'Password has been reset successfully'
+    })
+
+    const response = await request(app)
+      .post('/api/v1/auth/reset-password')
+      .send({ token: 'raw-token', newPassword: 'newpassword123' })
+
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({
+      message: 'Password has been reset successfully'
+    })
+    expect(authService.resetPassword).toHaveBeenCalledWith('raw-token', 'newpassword123')
+  })
+
+  it('should return deterministic error for invalid or expired token', async () => {
+    ;(authService.resetPassword as jest.Mock).mockRejectedValue(
+      new AppError('invalid_reset_token', 'Reset token is invalid or expired', {}, 400)
+    )
+
+    const response = await request(app)
+      .post('/api/v1/auth/reset-password')
+      .send({ token: 'bad-token', newPassword: 'newpassword123' })
+
+    expect(response.status).toBe(400)
+    expect(response.body).toMatchObject({
+      code: 'invalid_reset_token',
+      message: 'Reset token is invalid or expired'
     })
   })
 })

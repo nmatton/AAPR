@@ -112,3 +112,43 @@ describe('authApi race condition handling', () => {
     global.fetch = originalFetch
   })
 })
+
+describe('authApi forgot/reset methods', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('forgotPassword returns success payload', async () => {
+    const originalFetch = global.fetch
+    try {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: true,
+        status: 200,
+        text: async () => JSON.stringify({ message: 'If an account exists for that email, a reset link has been sent.' })
+      } as Response) as typeof fetch
+
+      const result = await authApi.forgotPassword('user@example.com')
+      expect(result.message).toContain('If an account exists')
+    } finally {
+      global.fetch = originalFetch
+    }
+  })
+
+  it('resetPassword bubbles API error payload', async () => {
+    const originalFetch = global.fetch
+    try {
+      global.fetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 400,
+        text: async () => JSON.stringify({ code: 'invalid_reset_token', message: 'Reset token is invalid or expired' })
+      } as Response) as typeof fetch
+
+      await expect(authApi.resetPassword('bad-token', 'newpassword123')).rejects.toMatchObject({
+        code: 'invalid_reset_token',
+        message: 'Reset token is invalid or expired'
+      })
+    } finally {
+      global.fetch = originalFetch
+    }
+  })
+})

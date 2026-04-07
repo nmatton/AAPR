@@ -1,5 +1,5 @@
 import * as nodemailer from 'nodemailer'
-import { sendAddedToTeamEmail, sendInviteEmail } from '../mailer'
+import { sendAddedToTeamEmail, sendInviteEmail, sendPasswordResetEmail } from '../mailer'
 
 type MockTransport = {
   sendMail: jest.Mock
@@ -78,5 +78,40 @@ describe('Mailer', () => {
         html: expect.stringContaining('Create Account')
       })
     )
+  })
+
+  it('sends password reset email with reset URL in text and html', async () => {
+    const transport: MockTransport = { sendMail: jest.fn().mockResolvedValue({ messageId: '1' }) }
+    mockCreateTransport.mockReturnValue(transport)
+
+    const resetUrl = 'http://localhost:5173/reset-password?token=abc123'
+    await sendPasswordResetEmail({
+      email: 'reset@example.com',
+      resetUrl
+    })
+
+    expect(transport.sendMail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: 'reset@example.com',
+        from: 'noreply@example.com',
+        subject: 'Reset your AAPR password',
+        text: expect.stringContaining(resetUrl),
+        html: expect.stringContaining('href="http://localhost:5173/reset-password?token=abc123"')
+      })
+    )
+  })
+
+  it('escapes reset URL in html output', async () => {
+    const transport: MockTransport = { sendMail: jest.fn().mockResolvedValue({ messageId: '1' }) }
+    mockCreateTransport.mockReturnValue(transport)
+
+    await sendPasswordResetEmail({
+      email: 'escape@example.com',
+      resetUrl: 'http://localhost/reset?token=<script>alert(1)</script>'
+    })
+
+    const sendMailArg = transport.sendMail.mock.calls[0][0]
+    expect(sendMailArg.html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;')
+    expect(sendMailArg.html).not.toContain('<script>alert(1)</script>')
   })
 })

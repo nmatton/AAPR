@@ -89,4 +89,12 @@ describe('LoginForm', () => {
     expect(registerLink).toBeInTheDocument()
     expect(registerLink).toHaveAttribute('href', '/signup')
   })
+
+  it('renders a forgot password link with requested French label', () => {
+    renderLoginForm()
+
+    const forgotPasswordLink = screen.getByRole('link', { name: /mot de passe oublie/i })
+    expect(forgotPasswordLink).toBeInTheDocument()
+    expect(forgotPasswordLink).toHaveAttribute('href', '/forgot-password')
+  })
 })

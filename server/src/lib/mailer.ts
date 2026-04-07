@@ -18,6 +18,11 @@ export interface InviteEmailPayload {
   ctaUrl: string
 }
 
+export interface PasswordResetEmailPayload {
+  email: string
+  resetUrl: string
+}
+
 interface MailConfig {
   host: string
   port: number
@@ -101,10 +106,51 @@ const sendEmail = async (payload: InviteEmailPayload, builder: (p: InviteEmailPa
   })
 }
 
+const sendPasswordEmail = async (
+  payload: PasswordResetEmailPayload,
+  builder: (p: PasswordResetEmailPayload) => { subject: string; text: string; html: string }
+) => {
+  const config = getMailConfig()
+  const transporter = createTransporter()
+  const { subject, text, html } = builder(payload)
+
+  await transporter.sendMail({
+    from: config.from,
+    to: payload.email,
+    subject,
+    text,
+    html
+  })
+}
+
+const buildPasswordResetEmail = (payload: PasswordResetEmailPayload) => {
+  const escapedResetUrl = escapeHtml(payload.resetUrl)
+  const subject = 'Reset your AAPR password'
+  const text = [
+    'We received a request to reset your Addaptive Agile Practices Repository (AAPR) password.',
+    'If you made this request, use the link below within 15 minutes:',
+    payload.resetUrl,
+    '',
+    'If you did not request a password reset, you can safely ignore this email.'
+  ].join('\n')
+  const html = `
+    <p>We received a request to reset your Addaptive Agile Practices Repository (AAPR) password.</p>
+    <p>If you made this request, use the link below within 15 minutes:</p>
+    <p><a href="${escapedResetUrl}" style="display:inline-block;padding:10px 16px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;">Reset Password</a></p>
+    <p>If you did not request a password reset, you can safely ignore this email.</p>
+  `.trim()
+
+  return { subject, text, html }
+}
+
 export const sendInviteEmail = async (payload: InviteEmailPayload): Promise<void> => {
   await sendEmail(payload, buildInviteEmail)
 }
 
 export const sendAddedToTeamEmail = async (payload: InviteEmailPayload): Promise<void> => {
   await sendEmail(payload, buildAddedEmail)
+}
+
+export const sendPasswordResetEmail = async (payload: PasswordResetEmailPayload): Promise<void> => {
+  await sendPasswordEmail(payload, buildPasswordResetEmail)
 }

@@ -8,6 +8,8 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-route
 import { useEffect, useState } from 'react'
 import { SignupForm } from './features/auth/components/SignupForm'
 import { LoginForm } from './features/auth/components/LoginForm'
+import { ForgotPasswordForm } from './features/auth/components/ForgotPasswordForm'
+import { ResetPasswordForm } from './features/auth/components/ResetPasswordForm'
 import { ProtectedRoute } from './features/auth/components/ProtectedRoute'
 import { useAuthStore } from './features/auth/state/authSlice'
 import { getCurrentUser } from './features/auth/api/authApi'
@@ -110,6 +112,18 @@ const AppRoutes = () => {
         path="/login"
         element={
           isAuthed ? <Navigate to="/teams" replace /> : <LoginForm />
+        }
+      />
+      <Route
+        path="/forgot-password"
+        element={
+          isAuthed ? <Navigate to="/teams" replace /> : <ForgotPasswordForm />
+        }
+      />
+      <Route
+        path="/reset-password"
+        element={
+          isAuthed ? <Navigate to="/teams" replace /> : <ResetPasswordForm />
         }
       />
       <Route

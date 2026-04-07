@@ -45,6 +45,10 @@ interface CurrentUserResponse extends User {
   requestId?: string
 }
 
+interface GenericMessageResponse {
+  message: string
+}
+
 let refreshPromise: Promise<void> | null = null
 
 const generateRequestId = (): string => {
@@ -209,6 +213,34 @@ export const logoutUser = async (): Promise<{ message: string }> => {
     '/api/v1/auth/logout',
     {
       method: 'POST'
+    },
+    false
+  )
+}
+
+/**
+ * Request password reset email (generic response regardless of account existence)
+ */
+export const forgotPassword = async (email: string): Promise<GenericMessageResponse> => {
+  return apiRequest<GenericMessageResponse>(
+    '/api/v1/auth/forgot-password',
+    {
+      method: 'POST',
+      body: JSON.stringify({ email })
+    },
+    false
+  )
+}
+
+/**
+ * Reset password using token from email link
+ */
+export const resetPassword = async (token: string, newPassword: string): Promise<GenericMessageResponse> => {
+  return apiRequest<GenericMessageResponse>(
+    '/api/v1/auth/reset-password',
+    {
+      method: 'POST',
+      body: JSON.stringify({ token, newPassword })
     },
     false
   )

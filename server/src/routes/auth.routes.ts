@@ -50,6 +50,18 @@ authRouter.post('/register', authController.registerUser)
 authRouter.post('/login', authController.loginUser)
 
 /**
+ * POST /api/v1/auth/forgot-password
+ * Initiate password reset flow (generic response to avoid account enumeration)
+ */
+authRouter.post('/forgot-password', authController.forgotPassword)
+
+/**
+ * POST /api/v1/auth/reset-password
+ * Complete password reset with a one-time token
+ */
+authRouter.post('/reset-password', authController.resetPassword)
+
+/**
  * GET /api/v1/auth/me
  * Get current authenticated user
  */

@@ -1,6 +1,11 @@
 import { Request, Response, NextFunction } from 'express'
 import { z } from 'zod'
-import { registerSchema, loginSchema } from '../schemas/auth.schema'
+import {
+  registerSchema,
+  loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema
+} from '../schemas/auth.schema'
 import * as authService from '../services/auth.service'
 
 /**
@@ -337,4 +342,90 @@ export const logoutUser = async (
   return res.status(200).json({
     message: 'Logout successful'
   })
+}
+
+/**
+ * Forgot password endpoint
+ * POST /api/v1/auth/forgot-password
+ */
+export const forgotPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<Response | void> => {
+  try {
+    const validatedData = forgotPasswordSchema.parse(req.body)
+    const result = await authService.requestPasswordReset(validatedData.email)
+    return res.status(200).json(result)
+  } catch (error) {
+    if (error && typeof error === 'object' && 'issues' in error) {
+      const zodError = error as z.ZodError
+      return res.status(400).json({
+        code: 'validation_error',
+        message: 'Invalid input',
+        details: {
+          errors: zodError.issues.map((err) => ({
+            path: err.path.join('.'),
+            message: err.message,
+            code: err.code
+          }))
+        },
+        requestId: res.getHeader('x-request-id')
+      })
+    }
+
+    if (error instanceof authService.AppError) {
+      return res.status(error.statusCode).json({
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        requestId: res.getHeader('x-request-id')
+      })
+    }
+
+    return next(error)
+  }
+}
+
+/**
+ * Reset password endpoint
+ * POST /api/v1/auth/reset-password
+ */
+export const resetPassword = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<Response | void> => {
+  try {
+    const validatedData = resetPasswordSchema.parse(req.body)
+    const result = await authService.resetPassword(validatedData.token, validatedData.newPassword)
+    return res.status(200).json(result)
+  } catch (error) {
+    if (error && typeof error === 'object' && 'issues' in error) {
+      const zodError = error as z.ZodError
+      return res.status(400).json({
+        code: 'validation_error',
+        message: 'Invalid input',
+        details: {
+          errors: zodError.issues.map((err) => ({
+            path: err.path.join('.'),
+            message: err.message,
+            code: err.code
+          }))
+        },
+        requestId: res.getHeader('x-request-id')
+      })
+    }
+
+    if (error instanceof authService.AppError) {
+      return res.status(error.statusCode).json({
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        requestId: res.getHeader('x-request-id')
+      })
+    }
+
+    return next(error)
+  }
 }

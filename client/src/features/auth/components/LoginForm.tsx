@@ -188,6 +188,19 @@ export const LoginForm: React.FC = () => {
           </div>
 
           <div className="text-sm text-center">
+            <a
+              href="/forgot-password"
+              className="font-medium text-indigo-600 hover:text-indigo-500"
+              onClick={(e) => {
+                e.preventDefault()
+                navigate('/forgot-password')
+              }}
+            >
+              Forgot your password?
+            </a>
+          </div>
+
+          <div className="text-sm text-center">
             <span className="text-gray-500">Don't have an account? </span>
             <a
               href="/signup"

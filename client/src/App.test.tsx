@@ -111,4 +111,18 @@ describe('App auth flow integration', () => {
 
     expect(await screen.findByText(/sign in to your account/i)).toBeInTheDocument()
   })
+
+  it('renders forgot-password route for unauthenticated users', async () => {
+    window.history.pushState({}, '', '/forgot-password')
+    render(<App />)
+
+    expect(await screen.findByText(/forgot your password/i)).toBeInTheDocument()
+  })
+
+  it('renders reset-password route with token for unauthenticated users', async () => {
+    window.history.pushState({}, '', '/reset-password?token=test-token')
+    render(<App />)
+
+    expect(await screen.findByText(/reset your password/i)).toBeInTheDocument()
+  })
 })

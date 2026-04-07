@@ -1,7 +1,9 @@
 import bcrypt from 'bcrypt'
+import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../lib/prisma'
 import { autoResolveInvitesOnSignup } from './invites.service'
+import { sendPasswordResetEmail } from '../lib/mailer'
 
 /**
  * Custom application error for structured error handling
@@ -65,6 +67,13 @@ if (!process.env.JWT_SECRET) {
 const JWT_SECRET = process.env.JWT_SECRET
 const ACCESS_TOKEN_EXPIRY = '1h'
 const REFRESH_TOKEN_EXPIRY = '7d'
+const PASSWORD_RESET_TOKEN_TTL_MS = 15 * 60 * 1000
+
+const getAppBaseUrl = (): string => process.env.APP_BASE_URL || 'http://localhost:5173'
+
+const hashResetToken = (token: string): string => {
+  return crypto.createHash('sha256').update(token, 'utf8').digest('hex')
+}
 
 /**
  * Register a new user with bcrypt-hashed password
@@ -339,4 +348,95 @@ export const checkIsAdminMonitor = async (userId: number): Promise<boolean> => {
     select: { isAdminMonitor: true }
   })
   return user?.isAdminMonitor ?? false
+}
+
+/**
+ * Request a password reset link.
+ * Always resolves with a generic response to avoid account enumeration.
+ */
+export const requestPasswordReset = async (email: string): Promise<{ message: string }> => {
+  const user = await prisma.user.findUnique({
+    where: { email },
+    select: { id: true, email: true }
+  })
+
+  if (!user) {
+    return {
+      message: 'If an account exists for that email, a reset link has been sent.'
+    }
+  }
+
+  const rawToken = crypto.randomBytes(32).toString('hex')
+  const tokenHash = hashResetToken(rawToken)
+  const expiresAt = new Date(Date.now() + PASSWORD_RESET_TOKEN_TTL_MS)
+
+  await prisma.passwordResetToken.create({
+    data: {
+      userId: user.id,
+      tokenHash,
+      expiresAt
+    }
+  })
+
+  const resetUrl = `${getAppBaseUrl()}/reset-password?token=${encodeURIComponent(rawToken)}`
+  try {
+    await sendPasswordResetEmail({
+      email: user.email,
+      resetUrl
+    })
+  } catch {
+    // Swallow send failures so error/timing differences cannot reveal account existence.
+    // The orphaned token expires in 15 minutes.
+    console.error('Failed to send password reset email')
+  }
+
+  return {
+    message: 'If an account exists for that email, a reset link has been sent.'
+  }
+}
+
+/**
+ * Complete password reset with a one-time token.
+ */
+export const resetPassword = async (token: string, newPassword: string): Promise<{ message: string }> => {
+  const tokenHash = hashResetToken(token)
+  const now = new Date()
+
+  const resetToken = await prisma.passwordResetToken.findUnique({
+    where: { tokenHash },
+    select: {
+      id: true,
+      userId: true,
+      expiresAt: true,
+      consumedAt: true
+    }
+  })
+
+  if (!resetToken || resetToken.consumedAt || resetToken.expiresAt <= now) {
+    throw new AppError('invalid_reset_token', 'Reset token is invalid or expired', {}, 400)
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, BCRYPT_ROUNDS)
+  if (hashedPassword.length !== 60) {
+    throw new AppError('hash_generation_failed', 'Password hashing failed', {}, 500)
+  }
+
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({
+      where: { id: resetToken.userId },
+      data: { password: hashedPassword }
+    })
+
+    await tx.passwordResetToken.updateMany({
+      where: {
+        userId: resetToken.userId,
+        consumedAt: null
+      },
+      data: {
+        consumedAt: now
+      }
+    })
+  })
+
+  return { message: 'Password has been reset successfully' }
 }
