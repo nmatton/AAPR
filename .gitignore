@@ -13,6 +13,7 @@ pnpm-debug.log*
 .env.local
 .env*.local
 deploy/compose/*.env
+deploy/compose/*.yml
 !deploy/compose/.env.instance.example
 
 
