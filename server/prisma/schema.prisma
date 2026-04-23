@@ -19,6 +19,8 @@ model User {
   /// Bcrypt-hashed password (NEVER stored as plain text)
   /// IMPORTANT: Bcrypt always produces 60-character hashes
   password        String       @db.Char(60)
+  /// User-generated immutable identifier for privacy-preserving research correlation
+  privacyCode     String?      @unique @map("privacy_code") @db.VarChar(255)
   /// User creation timestamp
   createdAt       DateTime     @default(now()) @map("created_at")
   /// Last update timestamp

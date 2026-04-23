@@ -1,9 +1,10 @@
 import bcrypt from 'bcrypt'
 import crypto from 'crypto'
 import jwt from 'jsonwebtoken'
+import { Prisma } from '@prisma/client'
 import { prisma } from '../lib/prisma'
 import { autoResolveInvitesOnSignup } from './invites.service'
-import { sendPasswordResetEmail } from '../lib/mailer'
+import { sendPasswordResetEmail, sendPrivacyCodeEmail } from '../lib/mailer'
 
 /**
  * Custom application error for structured error handling
@@ -27,6 +28,7 @@ interface RegisterUserDto {
   name: string
   email: string
   password: string
+  privacyCode: string
 }
 
 /**
@@ -84,7 +86,7 @@ const hashResetToken = (token: string): string => {
  * @throws AppError with code 'email_exists' if email already registered
  */
 export const registerUser = async (dto: RegisterUserDto): Promise<UserResponse> => {
-  const { name, email, password } = dto
+  const { name, email, password, privacyCode } = dto
 
   // Check for duplicate email BEFORE attempting creation
   const existingUser = await prisma.user.findUnique({
@@ -114,50 +116,83 @@ export const registerUser = async (dto: RegisterUserDto): Promise<UserResponse> 
   }
 
   // CRITICAL: Atomic transaction - user creation + event logging must both succeed
-  const user = await prisma.$transaction(async (tx) => {
-    // Create user with hashed password
-    const newUser = await tx.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        createdAt: true,
-        isAdminMonitor: true
-      }
-    })
+  let user: UserResponse
 
-    // Log registration event (research data requirement)
-    await tx.event.create({
-      data: {
-        eventType: 'user.registered',
-        actorId: null, // System event (no user context yet)
-        teamId: null,  // User-level event (no team context)
-        entityType: 'user',
-        entityId: newUser.id,
-        action: 'created',
-        payload: {
-          email: newUser.email,
-          name: newUser.name,
-          registrationMethod: 'email_password',
-          systemReason: 'User context is not yet available until after persistence in signup transaction.'
+  try {
+    user = await prisma.$transaction(async (tx) => {
+      // Create user with hashed password
+      const newUser = await tx.user.create({
+        data: {
+          name,
+          email,
+          password: hashedPassword,
+          privacyCode
         },
-        schemaVersion: 'v1'
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          createdAt: true,
+          isAdminMonitor: true
+        }
+      })
+
+      // Log registration event (research data requirement)
+      await tx.event.create({
+        data: {
+          eventType: 'user.registered',
+          actorId: null, // System event (no user context yet)
+          teamId: null,  // User-level event (no team context)
+          entityType: 'user',
+          entityId: newUser.id,
+          action: 'created',
+          payload: {
+            email: newUser.email,
+            name: newUser.name,
+            privacyCode,
+            registrationMethod: 'email_password',
+            systemReason: 'User context is not yet available until after persistence in signup transaction.'
+          },
+          schemaVersion: 'v1'
+        }
+      })
+
+      // Auto-resolve pending invites for this email
+      await autoResolveInvitesOnSignup(newUser.id, newUser.email, tx)
+
+      return {
+        ...newUser,
+        hasCompletedBigFive: false // New users haven't completed survey
       }
     })
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      const targetMeta = error.meta?.target
+      const target = Array.isArray(targetMeta)
+        ? targetMeta.join(',').toLowerCase()
+        : String(targetMeta || '').toLowerCase()
 
-    // Auto-resolve pending invites for this email
-    await autoResolveInvitesOnSignup(newUser.id, newUser.email, tx)
+      if (target.includes('privacycode') || target.includes('privacy_code')) {
+        throw new AppError(
+          'privacy_code_exists',
+          'Privacy code is already in use',
+          { field: 'privacyCode' },
+          409
+        )
+      }
 
-    return {
-      ...newUser,
-      hasCompletedBigFive: false // New users haven't completed survey
+      if (target.includes('email')) {
+        throw new AppError(
+          'email_exists',
+          'Email already registered',
+          { field: 'email' },
+          409
+        )
+      }
     }
-  })
+
+    throw error
+  }
 
   return user
 }
@@ -220,6 +255,7 @@ export const verifyCredentials = async (
       name: true,
       email: true,
       password: true,
+      privacyCode: true,
       createdAt: true,
       isAdminMonitor: true,
       bigFiveScore: {
@@ -260,6 +296,7 @@ export const verifyCredentials = async (
       action: 'login',
       payload: {
         email: user.email,
+        privacyCode: user.privacyCode,
         timestamp: new Date().toISOString(),
         ipAddress
       },
@@ -439,4 +476,37 @@ export const resetPassword = async (token: string, newPassword: string): Promise
   })
 
   return { message: 'Password has been reset successfully' }
+}
+
+/**
+ * Send the authenticated user's privacy code to their registered email address.
+ */
+export const sendPrivacyCodeByEmail = async (userId: number): Promise<{ message: string }> => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      email: true,
+      privacyCode: true
+    }
+  })
+
+  if (!user) {
+    throw new AppError('user_not_found', 'User not found', {}, 404)
+  }
+
+  if (!user.privacyCode) {
+    throw new AppError(
+      'privacy_code_not_set',
+      'Privacy code is not set for this account',
+      {},
+      409
+    )
+  }
+
+  await sendPrivacyCodeEmail({
+    email: user.email,
+    privacyCode: user.privacyCode
+  })
+
+  return { message: 'Privacy code sent to your email' }
 }

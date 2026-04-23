@@ -20,6 +20,7 @@ interface LogEventInput {
     eventType: EventType | string;
     teamId?: number;
     actorId?: number;
+    privacyCode?: string;
     entityType?: string;
     entityId?: number;
     action?: string;
@@ -161,6 +162,13 @@ export const logEvent = async (
 ) => {
     validateLogEventInput(data);
     const client = tx || prisma;
+    const payload: EventPayload = data.payload && typeof data.payload === 'object' && !Array.isArray(data.payload)
+        ? { ...data.payload }
+        : {};
+
+    if (typeof data.privacyCode === 'string' && data.privacyCode.trim().length > 0) {
+        payload.privacyCode = data.privacyCode.trim();
+    }
 
     return client.event.create({
         data: {
@@ -170,7 +178,7 @@ export const logEvent = async (
             entityType: data.entityType,
             entityId: data.entityId,
             action: data.action,
-            payload: data.payload,
+            payload,
         },
     });
 };

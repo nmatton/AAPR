@@ -3,10 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { useTeamsStore } from '../state/teamsSlice';
 import { TeamCard } from './TeamCard';
 import { EmptyState } from './EmptyState';
+import { sendPrivacyCodeEmail } from '../../auth/api/authApi';
+
+interface PrivacyCodeToast {
+  type: 'success' | 'error';
+  message: string;
+}
 
 export const TeamsList = () => {
   const { teams, isLoading, error, fetchTeams } = useTeamsStore();
   const [minLoadTime, setMinLoadTime] = useState(false);
+  const [isSendingPrivacyCode, setIsSendingPrivacyCode] = useState(false);
+  const [privacyCodeToast, setPrivacyCodeToast] = useState<PrivacyCodeToast | null>(null);
   const navigate = useNavigate();
   const userGuideUrl = '/AAPR%20User%20Guide.pdf';
 
@@ -25,8 +33,39 @@ export const TeamsList = () => {
     }
   }, [isLoading]);
 
+  useEffect(() => {
+    if (!privacyCodeToast) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setPrivacyCodeToast(null);
+    }, 3000);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [privacyCodeToast]);
+
   const handleRetry = () => {
     fetchTeams();
+  };
+
+  const handleSendPrivacyCode = async () => {
+    setIsSendingPrivacyCode(true);
+
+    try {
+      await sendPrivacyCodeEmail();
+      setPrivacyCodeToast({
+        type: 'success',
+        message: 'Check your email for your privacy code'
+      });
+    } catch {
+      setPrivacyCodeToast({
+        type: 'error',
+        message: 'Failed to send your privacy code email. Please try again.'
+      });
+    } finally {
+      setIsSendingPrivacyCode(false);
+    }
   };
 
   const headerActions = (
@@ -46,6 +85,35 @@ export const TeamsList = () => {
       >
         Create Team
       </button>
+    </div>
+  );
+
+  const privacyCodeAction = (
+    <div className="mt-8 border-t border-gray-200 pt-6">
+      <button
+        type="button"
+        onClick={handleSendPrivacyCode}
+        disabled={isSendingPrivacyCode}
+        className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+          isSendingPrivacyCode
+            ? 'bg-blue-300 text-white cursor-not-allowed'
+            : 'bg-blue-600 text-white hover:bg-blue-700'
+        }`}
+      >
+        {isSendingPrivacyCode ? 'Sending...' : 'Send my personal code by email'}
+      </button>
+    </div>
+  );
+
+  const privacyCodeToastBanner = privacyCodeToast && (
+    <div
+      className={`mb-6 rounded-md px-4 py-3 text-sm ${
+        privacyCodeToast.type === 'success'
+          ? 'bg-green-50 text-green-800 border border-green-200'
+          : 'bg-red-50 text-red-800 border border-red-200'
+      }`}
+    >
+      {privacyCodeToast.message}
     </div>
   );
 
@@ -72,6 +140,7 @@ export const TeamsList = () => {
           <h1 className="text-3xl font-bold text-gray-800">My Teams</h1>
           {headerActions}
         </div>
+        {privacyCodeToastBanner}
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <svg
             className="w-16 h-16 text-red-400 mb-4"
@@ -95,6 +164,7 @@ export const TeamsList = () => {
             Retry
           </button>
         </div>
+        {privacyCodeAction}
       </div>
     );
   }
@@ -106,7 +176,9 @@ export const TeamsList = () => {
           <h1 className="text-3xl font-bold text-gray-800">My Teams</h1>
           {headerActions}
         </div>
+        {privacyCodeToastBanner}
         <EmptyState />
+        {privacyCodeAction}
       </div>
     );
   }
@@ -117,12 +189,14 @@ export const TeamsList = () => {
         <h1 className="text-3xl font-bold text-gray-800">My Teams</h1>
         {headerActions}
       </div>
+      {privacyCodeToastBanner}
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {teams.map((team) => (
           <TeamCard key={team.id} team={team} />
         ))}
       </div>
+      {privacyCodeAction}
     </div>
   );
 };

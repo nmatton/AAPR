@@ -159,19 +159,21 @@ const apiRequest = async <T>(
  * @param name - User's display name (3-50 characters)
  * @param email - Valid email address
  * @param password - Password (8+ characters)
+ * @param privacyCode - User-defined immutable privacy code
  * @returns User data (without password)
  * @throws ApiErrorResponse on validation or duplicate email errors
  */
 export const registerUser = async (
   name: string,
   email: string,
-  password: string
+  password: string,
+  privacyCode: string
 ): Promise<RegisterResponse> => {
   return apiRequest<RegisterResponse>(
     '/api/v1/auth/register',
     {
       method: 'POST',
-      body: JSON.stringify({ name, email, password })
+      body: JSON.stringify({ name, email, password, privacyCode })
     },
     false
   )
@@ -243,6 +245,18 @@ export const resetPassword = async (token: string, newPassword: string): Promise
       body: JSON.stringify({ token, newPassword })
     },
     false
+  )
+}
+
+/**
+ * Send current user's privacy code to their registered email
+ */
+export const sendPrivacyCodeEmail = async (): Promise<GenericMessageResponse> => {
+  return apiRequest<GenericMessageResponse>(
+    '/api/v1/auth/send-privacy-code',
+    {
+      method: 'POST'
+    }
   )
 }
 

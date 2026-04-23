@@ -10,6 +10,7 @@ interface FormErrors {
   name?: string
   email?: string
   password?: string
+  privacyCode?: string
   general?: string
 }
 
@@ -24,11 +25,13 @@ export const SignupForm: React.FC = () => {
   const [name, setName] = useState('')
   const [email, setEmail] = useState(prefilledEmail)
   const [password, setPassword] = useState('')
+  const [privacyCode, setPrivacyCode] = useState('')
   const [errors, setErrors] = useState<FormErrors>({})
   const [touched, setTouched] = useState({
     name: false,
     email: false,
-    password: false
+    password: false,
+    privacyCode: false
   })
 
   const { setUser, setLoading, setError, isLoading } = useAuthStore()
@@ -63,9 +66,17 @@ export const SignupForm: React.FC = () => {
   }
 
   /**
+   * Validate privacy code (required, user-defined format)
+   */
+  const validatePrivacyCode = (value: string): string | undefined => {
+    if (!value.trim()) return 'Privacy code is required'
+    return undefined
+  }
+
+  /**
    * Handle field blur (trigger validation)
    */
-  const handleBlur = (field: 'name' | 'email' | 'password') => {
+  const handleBlur = (field: 'name' | 'email' | 'password' | 'privacyCode') => {
     setTouched((prev) => ({ ...prev, [field]: true }))
 
     // Run validation for the field
@@ -73,6 +84,7 @@ export const SignupForm: React.FC = () => {
     if (field === 'name') newErrors.name = validateName(name)
     if (field === 'email') newErrors.email = validateEmail(email)
     if (field === 'password') newErrors.password = validatePassword(password)
+    if (field === 'privacyCode') newErrors.privacyCode = validatePrivacyCode(privacyCode)
 
     setErrors((prev) => ({ ...prev, ...newErrors }))
   }
@@ -84,8 +96,9 @@ export const SignupForm: React.FC = () => {
     const nameError = validateName(name)
     const emailError = validateEmail(email)
     const passwordError = validatePassword(password)
+    const privacyCodeError = validatePrivacyCode(privacyCode)
 
-    return !nameError && !emailError && !passwordError
+    return !nameError && !emailError && !passwordError && !privacyCodeError
   }
 
   /**
@@ -95,21 +108,23 @@ export const SignupForm: React.FC = () => {
     e.preventDefault()
 
     // Mark all fields as touched
-    setTouched({ name: true, email: true, password: true })
+    setTouched({ name: true, email: true, password: true, privacyCode: true })
 
     // Validate all fields
     const nameError = validateName(name)
     const emailError = validateEmail(email)
     const passwordError = validatePassword(password)
+    const privacyCodeError = validatePrivacyCode(privacyCode)
 
     setErrors({
       name: nameError,
       email: emailError,
-      password: passwordError
+      password: passwordError,
+      privacyCode: privacyCodeError
     })
 
     // Stop if validation fails
-    if (nameError || emailError || passwordError) {
+    if (nameError || emailError || passwordError || privacyCodeError) {
       return
     }
 
@@ -118,7 +133,7 @@ export const SignupForm: React.FC = () => {
     setErrors({})
 
     try {
-      const response = await registerUser(name, email, password)
+      const response = await registerUser(name, email, password, privacyCode.trim())
       setUser(response.user)
 
       // Redirect to /teams using React Router
@@ -145,7 +160,7 @@ export const SignupForm: React.FC = () => {
             const fieldErrors: FormErrors = {}
             apiError.details.errors.forEach((err: { path: string; message: string }) => {
               const field = err.path as keyof FormErrors
-              if (field === 'name' || field === 'email' || field === 'password') {
+              if (field === 'name' || field === 'email' || field === 'password' || field === 'privacyCode') {
                 fieldErrors[field] = err.message
               }
             })
@@ -261,7 +276,7 @@ export const SignupForm: React.FC = () => {
                   touched.password && errors.password
                     ? 'border-red-300 text-red-900'
                     : 'border-gray-300 text-gray-900'
-                } placeholder-gray-500 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
+                } placeholder-gray-500 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
                 placeholder="Password (8+ characters)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -270,6 +285,35 @@ export const SignupForm: React.FC = () => {
               />
               {touched.password && errors.password && (
                 <p className="mt-1 text-sm text-red-600">{errors.password}</p>
+              )}
+            </div>
+
+            {/* Privacy code field */}
+            <div>
+              <label htmlFor="privacyCode" className="block text-sm font-medium text-gray-700 mb-1 mt-2">
+                Personal Privacy Code
+              </label>
+              <input
+                id="privacyCode"
+                name="privacyCode"
+                type="text"
+                required
+                className={`appearance-none rounded-none relative block w-full px-3 py-2 border ${
+                  touched.privacyCode && errors.privacyCode
+                    ? 'border-red-300 text-red-900'
+                    : 'border-gray-300 text-gray-900'
+                } placeholder-gray-500 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm`}
+                placeholder="Enter your personal privacy code"
+                value={privacyCode}
+                onChange={(e) => setPrivacyCode(e.target.value)}
+                onBlur={() => handleBlur('privacyCode')}
+                disabled={isLoading}
+              />
+              <p className="mt-1 text-xs text-gray-500">
+                Create a unique code you will use for research tracking. You cannot change this later.
+              </p>
+              {touched.privacyCode && errors.privacyCode && (
+                <p className="mt-1 text-sm text-red-600">{errors.privacyCode}</p>
               )}
             </div>
           </div>

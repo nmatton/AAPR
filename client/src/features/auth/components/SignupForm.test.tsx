@@ -26,4 +26,12 @@ describe('SignupForm', () => {
     const emailInput = screen.getByLabelText(/email address/i)
     expect(emailInput).toHaveValue('invited.user+team@example.com')
   })
+
+  it('renders required privacy code field', () => {
+    renderSignupForm()
+
+    const privacyCodeInput = screen.getByLabelText(/personal privacy code/i)
+    expect(privacyCodeInput).toBeInTheDocument()
+    expect(privacyCodeInput).toBeRequired()
+  })
 })

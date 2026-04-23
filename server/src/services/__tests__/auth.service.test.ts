@@ -11,7 +11,8 @@ import {
   verifyCredentials,
   generateRefreshToken,
   requestPasswordReset,
-  resetPassword
+  resetPassword,
+  sendPrivacyCodeByEmail
 } from '../auth.service'
 import { prisma } from '../../lib/prisma'
 import * as mailer from '../../lib/mailer'
@@ -37,7 +38,8 @@ jest.mock('../../lib/prisma', () => ({
 }))
 
 jest.mock('../../lib/mailer', () => ({
-  sendPasswordResetEmail: jest.fn()
+  sendPasswordResetEmail: jest.fn(),
+  sendPrivacyCodeEmail: jest.fn()
 }))
 
 describe('Auth Service', () => {
@@ -49,7 +51,8 @@ describe('Auth Service', () => {
     const validUserDto = {
       name: 'Test User',
       email: 'test@example.com',
-      password: 'password123'
+      password: 'password123',
+      privacyCode: 'PRIVACY-CODE-001'
     }
 
     it('should create user with bcrypt-hashed password (10+ rounds)', async () => {
@@ -204,6 +207,7 @@ describe('Auth Service', () => {
           payload: expect.objectContaining({
             email: mockUser.email,
             name: mockUser.name,
+            privacyCode: validUserDto.privacyCode,
             registrationMethod: 'email_password'
           }),
           schemaVersion: 'v1'
@@ -556,6 +560,46 @@ describe('Auth Service', () => {
         code: 'invalid_reset_token',
         statusCode: 400
       })
+    })
+  })
+
+  describe('sendPrivacyCodeByEmail', () => {
+    it('sends privacy code email for existing user with code', async () => {
+      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        email: 'known@example.com',
+        privacyCode: 'RESEARCH-123'
+      })
+      ;(mailer.sendPrivacyCodeEmail as jest.Mock).mockResolvedValue(undefined)
+
+      const result = await sendPrivacyCodeByEmail(42)
+
+      expect(result).toEqual({ message: 'Privacy code sent to your email' })
+      expect(mailer.sendPrivacyCodeEmail).toHaveBeenCalledWith({
+        email: 'known@example.com',
+        privacyCode: 'RESEARCH-123'
+      })
+    })
+
+    it('throws user_not_found when user does not exist', async () => {
+      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue(null)
+
+      await expect(sendPrivacyCodeByEmail(404)).rejects.toMatchObject({
+        code: 'user_not_found',
+        statusCode: 404
+      })
+    })
+
+    it('throws privacy_code_not_set when user has no code', async () => {
+      ;(prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        email: 'known@example.com',
+        privacyCode: null
+      })
+
+      await expect(sendPrivacyCodeByEmail(42)).rejects.toMatchObject({
+        code: 'privacy_code_not_set',
+        statusCode: 409
+      })
+      expect(mailer.sendPrivacyCodeEmail).not.toHaveBeenCalled()
     })
   })
 })

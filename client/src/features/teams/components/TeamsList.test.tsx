@@ -1,14 +1,19 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import { TeamsList } from './TeamsList';
 import { useTeamsStore } from '../state/teamsSlice';
+import { sendPrivacyCodeEmail } from '../../auth/api/authApi';
 
 // Mock the store
 vi.mock('../state/teamsSlice');
+vi.mock('../../auth/api/authApi', () => ({
+  sendPrivacyCodeEmail: vi.fn()
+}));
 
 const mockFetchTeams = vi.fn();
 const mockUseTeamsStore = useTeamsStore as any;
+const mockSendPrivacyCodeEmail = vi.mocked(sendPrivacyCodeEmail);
 
 const renderTeamsList = () => {
   return render(
@@ -173,5 +178,49 @@ describe('TeamsList', () => {
 
     // Verify loading state persists for the minimum time
     // (detailed timer behavior tested in integration tests)
+  });
+
+  it('sends privacy code email and shows success toast', async () => {
+    vi.useRealTimers();
+
+    mockUseTeamsStore.mockReturnValue({
+      teams: [],
+      isLoading: false,
+      error: null,
+      fetchTeams: mockFetchTeams,
+      reset: vi.fn(),
+    });
+    mockSendPrivacyCodeEmail.mockResolvedValue({ message: 'Privacy code sent to your email' });
+
+    renderTeamsList();
+
+    fireEvent.click(screen.getByRole('button', { name: /send my personal code by email/i }));
+
+    await waitFor(() => {
+      expect(mockSendPrivacyCodeEmail).toHaveBeenCalledTimes(1);
+    });
+    expect(screen.getByText('Check your email for your privacy code')).toBeInTheDocument();
+  });
+
+  it('shows error toast when privacy code email fails', async () => {
+    vi.useRealTimers();
+
+    mockUseTeamsStore.mockReturnValue({
+      teams: [],
+      isLoading: false,
+      error: null,
+      fetchTeams: mockFetchTeams,
+      reset: vi.fn(),
+    });
+    mockSendPrivacyCodeEmail.mockRejectedValue(new Error('SMTP error'));
+
+    renderTeamsList();
+
+    fireEvent.click(screen.getByRole('button', { name: /send my personal code by email/i }));
+
+    await waitFor(() => {
+      expect(mockSendPrivacyCodeEmail).toHaveBeenCalledTimes(1);
+    });
+    expect(screen.getByText('Failed to send your privacy code email. Please try again.')).toBeInTheDocument();
   });
 });

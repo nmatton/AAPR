@@ -23,6 +23,11 @@ export interface PasswordResetEmailPayload {
   resetUrl: string
 }
 
+export interface PrivacyCodeEmailPayload {
+  email: string
+  privacyCode: string
+}
+
 interface MailConfig {
   host: string
   port: number
@@ -123,6 +128,23 @@ const sendPasswordEmail = async (
   })
 }
 
+const sendPrivacyCodeMessage = async (
+  payload: PrivacyCodeEmailPayload,
+  builder: (p: PrivacyCodeEmailPayload) => { subject: string; text: string; html: string }
+) => {
+  const config = getMailConfig()
+  const transporter = createTransporter()
+  const { subject, text, html } = builder(payload)
+
+  await transporter.sendMail({
+    from: config.from,
+    to: payload.email,
+    subject,
+    text,
+    html
+  })
+}
+
 const buildPasswordResetEmail = (payload: PasswordResetEmailPayload) => {
   const escapedResetUrl = escapeHtml(payload.resetUrl)
   const subject = 'Reset your AAPR password'
@@ -143,6 +165,24 @@ const buildPasswordResetEmail = (payload: PasswordResetEmailPayload) => {
   return { subject, text, html }
 }
 
+const buildPrivacyCodeEmail = (payload: PrivacyCodeEmailPayload) => {
+  const escapedPrivacyCode = escapeHtml(payload.privacyCode)
+  const subject = 'Your Personal Privacy Code for AAPR Research'
+  const text = [
+    'Here is your personal privacy code for AAPR research tracking:',
+    payload.privacyCode,
+    '',
+    'Keep this code private and do not share it with others.'
+  ].join('\n')
+  const html = `
+    <p>Here is your personal privacy code for AAPR research tracking:</p>
+    <p><strong style="font-size:18px;letter-spacing:0.4px;">${escapedPrivacyCode}</strong></p>
+    <p>Keep this code private and do not share it with others.</p>
+  `.trim()
+
+  return { subject, text, html }
+}
+
 export const sendInviteEmail = async (payload: InviteEmailPayload): Promise<void> => {
   await sendEmail(payload, buildInviteEmail)
 }
@@ -153,4 +193,8 @@ export const sendAddedToTeamEmail = async (payload: InviteEmailPayload): Promise
 
 export const sendPasswordResetEmail = async (payload: PasswordResetEmailPayload): Promise<void> => {
   await sendPasswordEmail(payload, buildPasswordResetEmail)
+}
+
+export const sendPrivacyCodeEmail = async (payload: PrivacyCodeEmailPayload): Promise<void> => {
+  await sendPrivacyCodeMessage(payload, buildPrivacyCodeEmail)
 }

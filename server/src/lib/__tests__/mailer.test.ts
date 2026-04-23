@@ -1,5 +1,10 @@
 import * as nodemailer from 'nodemailer'
-import { sendAddedToTeamEmail, sendInviteEmail, sendPasswordResetEmail } from '../mailer'
+import {
+  sendAddedToTeamEmail,
+  sendInviteEmail,
+  sendPasswordResetEmail,
+  sendPrivacyCodeEmail
+} from '../mailer'
 
 type MockTransport = {
   sendMail: jest.Mock
@@ -113,5 +118,39 @@ describe('Mailer', () => {
     const sendMailArg = transport.sendMail.mock.calls[0][0]
     expect(sendMailArg.html).toContain('&lt;script&gt;alert(1)&lt;/script&gt;')
     expect(sendMailArg.html).not.toContain('<script>alert(1)</script>')
+  })
+
+  it('sends privacy code email with expected subject and code content', async () => {
+    const transport: MockTransport = { sendMail: jest.fn().mockResolvedValue({ messageId: '1' }) }
+    mockCreateTransport.mockReturnValue(transport)
+
+    await sendPrivacyCodeEmail({
+      email: 'privacy@example.com',
+      privacyCode: 'RESEARCH-001'
+    })
+
+    expect(transport.sendMail).toHaveBeenCalledWith(
+      expect.objectContaining({
+        to: 'privacy@example.com',
+        from: 'noreply@example.com',
+        subject: 'Your Personal Privacy Code for AAPR Research',
+        text: expect.stringContaining('RESEARCH-001'),
+        html: expect.stringContaining('RESEARCH-001')
+      })
+    )
+  })
+
+  it('escapes privacy code in html output', async () => {
+    const transport: MockTransport = { sendMail: jest.fn().mockResolvedValue({ messageId: '1' }) }
+    mockCreateTransport.mockReturnValue(transport)
+
+    await sendPrivacyCodeEmail({
+      email: 'escape@example.com',
+      privacyCode: '<b>SECRET</b>'
+    })
+
+    const sendMailArg = transport.sendMail.mock.calls[0][0]
+    expect(sendMailArg.html).toContain('&lt;b&gt;SECRET&lt;/b&gt;')
+    expect(sendMailArg.html).not.toContain('<b>SECRET</b>')
   })
 })

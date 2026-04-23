@@ -17,7 +17,8 @@ jest.mock('../../services/auth.service', () => {
     resetPassword: jest.fn(),
     generateRefreshToken: jest.fn(),
     verifyToken: jest.fn(),
-    getUserById: jest.fn()
+    getUserById: jest.fn(),
+    sendPrivacyCodeByEmail: jest.fn()
   }
 })
 
@@ -36,7 +37,8 @@ describe('POST /api/v1/auth/register', () => {
   const validRegistration = {
     name: 'Test User',
     email: 'test@example.com',
-    password: 'password123'
+    password: 'password123',
+    privacyCode: 'PRIVACY-CODE-001'
   }
 
   it('should return 201 Created with user data on successful registration', async () => {
@@ -103,7 +105,8 @@ describe('POST /api/v1/auth/register', () => {
     const invalidRequest = {
       name: 'Test User',
       email: 'invalid-email',
-      password: 'password123'
+      password: 'password123',
+      privacyCode: 'PRIVACY-CODE-001'
     }
 
     const response = await request(app)
@@ -129,7 +132,8 @@ describe('POST /api/v1/auth/register', () => {
     const invalidRequest = {
       name: 'Test User',
       email: 'test@example.com',
-      password: 'short'
+      password: 'short',
+      privacyCode: 'PRIVACY-CODE-001'
     }
 
     const response = await request(app)
@@ -155,7 +159,8 @@ describe('POST /api/v1/auth/register', () => {
     const invalidRequest = {
       name: 'AB',
       email: 'test@example.com',
-      password: 'password123'
+      password: 'password123',
+      privacyCode: 'PRIVACY-CODE-001'
     }
 
     const response = await request(app)
@@ -175,7 +180,8 @@ describe('POST /api/v1/auth/register', () => {
     const invalidRequest = {
       name: 'AB',
       email: 'invalid',
-      password: 'short'
+      password: 'short',
+      privacyCode: 'PRIVACY-CODE-001'
     }
 
     const response = await request(app)
@@ -184,6 +190,31 @@ describe('POST /api/v1/auth/register', () => {
 
     expect(response.status).toBe(400)
     expect(response.body.details.errors).toHaveLength(3)
+  })
+
+  it('should return 400 Bad Request when privacy code is missing', async () => {
+    const invalidRequest = {
+      name: 'Test User',
+      email: 'test@example.com',
+      password: 'password123'
+    }
+
+    const response = await request(app)
+      .post('/api/v1/auth/register')
+      .send(invalidRequest)
+
+    expect(response.status).toBe(400)
+    expect(response.body).toMatchObject({
+      code: 'validation_error',
+      message: 'Invalid input',
+      details: {
+        errors: expect.arrayContaining([
+          expect.objectContaining({
+            path: 'privacyCode'
+          })
+        ])
+      }
+    })
   })
 })
 
@@ -515,6 +546,38 @@ describe('POST /api/v1/auth/logout', () => {
   it('should return 401 Unauthorized when not authenticated', async () => {
     const response = await request(app)
       .post('/api/v1/auth/logout')
+
+    expect(response.status).toBe(401)
+    expect(response.body).toMatchObject({
+      code: 'missing_token',
+      message: 'Authentication required'
+    })
+  })
+})
+
+describe('POST /api/v1/auth/send-privacy-code', () => {
+  beforeEach(() => {
+    jest.clearAllMocks()
+  })
+
+  it('should return 200 OK for authenticated users', async () => {
+    ;(authService.verifyToken as jest.Mock).mockReturnValue({ userId: 11 })
+    ;(authService.sendPrivacyCodeByEmail as jest.Mock).mockResolvedValue({
+      message: 'Privacy code sent to your email'
+    })
+
+    const response = await request(app)
+      .post('/api/v1/auth/send-privacy-code')
+      .set('Authorization', 'Bearer mock.token.value')
+
+    expect(response.status).toBe(200)
+    expect(response.body).toEqual({ message: 'Privacy code sent to your email' })
+    expect(authService.sendPrivacyCodeByEmail).toHaveBeenCalledWith(11)
+  })
+
+  it('should return 401 Unauthorized when missing token', async () => {
+    const response = await request(app)
+      .post('/api/v1/auth/send-privacy-code')
 
     expect(response.status).toBe(401)
     expect(response.body).toMatchObject({

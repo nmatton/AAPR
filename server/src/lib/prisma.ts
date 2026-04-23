@@ -86,16 +86,51 @@ const assertEventMutationAllowed = (operation: string): void => {
   )
 }
 
+const isRecord = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
 const createPrismaClient = () => {
   const baseClient = new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   })
 
+  const enrichEventPayloadWithPrivacyCode = async (args: any): Promise<void> => {
+    const actorId = args?.data?.actorId
+    if (typeof actorId !== 'number') {
+      return
+    }
+
+    const currentPayload = isRecord(args?.data?.payload) ? args.data.payload : {}
+    const existingPrivacyCode = typeof currentPayload.privacyCode === 'string'
+      ? currentPayload.privacyCode.trim()
+      : ''
+
+    if (existingPrivacyCode.length > 0) {
+      return
+    }
+
+    const actor = await baseClient.user.findUnique({
+      where: { id: actorId },
+      select: { privacyCode: true }
+    })
+
+    if (!actor?.privacyCode) {
+      return
+    }
+
+    args.data.payload = {
+      ...currentPayload,
+      privacyCode: actor.privacyCode
+    }
+  }
+
   return baseClient.$extends({
     query: {
       event: {
         async create({ args, query }) {
+          await enrichEventPayloadWithPrivacyCode(args)
           assertEventCreateMetadata(args)
           return query(args)
         },

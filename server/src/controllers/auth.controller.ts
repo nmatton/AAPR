@@ -6,6 +6,7 @@ import {
   forgotPasswordSchema,
   resetPasswordSchema
 } from '../schemas/auth.schema'
+import type { AuthenticatedRequest } from '../middleware/requireAuth'
 import * as authService from '../services/auth.service'
 
 /**
@@ -34,7 +35,7 @@ const getClientIpAddress = (req: Request): string => {
  * Register new user endpoint
  * POST /api/v1/auth/register
  * 
- * @param req - Express request with { name, email, password } in body
+ * @param req - Express request with { name, email, password, privacyCode } in body
  * @param res - Express response
  * @param next - Express next function for error handling
  */
@@ -417,6 +418,43 @@ export const resetPassword = async (
       })
     }
 
+    if (error instanceof authService.AppError) {
+      return res.status(error.statusCode).json({
+        code: error.code,
+        message: error.message,
+        details: error.details,
+        requestId: res.getHeader('x-request-id')
+      })
+    }
+
+    return next(error)
+  }
+}
+
+/**
+ * Send privacy code email endpoint
+ * POST /api/v1/auth/send-privacy-code
+ */
+export const sendPrivacyCode = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<Response | void> => {
+  try {
+    const userId = (req as AuthenticatedRequest).user?.userId
+
+    if (!userId) {
+      return res.status(401).json({
+        code: 'missing_token',
+        message: 'Authentication required',
+        details: { field: 'authorization' },
+        requestId: res.getHeader('x-request-id')
+      })
+    }
+
+    const result = await authService.sendPrivacyCodeByEmail(userId)
+    return res.status(200).json(result)
+  } catch (error) {
     if (error instanceof authService.AppError) {
       return res.status(error.statusCode).json({
         code: error.code,

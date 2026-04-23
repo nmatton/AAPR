@@ -12,7 +12,8 @@ export const authRouter = Router()
  * {
  *   "name": "John Doe",
  *   "email": "john@example.com",
- *   "password": "password123"
+ *   "password": "password123",
+ *   "privacyCode": "RESEARCH-001"
  * }
  * 
  * Response (201 Created):
@@ -78,3 +79,9 @@ authRouter.post('/refresh', authController.refreshTokens)
  * Logout current session
  */
 authRouter.post('/logout', requireAuth, authController.logoutUser)
+
+/**
+ * POST /api/v1/auth/send-privacy-code
+ * Send current user's personal privacy code to their registered email
+ */
+authRouter.post('/send-privacy-code', requireAuth, authController.sendPrivacyCode)
