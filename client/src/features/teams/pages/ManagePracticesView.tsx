@@ -25,6 +25,8 @@ export const ManagePracticesView = () => {
   const { teams, fetchTeams } = useTeamsStore();
   const {
     practices: availablePractices,
+    availablePillars,
+    isPillarsLoading,
     isLoading: isLoadingAvailable,
     error: availableError,
     total: availableTotal,
@@ -35,6 +37,7 @@ export const ManagePracticesView = () => {
     selectedMethods,
     selectedTags,
     loadAvailablePractices,
+    loadAvailablePillars,
     loadAvailableMethods,
     addPractice,
     setSearchQuery,
@@ -75,16 +78,6 @@ export const ManagePracticesView = () => {
     };
   }, [successTimeoutId]);
 
-  const availablePillars = useMemo(() => {
-    const pillarMap = new Map<number, { id: number; name: string; category: string; description?: string | null }>();
-    availablePractices.forEach((practice) => {
-      practice.pillars.forEach((pillar) => {
-        pillarMap.set(pillar.id, pillar);
-      });
-    });
-    return Array.from(pillarMap.values()).sort((a, b) => a.name.localeCompare(b.name));
-  }, [availablePractices]);
-
   const filteredAvailablePractices = useMemo(() => {
     if (!categoryFilter) {
       return availablePractices;
@@ -103,6 +96,12 @@ export const ManagePracticesView = () => {
       loadAvailablePractices(numericTeamId);
     }
   }, [numericTeamId, activeTab, loadAvailablePractices, searchQuery, selectedPillars, selectedCategories, selectedMethods, selectedTags]);
+
+  useEffect(() => {
+    if (numericTeamId) {
+      void loadAvailablePillars(numericTeamId);
+    }
+  }, [numericTeamId, loadAvailablePillars]);
 
   useEffect(() => {
     if (numericTeamId) {
@@ -397,7 +396,7 @@ export const ManagePracticesView = () => {
                 selectedPillars={selectedPillars}
                 onToggle={togglePillar}
                 onClear={clearFilters}
-                isLoading={isLoadingAvailable && availablePillars.length === 0}
+                isLoading={isPillarsLoading}
               />
             </div>
 

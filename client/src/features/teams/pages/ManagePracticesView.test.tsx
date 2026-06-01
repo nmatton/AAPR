@@ -23,10 +23,12 @@ vi.mock('../api/teamPracticesApi', () => ({
 
 describe('ManagePracticesView', () => {
   const mockLoadAvailablePractices = vi.fn();
+  const mockLoadAvailablePillars = vi.fn();
   const mockLoadAvailableMethods = vi.fn();
   const mockToggleCategory = vi.fn();
   const mockToggleMethod = vi.fn();
   const mockSetTags = vi.fn();
+  const mockClearFilters = vi.fn();
   const mockPractice: Practice = {
     id: 5,
     title: 'Sprint Planning',
@@ -68,7 +70,11 @@ describe('ManagePracticesView', () => {
 
     (useAddPracticesStore as any).mockReturnValue({
       practices: [],
+      availablePillars: [
+        { id: 1, name: 'Communication', category: 'Human Values', description: null }
+      ],
       availableMethods: ['Scrum'],
+      isPillarsLoading: false,
       isLoading: false,
       error: null,
       total: 0,
@@ -80,6 +86,7 @@ describe('ManagePracticesView', () => {
       selectedMethods: [],
       selectedTags: [],
       loadAvailablePractices: mockLoadAvailablePractices,
+      loadAvailablePillars: mockLoadAvailablePillars,
       loadAvailableMethods: mockLoadAvailableMethods,
       addPractice: vi.fn(),
       setSearchQuery: vi.fn(),
@@ -87,7 +94,7 @@ describe('ManagePracticesView', () => {
       toggleCategory: mockToggleCategory,
       toggleMethod: mockToggleMethod,
       setTags: mockSetTags,
-      clearFilters: vi.fn()
+      clearFilters: mockClearFilters
     });
 
     (useManagePracticesStore as any).mockReturnValue({
@@ -226,7 +233,11 @@ describe('ManagePracticesView', () => {
     const mockAddPractice = vi.fn().mockResolvedValue(true);
     (useAddPracticesStore as any).mockReturnValue({
       practices: [mockPractice],
+      availablePillars: [
+        { id: 1, name: 'Communication', category: 'Human Values', description: null }
+      ],
       availableMethods: ['Scrum'],
+      isPillarsLoading: false,
       isLoading: false,
       error: null,
       total: 1,
@@ -238,6 +249,7 @@ describe('ManagePracticesView', () => {
       selectedMethods: [],
       selectedTags: [],
       loadAvailablePractices: mockLoadAvailablePractices,
+      loadAvailablePillars: mockLoadAvailablePillars,
       loadAvailableMethods: mockLoadAvailableMethods,
       addPractice: mockAddPractice,
       setSearchQuery: vi.fn(),
@@ -245,7 +257,7 @@ describe('ManagePracticesView', () => {
       toggleCategory: mockToggleCategory,
       toggleMethod: mockToggleMethod,
       setTags: mockSetTags,
-      clearFilters: vi.fn()
+      clearFilters: mockClearFilters
     });
 
     render(
@@ -281,7 +293,97 @@ describe('ManagePracticesView', () => {
 
     await waitFor(() => {
       expect(mockLoadAvailableMethods).toHaveBeenCalledWith(1);
+      expect(mockLoadAvailablePillars).toHaveBeenCalledWith(1);
     });
+  });
+
+  it('renders pillar options from complete store list, not visible card subset', async () => {
+    (useAddPracticesStore as any).mockReturnValue({
+      practices: [mockPractice],
+      availablePillars: [
+        { id: 1, name: 'Communication', category: 'Human Values', description: null },
+        { id: 99, name: 'Value Delivery', category: 'Product Value', description: null }
+      ],
+      availableMethods: ['Scrum'],
+      isPillarsLoading: false,
+      isLoading: false,
+      error: null,
+      total: 1,
+      page: 1,
+      pageSize: 20,
+      searchQuery: '',
+      selectedPillars: [],
+      selectedCategories: [],
+      selectedMethods: [],
+      selectedTags: [],
+      loadAvailablePractices: mockLoadAvailablePractices,
+      loadAvailablePillars: mockLoadAvailablePillars,
+      loadAvailableMethods: mockLoadAvailableMethods,
+      addPractice: vi.fn(),
+      setSearchQuery: vi.fn(),
+      togglePillar: vi.fn(),
+      toggleCategory: mockToggleCategory,
+      toggleMethod: mockToggleMethod,
+      setTags: mockSetTags,
+      clearFilters: mockClearFilters
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/teams/1/practices/manage']}>
+        <Routes>
+          <Route path="/teams/:teamId/practices/manage" element={<ManagePracticesView />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /filter by pillar/i }));
+
+    expect(await screen.findByRole('checkbox', { name: 'Communication' })).toBeInTheDocument();
+    expect(await screen.findByRole('checkbox', { name: 'Value Delivery' })).toBeInTheDocument();
+  });
+
+  it('keeps dropdown clear wired to clearFilters', async () => {
+    (useAddPracticesStore as any).mockReturnValue({
+      practices: [mockPractice],
+      availablePillars: [
+        { id: 1, name: 'Communication', category: 'Human Values', description: null }
+      ],
+      availableMethods: ['Scrum'],
+      isPillarsLoading: false,
+      isLoading: false,
+      error: null,
+      total: 1,
+      page: 1,
+      pageSize: 20,
+      searchQuery: 'planning',
+      selectedPillars: [1],
+      selectedCategories: ['scrum'],
+      selectedMethods: ['Scrum'],
+      selectedTags: ['teamwork'],
+      loadAvailablePractices: mockLoadAvailablePractices,
+      loadAvailablePillars: mockLoadAvailablePillars,
+      loadAvailableMethods: mockLoadAvailableMethods,
+      addPractice: vi.fn(),
+      setSearchQuery: vi.fn(),
+      togglePillar: vi.fn(),
+      toggleCategory: mockToggleCategory,
+      toggleMethod: mockToggleMethod,
+      setTags: mockSetTags,
+      clearFilters: mockClearFilters
+    });
+
+    render(
+      <MemoryRouter initialEntries={['/teams/1/practices/manage']}>
+        <Routes>
+          <Route path="/teams/:teamId/practices/manage" element={<ManagePracticesView />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /filter by pillar/i }));
+    fireEvent.click(screen.getByRole('button', { name: /^clear$/i }));
+
+    expect(mockClearFilters).toHaveBeenCalledTimes(1);
   });
 });
 

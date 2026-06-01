@@ -1,10 +1,12 @@
 import { create } from 'zustand';
 import { fetchAvailablePractices, addPracticeToTeam, fetchAvailablePracticeMethods } from '../api/teamPracticesApi';
-import type { Practice } from '../types/practice.types';
+import type { Practice, PracticePillar } from '../types/practice.types';
 
 export interface AddPracticesState {
   practices: Practice[];
+  availablePillars: PracticePillar[];
   availableMethods: string[];
+  isPillarsLoading: boolean;
   isLoading: boolean;
   error: string | null;
   total: number;
@@ -18,6 +20,7 @@ export interface AddPracticesState {
   
   // Actions
   loadAvailablePractices: (teamId: number, page?: number) => Promise<void>;
+  loadAvailablePillars: (teamId: number) => Promise<void>;
   loadAvailableMethods: (teamId: number) => Promise<void>;
   addPractice: (teamId: number, practiceId: number) => Promise<void>;
   setSearchQuery: (query: string) => void;
@@ -31,7 +34,9 @@ export interface AddPracticesState {
 
 const initialState = {
   practices: [],
+  availablePillars: [],
   availableMethods: [],
+  isPillarsLoading: false,
   isLoading: false,
   error: null,
   total: 0,
@@ -43,6 +48,8 @@ const initialState = {
   selectedMethods: [],
   selectedTags: []
 };
+
+let latestPillarsLoadRequestId = 0;
 
 export const useAddPracticesStore = create<AddPracticesState>((set, get) => ({
   ...initialState,
@@ -94,6 +101,60 @@ export const useAddPracticesStore = create<AddPracticesState>((set, get) => ({
         error: errorMessage, 
         isLoading: false 
       });
+    }
+  },
+
+  loadAvailablePillars: async (teamId: number) => {
+    const requestId = ++latestPillarsLoadRequestId;
+    set({ isPillarsLoading: true });
+
+    try {
+      const firstPage = await fetchAvailablePractices({
+        teamId,
+        page: 1,
+        pageSize: 100
+      });
+
+      let allItems = firstPage.items;
+      if (firstPage.total > firstPage.items.length) {
+        const totalPages = Math.ceil(firstPage.total / firstPage.pageSize);
+        const pageRequests: Promise<Awaited<ReturnType<typeof fetchAvailablePractices>>>[] = [];
+
+        for (let pageNumber = 2; pageNumber <= totalPages; pageNumber += 1) {
+          pageRequests.push(
+            fetchAvailablePractices({
+              teamId,
+              page: pageNumber,
+              pageSize: firstPage.pageSize
+            })
+          );
+        }
+
+        const remainingPages = await Promise.all(pageRequests);
+        allItems = [firstPage.items, ...remainingPages.map((result) => result.items)].flat();
+      }
+
+      const pillarMap = new Map<number, PracticePillar>();
+      allItems.forEach((practice) => {
+        practice.pillars.forEach((pillar) => {
+          pillarMap.set(pillar.id, pillar);
+        });
+      });
+
+      const availablePillars = Array.from(pillarMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+
+      // Ignore stale responses when team changes quickly.
+      if (requestId !== latestPillarsLoadRequestId) {
+        return;
+      }
+
+      set({ availablePillars, isPillarsLoading: false });
+    } catch (error) {
+      if (requestId !== latestPillarsLoadRequestId) {
+        return;
+      }
+
+      set({ availablePillars: [], isPillarsLoading: false });
     }
   },
 

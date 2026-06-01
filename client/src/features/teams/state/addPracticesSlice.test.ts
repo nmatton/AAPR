@@ -140,6 +140,89 @@ describe('addPracticesSlice', () => {
     expect(useAddPracticesStore.getState().selectedPillars).not.toContain(5);
   });
 
+  it('loads available pillars from all pages with dedupe and sorted names', async () => {
+    vi.mocked(teamPracticesApi.fetchAvailablePractices)
+      .mockResolvedValueOnce({
+        items: [
+          {
+            id: 1,
+            title: 'Sprint Planning',
+            goal: 'Plan sprints',
+            categoryId: 'scrum',
+            categoryName: 'Scrum',
+            pillars: [
+              { id: 2, name: 'Flow', category: 'Process Execution', description: null },
+              { id: 1, name: 'Communication', category: 'Team Culture', description: null }
+            ]
+          },
+          {
+            id: 2,
+            title: 'Daily Standup',
+            goal: 'Daily sync',
+            categoryId: 'scrum',
+            categoryName: 'Scrum',
+            pillars: [
+              { id: 2, name: 'Flow', category: 'Process Execution', description: null }
+            ]
+          }
+        ],
+        page: 1,
+        pageSize: 2,
+        total: 3
+      })
+      .mockResolvedValueOnce({
+        items: [
+          {
+            id: 3,
+            title: 'Retrospective',
+            goal: 'Improve continuously',
+            categoryId: 'scrum',
+            categoryName: 'Scrum',
+            pillars: [
+              { id: 3, name: 'Adaptation', category: 'Technical Quality', description: null }
+            ]
+          }
+        ],
+        page: 2,
+        pageSize: 2,
+        total: 3
+      });
+
+    await useAddPracticesStore.getState().loadAvailablePillars(1);
+
+    expect(teamPracticesApi.fetchAvailablePractices).toHaveBeenNthCalledWith(1, {
+      teamId: 1,
+      page: 1,
+      pageSize: 100
+    });
+    expect(teamPracticesApi.fetchAvailablePractices).toHaveBeenNthCalledWith(2, {
+      teamId: 1,
+      page: 2,
+      pageSize: 2
+    });
+
+    const state = useAddPracticesStore.getState();
+    expect(state.availablePillars.map((pillar) => pillar.name)).toEqual(['Adaptation', 'Communication', 'Flow']);
+    expect(state.availablePillars).toHaveLength(3);
+    expect(state.isPillarsLoading).toBe(false);
+  });
+
+  it('falls back safely when available pillar loading fails', async () => {
+    useAddPracticesStore.setState({
+      availablePillars: [
+        { id: 1, name: 'Communication', category: 'Team Culture', description: null }
+      ]
+    });
+
+    vi.mocked(teamPracticesApi.fetchAvailablePractices).mockRejectedValue(new Error('network down'));
+
+    await useAddPracticesStore.getState().loadAvailablePillars(1);
+
+    const state = useAddPracticesStore.getState();
+    expect(state.availablePillars).toEqual([]);
+    expect(state.isPillarsLoading).toBe(false);
+  });
+
   it('clears all filters', () => {
     useAddPracticesStore.setState({
       searchQuery: 'test',
