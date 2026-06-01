@@ -80,7 +80,7 @@ describe('TeamsList', () => {
     expect(screen.getByText('Team Alpha')).toBeInTheDocument();
     expect(screen.getByText('Team Beta')).toBeInTheDocument();
     expect(screen.getByText('Team Gamma')).toBeInTheDocument();
-    expect(screen.getByRole('link', { name: 'User Guide' })).toHaveAttribute('href', '/AAPR%20User%20Guide.pdf');
+    expect(screen.getByRole('link', { name: 'User Guide' })).toHaveAttribute('href', '/AAPRUserGuide_EN.pdf');
   });
 
   it('shows loading skeleton while fetching', () => {

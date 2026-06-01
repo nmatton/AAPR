@@ -16,7 +16,7 @@ export const TeamsList = () => {
   const [isSendingPrivacyCode, setIsSendingPrivacyCode] = useState(false);
   const [privacyCodeToast, setPrivacyCodeToast] = useState<PrivacyCodeToast | null>(null);
   const navigate = useNavigate();
-  const userGuideUrl = '/AAPR%20User%20Guide.pdf';
+  const userGuideUrl = '/AAPRUserGuide_EN.pdf';
 
   useEffect(() => {
     fetchTeams();
