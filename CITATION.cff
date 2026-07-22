@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Matton"
+  given-names: "Nicolas"
+  orcid: "https://orcid.org/0000-0002-8479-7250"
+- family-names: "Vanderose"
+  given-names: "Benoit"
+  orcid: "https://orcid.org/0000-0001-9752-0085"
+title: "AdAPTR: A Tag-Based Recommendation Tool for Personality-Aware Agile Practice Adaptation"
+version: 1.0.0
+doi: 10.5281/zenodo.1234
+date-released: 2026-07-22
+url: "https://github.com/nmatton/AdAPTR"
