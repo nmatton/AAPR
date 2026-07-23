@@ -10,6 +10,7 @@
   <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" />
   <img src="https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" />
   <img src="https://img.shields.io/badge/Vitest-%236E9F18?style=for-the-badge&logo=Vitest&logoColor=%23fcd703" />
+  <a href="https://doi.org/10.5281/zenodo.21499627"><img src="https://zenodo.org/badge/1135729877.svg" alt="DOI"></a>
 </p>
 
 Research-grade web platform for identifying and resolving agile practice friction points through team collaboration, coverage analysis, and personality-informed context.
