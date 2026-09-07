@@ -1,0 +1,369 @@
+// Data Schema — AAPR Platform
+// Generated from server/prisma/schema.prisma (source of truth)
+// Import at https://dbdiagram.io (File > Import > DBML)
+
+Project AAPR {
+  database_type: 'PostgreSQL'
+  Note: 'Agile Practices Repository platform: team management, practice catalog, issue tracking, personality (Big Five) profiling and tag-based recommendations.'
+}
+
+Enum priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+Enum issue_status {
+  OPEN
+  IN_DISCUSSION
+  ADAPTATION_IN_PROGRESS
+  EVALUATED
+  RESOLVED
+}
+
+// =====================================================================
+// USER & PERSONALITY
+// =====================================================================
+
+Table users {
+  id              integer   [pk, increment]
+  name            varchar(100) [not null]
+  email           varchar(255) [unique, not null]
+  password        char(60)  [not null, note: 'Bcrypt hash']
+  privacy_code    varchar(255) [unique, note: 'User-generated pseudonym for research correlation']
+  is_admin_monitor boolean  [not null, default: false]
+  created_at      timestamp [not null, default: `now()`]
+  updated_at      timestamp [not null, default: `now()`]
+
+  Note: 'Authentication and profile information'
+}
+
+Table password_reset_tokens {
+  id          integer   [pk, increment]
+  user_id     integer   [not null, ref: > users.id]
+  token_hash  varchar(64) [unique, not null, note: 'SHA-256 hash of the raw reset token']
+  expires_at  timestamp [not null]
+  consumed_at timestamp
+  created_at  timestamp [not null, default: `now()`]
+  updated_at  timestamp [not null, default: `now()`]
+
+  indexes {
+    user_id
+    expires_at
+    consumed_at
+  }
+}
+
+Table big_five_responses {
+  id          integer   [pk, increment]
+  user_id     integer   [not null, ref: > users.id]
+  item_number integer   [not null, note: '1-44']
+  response    integer   [not null, note: '1-5 Likert scale']
+  created_at  timestamp [not null, default: `now()`]
+
+  indexes {
+    (user_id, item_number) [unique]
+  }
+}
+
+Table big_five_scores {
+  id                integer [pk, increment]
+  user_id           integer [unique, not null, ref: - users.id]
+  extraversion      integer [not null, note: 'range 8-40']
+  agreeableness     integer [not null, note: 'range 9-45']
+  conscientiousness integer [not null, note: 'range 9-45']
+  neuroticism       integer [not null, note: 'range 8-40']
+  openness          integer [not null, note: 'range 10-50']
+  created_at        timestamp [not null, default: `now()`]
+  updated_at        timestamp [not null, default: `now()`]
+}
+
+// =====================================================================
+// TEAM MANAGEMENT
+// =====================================================================
+
+Table teams {
+  id         integer   [pk, increment]
+  name       varchar(100) [unique, not null]
+  version    integer   [not null, default: 1, note: 'Optimistic locking version']
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  indexes {
+    name
+  }
+}
+
+Table team_members {
+  id        integer   [pk, increment]
+  team_id   integer   [not null, ref: > teams.id]
+  user_id   integer   [not null, ref: > users.id]
+  role      varchar(20) [not null, default: 'member', note: 'owner | member']
+  joined_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (team_id, user_id) [unique]
+    team_id
+    user_id
+  }
+}
+
+Table team_invites {
+  id               integer   [pk, increment]
+  team_id          integer   [not null, ref: > teams.id]
+  email            varchar(255) [not null]
+  status           varchar(20) [not null, note: 'Pending | Added | Failed']
+  invited_by       integer   [not null, ref: > users.id]
+  invited_user_id  integer   [ref: >? users.id]
+  created_at       timestamp [not null, default: `now()`]
+  updated_at       timestamp [not null, default: `now()`]
+  last_sent_at     timestamp
+  error_message    text
+
+  indexes {
+    (team_id, email) [unique, name: 'uq_team_invites_team_email']
+    team_id
+    email
+  }
+}
+
+// =====================================================================
+// PRACTICE CATALOG
+// =====================================================================
+
+Table categories {
+  id            varchar(50)  [pk, note: 'Semantic key']
+  name          varchar(255) [unique, not null]
+  description   text
+  display_order integer      [not null]
+  created_at    timestamp    [not null, default: `now()`]
+  updated_at    timestamp    [not null, default: `now()`]
+
+  Note: 'Global reference data: 5 APR framework categories'
+}
+
+Table pillars {
+  id          integer      [pk, increment]
+  name        varchar(255) [not null]
+  category_id varchar(50)  [not null, ref: > categories.id]
+  description text
+  created_at  timestamp    [not null, default: `now()`]
+  updated_at  timestamp    [not null, default: `now()`]
+
+  indexes {
+    (name, category_id) [unique, name: 'uq_pillars_name_category']
+    category_id
+  }
+
+  Note: 'Global reference data: 19 agile pillars'
+}
+
+Table practices {
+  id                   integer      [pk, increment]
+  title                varchar(100) [not null]
+  goal                 varchar(500) [not null]
+  category_id          varchar(50)  [not null, ref: > categories.id]
+  method               varchar(50)  [note: 'Scrum, XP, Kanban, etc.']
+  description          text
+  is_global            boolean      [not null, default: true]
+  tags                 jsonb
+  activities           jsonb
+  roles                jsonb
+  work_products        jsonb
+  completion_criteria  text
+  metrics              jsonb
+  guidelines           jsonb
+  pitfalls             jsonb
+  benefits             jsonb
+  associated_practices jsonb        [note: 'Deprecated - use practice_associations table']
+  practice_version     integer      [not null, default: 1]
+  imported_at          timestamp
+  imported_by          varchar(100)
+  source_file          varchar(255)
+  source_git_sha       varchar(40)
+  json_checksum        varchar(64)
+  raw_json             jsonb
+  created_at           timestamp    [not null, default: `now()`]
+  updated_at           timestamp    [not null, default: `now()`]
+
+  indexes {
+    (title, category_id) [unique, name: 'uq_practices_title_category']
+    category_id
+    title
+    goal
+    is_global
+    method
+  }
+}
+
+Table practice_associations {
+  id                 integer     [pk, increment]
+  source_practice_id integer     [not null, ref: > practices.id]
+  target_practice_id integer     [not null, ref: > practices.id]
+  association_type   varchar(50) [not null, note: 'Configuration | Equivalence | Dependency | Complementarity | Exclusion']
+  created_at         timestamp   [not null, default: `now()`]
+  updated_at         timestamp   [not null, default: `now()`]
+
+  indexes {
+    (source_practice_id, target_practice_id, association_type) [unique, name: 'uq_practice_associations_source_target_type']
+    source_practice_id
+    target_practice_id
+  }
+}
+
+Table team_practices {
+  id          integer   [pk, increment]
+  team_id     integer   [not null, ref: > teams.id]
+  practice_id integer   [not null, ref: > practices.id]
+  added_at    timestamp [not null, default: `now()`]
+
+  indexes {
+    (team_id, practice_id) [unique]
+    team_id
+    practice_id
+  }
+
+  Note: 'Practices selected by each team (many-to-many resolver)'
+}
+
+Table practice_pillars {
+  practice_id integer   [not null, ref: > practices.id]
+  pillar_id   integer   [not null, ref: > pillars.id]
+  created_at  timestamp [not null, default: `now()`]
+
+  indexes {
+    (practice_id, pillar_id) [pk]
+    practice_id
+    pillar_id
+  }
+
+  Note: 'Practice-to-pillar coverage mapping (many-to-many resolver)'
+}
+
+// =====================================================================
+// ISSUE TRACKING
+// =====================================================================
+
+Table issues {
+  id                     integer     [pk, increment]
+  title                  varchar(255) [not null]
+  description            text        [not null]
+  priority               priority    [not null]
+  status                 issue_status [not null, default: 'OPEN']
+  team_id                integer     [not null, ref: > teams.id]
+  created_by             integer     [not null, ref: > users.id]
+  decision_text          text
+  decision_recorded_by   integer     [ref: >? users.id]
+  decision_recorded_at   timestamp
+  evaluation_outcome     varchar(10) [note: 'yes | no | partial']
+  evaluation_comments    text
+  evaluation_recorded_by integer     [ref: >? users.id]
+  evaluation_recorded_at timestamp
+  is_standalone          boolean     [not null, default: false]
+  version                integer     [not null, default: 1, note: 'Optimistic locking version']
+  created_at             timestamp   [not null, default: `now()`]
+  updated_at             timestamp   [not null, default: `now()`]
+
+  indexes {
+    team_id
+    status
+  }
+}
+
+Table comments {
+  id         integer   [pk, increment]
+  content    text      [not null]
+  issue_id   integer   [not null, ref: > issues.id]
+  author_id  integer   [not null, ref: > users.id]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  indexes {
+    issue_id
+    author_id
+  }
+}
+
+Table issue_practices {
+  issue_id    integer [not null, ref: > issues.id]
+  practice_id integer [not null, ref: > practices.id]
+
+  indexes {
+    (issue_id, practice_id) [pk]
+    issue_id
+    practice_id
+  }
+
+  Note: 'Links issues to related practices (many-to-many resolver)'
+}
+
+// =====================================================================
+// TAG RECOMMENDATION ENGINE
+// =====================================================================
+
+Table tags {
+  id          integer      [pk, increment]
+  name        varchar(100) [unique, not null]
+  description text
+  type        varchar(50)  [not null, default: 'System', note: 'Activity | Artifact | Problem | Missing Capability']
+  is_global   boolean      [not null, default: true]
+  created_at  timestamp    [not null, default: `now()`]
+  updated_at  timestamp    [not null, default: `now()`]
+
+  Note: 'Global reference data: system-wide tags for directed recommendations'
+}
+
+Table tag_personality_relations {
+  tag_id     integer   [not null, ref: > tags.id]
+  trait      char(1)   [not null]
+  high_pole  smallint  [not null]
+  low_pole   smallint  [not null]
+  created_at timestamp [not null, default: `now()`]
+  updated_at timestamp [not null, default: `now()`]
+
+  indexes {
+    (tag_id, trait) [pk]
+    tag_id
+  }
+
+  Note: 'Maps each tag to its high/low Big Five trait poles'
+}
+
+Table tag_candidates {
+  problem_tag_id  integer   [not null, ref: > tags.id]
+  solution_tag_id integer   [not null, ref: > tags.id]
+  justification   text      [not null]
+  created_at      timestamp [not null, default: `now()`]
+  updated_at      timestamp [not null, default: `now()`]
+
+  indexes {
+    (problem_tag_id, solution_tag_id) [pk]
+    problem_tag_id
+    solution_tag_id
+  }
+
+  Note: 'Maps a problem tag to candidate solution tags'
+}
+
+Table tag_recommendations {
+  tag_id                  integer [pk, ref: - tags.id]
+  recommendation_text     text    [not null]
+  implementation_example  text    [not null]
+  created_at              timestamp [not null, default: `now()`]
+  updated_at              timestamp [not null, default: `now()`]
+
+  Note: 'Recommendation content for a tag (1:1 extension of tags)'
+}
+
+Table issue_tags {
+  issue_id integer [not null, ref: > issues.id]
+  tag_id   integer [not null, ref: > tags.id]
+
+  indexes {
+    (issue_id, tag_id) [pk]
+    issue_id
+    tag_id
+  }
+
+  Note: 'Links issues to specific tags (many-to-many resolver)'
+}
